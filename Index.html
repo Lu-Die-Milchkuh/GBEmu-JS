@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GB-Emu</title>
+    <style>
+        @import "Styles.css";
+    </style>
+</head>
+<body>
+    <h1>WebBoy</h1>
+    <main>
+        <div id="game-overlay">
+            <img src="media/gb-cover.jpg" alt="GameBoy Overlay">
+            <canvas id="game-screen">Your Browser does not support the Canvas</canvas>
+        </div>
+
+        <div id="control-block">
+            <input id="file-input" type="file" accept=".gb,.gbc">
+            <button id="reset-button">Reset</button>
+            <button id="stop-button">Stop</button>
+
+
+            <form id="speed-control">
+                <label for="speed-slider">Set Emulation Speed(0 - 200%)</label>
+                <input id="speed-slider" type="range" min="0" max="200" value="100">
+                <output for="speed-slider"></output>
+            </form>
+
+        </div>
+
+
+
+    </main>
+</body>
+</html>

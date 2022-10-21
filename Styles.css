@@ -1,0 +1,41 @@
+h1 {
+    background: aquamarine;
+}
+
+body {
+    display: grid;
+}
+
+/*
+    Main Game Overlay + Drawing Canvas
+*/
+#game-overlay {
+    border: 5px solid black;
+    display: inline-block;
+    position: center;
+}
+
+#game-screen {
+    position: absolute;
+    width: 320px;
+    height: 288px;
+    top: 183px;
+    left: 190px;
+    z-index: 20;
+    background-color: black;
+}
+
+/*
+    Main Control Block
+ */
+#control-block {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 5px;
+    border: 5px solid black;
+}
+
+#control-block > * {
+    width: 33%;
+}
