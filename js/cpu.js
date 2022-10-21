@@ -1,17 +1,5 @@
 "use strict"
 
-/* CPU State Flags
-    Half Carry ->   Check Bit 4 for 8 Bit OP and Bit 7 for 16-Bit OP
-    Carry ->        Check Bit 7 for 8-Bit Op and Bit 15 for 16-Bit Op
-    Zero -> Op Result was 0
-    Subtract -> Op involved a Subtraction
-*/
-let flags = {
-    C: false,   // Carry Flag
-    HC: false,  // Half Carry Flag
-    Z: false,   // Zero Flag
-    N: false,   // Subtract Flag
-}
 
 let cpu = {
     // 8-Bit Register
@@ -26,8 +14,19 @@ let cpu = {
     // 16-Bit Register
     SP: 0,  // Stack Pointer
     PC: 0,  // Program Counter
-    // CPU State Flags
-    flags
+
+    /* CPU State Flags
+        Half Carry ->   Check Bit 4 for 8 Bit OP and Bit 7 for 16-Bit OP
+        Carry ->        Check Bit 7 for 8-Bit Op and Bit 15 for 16-Bit Op
+        Zero -> Op Result was 0
+        Subtract -> Op involved a Subtraction
+    */
+    flags: {
+        C: false,   // Carry Flag
+        HC: false,  // Half Carry Flag
+        Z: false,   // Zero Flag
+        N: false,   // Subtract Flag
+    }
 }
 
 // Some Register can be paired together
@@ -68,7 +67,7 @@ function INCM8() {
     cpu.flags.HC = (data & 0x4)
     cpu.flags.Z = (data === 0)
 
-    memory.write(data,address)
+    memory.write(data, address)
     cpu.PC++
 }
 
@@ -89,7 +88,7 @@ function DECM8() {
     cpu.flags.HC = (data & 0x4)
     cpu.flags.Z = (data === 0)
 
-    memory.write(data,address)
+    memory.write(data, address)
     cpu.PC++
 }
 
@@ -121,6 +120,7 @@ function ORM(data) {
     cpu.PC++
 
 }
+
 // Bitwise AND A with register
 function ANDR(reg8) {
     cpu.A &= cpu.A
@@ -159,7 +159,7 @@ function SUBM(data) {
 
 // Subtract register and carry flag from A
 function SBCR(reg8) {
-    let carry = cpu.C ? 1:0
+    let carry = cpu.C ? 1 : 0
     cpu.flags.N = true
     cpu.flags.C = (cpu.A < (cpu[reg8] + carry))
     cpu.flags.HC = ((cpu.A - cpu[reg8] - carry) & 0x4)
@@ -171,7 +171,7 @@ function SBCR(reg8) {
 
 // Subtract memory at address and carry from A
 function SBCM(data) {
-    let carry = cpu.C ? 1:0
+    let carry = cpu.C ? 1 : 0
 
     cpu.flags.N = true
     cpu.flags.C = (cpu.A < (data + carry))
@@ -206,7 +206,7 @@ function ADDM(data) {
 
 // Add register and carry to a
 function ADDCR(reg8) {
-    let carry = cpu.flags.C ? 1:0
+    let carry = cpu.flags.C ? 1 : 0
     cpu.flags.N = false
     cpu.flags.C = ((cpu.A + cpu[reg8] + carry) > 255)
     cpu.flags.HC = ((cpu.A + cpu[reg8] + carry) & 0x4)
@@ -218,7 +218,7 @@ function ADDCR(reg8) {
 
 // Add memory and carry to A
 function ADCCM(data) {
-    let carry = cpu.flags.C ? 1:0
+    let carry = cpu.flags.C ? 1 : 0
     cpu.flags.N = false
     cpu.flags.C = ((cpu.A + data + carry) > 255)
     cpu.flags.HC = ((cpu.A + data + carry) & 0x4)
@@ -256,16 +256,107 @@ function CPM(data) {
 */
 
 // Load register2 or memory into register1
-function LDR(reg8,data) {
+function LDR(reg8, data) {
     cpu[reg8] = data
     cpu.PC++
 }
 
 // Load memory or register content into memory at address
-function LDM(data,address) {
-    memory.write(data,address)
+function LDM(data, address) {
+    memory.write(data, address)
     cpu.PC++
 }
+
+
+/*
+    Jump Instructions
+ */
+
+function JP(address) {
+    cpu.PC = address
+}
+
+// Conditional Jump -> Z,!Z,C,!C
+function JPC(address, condition) {
+    if (condition) {
+        cpu.PC = address
+    } else {
+        cpu.PC++
+    }
+}
+
+// Relative Jump -> PC = PC + offset
+function JR(offset) {
+    cpu.PC = (cpu.PC + offset) % 0xFFFF
+}
+
+function JRC(offset, condition) {
+    if (condition) {
+        cpu.PC = (cpu.PC + offset) % 0xFFFF
+    } else {
+        cpu.PC = (cpu.PC + offset) % 0xFFFF
+    }
+}
+
+// Call Subroutine, original PC will be stored in Stack
+function Call(address) {
+    let highByte = cpu.PC & 0xFF00
+    let lowByte = cpu.PC & 0x00FF
+    cpu.SP--
+    memory.write(highByte, cpu.SP)
+    cpu.SP--
+    memory.write(lowByte, cpu.SP)
+    cpu.PC = address
+}
+
+// Conditional Call to Subroutine
+function CALLC(address, condition) {
+    if (condition) {
+        let highByte = cpu.PC & 0xFF00
+        let lowByte = cpu.PC & 0x00FF
+        cpu.SP--
+        memory.write(highByte, cpu.SP)
+        cpu.SP--
+        memory.write(lowByte, cpu.SP)
+        cpu.PC = address
+    } else {
+        cpu.PC++
+    }
+}
+
+// Return from Subroutine
+function RET() {
+    cpu.SP++
+    let highByte = memory.read(cpu.SP)
+    cpu.SP++
+    let lowByte = memory.read(cpu.SP)
+    cpu.PC = (highByte << 8 | lowByte)
+
+}
+
+// Conditional Return from Subroutine
+function RETC(condition) {
+    if (condition) {
+        cpu.SP++
+        let highByte = memory.read(cpu.SP)
+        cpu.SP++
+        let lowByte = memory.read(cpu.SP)
+        cpu.PC = (highByte << 8 | lowByte)
+    } else {
+        cpu.PC++
+    }
+
+}
+
+// Return from subroutine and enable Interrupts
+function RETI() {
+}
+
+// Jump to 8 Byte Address
+function RST(address) {
+    cpu.PC = address
+}
+
 
 /*
     Miscellaneous
@@ -274,6 +365,16 @@ function LDM(data,address) {
 // No Operation, do nothing
 function NOP() {
     cpu.PC++
+}
+
+// Clear Carry Flag
+function CCF() {
+    cpu.flags.C = !cpu.flags.C
+}
+
+// Set Carry Flag
+function SCF() {
+    cpu.flags.C = true
 }
 
 /*
