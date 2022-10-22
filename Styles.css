@@ -29,6 +29,7 @@ body {
     Main Control Block
  */
 #control-block {
+    position: relative;
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;

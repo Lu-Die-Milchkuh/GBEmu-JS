@@ -26,7 +26,10 @@ let cpu = {
         HC: false,  // Half Carry Flag
         Z: false,   // Zero Flag
         N: false,   // Subtract Flag
-    }
+    },
+
+    // Interrupt Enable
+    IE: false
 }
 
 // Some Register can be paired together
@@ -357,6 +360,21 @@ function RST(address) {
     cpu.PC = address
 }
 
+/*
+    Single Bit Operation
+*/
+
+// Set a Bit at position n of register
+function SETR(reg8, n) {
+    cpu[reg8] |= (1 << n)
+    cpu.PC++
+}
+
+// Clear a Bit at position n of register
+function RESR(reg8, n) {
+    cpu[reg8] &= ~(1 << n)
+    cpu.PC++
+}
 
 /*
     Miscellaneous
@@ -370,12 +388,46 @@ function NOP() {
 // Clear Carry Flag
 function CCF() {
     cpu.flags.C = !cpu.flags.C
+    cpu.PC++
 }
 
 // Set Carry Flag
 function SCF() {
     cpu.flags.C = true
+    cpu.PC++
 }
+
+// Enable Interrupts
+function EI() {
+    cpu.IE = true
+    cpu.PC++
+}
+
+// Disable Interrupts
+function DI() {
+    cpu.IE = false
+    cpu.PC++
+}
+
+
+/*
+    Rotate and Shift Commands
+*/
+function SWAP(reg8) {
+    let highNibble = cpu[reg8] & 0xF0
+    let lowNibble = cpu[reg8] & 0x0F
+
+    cpu[reg8] = highNibble >> 4 | lowNibble << 4
+    cpu.PC++
+}
+
+function SWAPHL() {
+    let temp = cpu.H
+    cpu.H = cpu.L
+    cpu.L = temp
+    cpu.PC++
+}
+
 
 /*
     16-Bit Instructions
