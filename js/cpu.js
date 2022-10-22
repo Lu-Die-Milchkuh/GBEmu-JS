@@ -28,25 +28,86 @@ let cpu = {
         N: false,   // Subtract Flag
     },
 
-    // Interrupt Enable
-    IE: false
+    // Interrupt Enable Register
+    IE: 0
 }
 
 // Some Register can be paired together
-cpu.AB = () => {
-    return (cpu.A << 8) | cpu.B;
+cpu.AF = () => {
+    return (cpu.A << 8) | cpu.F;
 }
 
-cpu.CD = () => {
-    return (cpu.C << 8) | cpu.D;
+cpu.BC = () => {
+    return (cpu.B << 8) | cpu.C;
 }
 
-cpu.EF = () => {
-    return (cpu.E << 8) | cpu.F;
+cpu.DE = () => {
+    return (cpu.D << 8) | cpu.E;
 }
 
 cpu.HL = () => {
     return (cpu.H << 8) | cpu.L;
+}
+
+cpu.setAF = (data) => {
+    cpu.A = (data & 0xFF00) >> 8
+    cpu.F = data & 0x00FF
+}
+
+cpu.setBC = (data) => {
+    cpu.B = (data & 0xFF00) >> 8
+    cpu.C = data & 0x00FF
+}
+
+cpu.setDE = (data) => {
+    cpu.D = (data & 0xFF00) >> 8
+    cpu.E = data & 0x00FF
+}
+
+cpu.setHL = (data) => {
+    cpu.H = (data & 0xFF00) >> 8
+    cpu.L = data & 0x00FF
+}
+
+// At Startup the Game Boy expects certain Registers and Memory Location to contain the following data
+cpu.reset = () => {
+    cpu.setAF(0x01B0)
+    cpu.setBC(0x0013)
+    cpu.setDE(0x00D8)
+    cpu.setHL(0x014D)
+    cpu.SP = 0xFFFE
+    cpu.PC = 0x0000
+    memory.write(0x00,0xFF05)   // TIMA
+    memory.write(0x00,0xFF06)   // TMA
+    memory.write(0x00,0xFF07)   // TAC
+    memory.write(0x80,0xFF10)
+    memory.write(0xBF,0xFF11)
+    memory.write(0xF3,0xFF12)
+    memory.write(0xBF,0xFF14)
+    memory.write(0x3F,0xFF16)
+    memory.write(0x00,0xFF17)
+    memory.write(0xBF,0xFF19)
+    memory.write(0x7F,0xFF1A)
+    memory.write(0xFF,0xFF1B)
+    memory.write(0x9F,0xFF1C)
+    memory.write(0xBF,0xFF1E)
+    memory.write(0xFF,0xFF20)
+    memory.write(0x00,0xFF21)
+    memory.write(0x00,0xFF22)
+    memory.write(0xBF,0xFF23)
+    memory.write(0x77,0xFF24)
+    memory.write(0xF3,0xFF25)
+    memory.write(0xF1,0xFF26)
+    memory.write(0x91,0xFF40)
+    memory.write(0x00,0xFF42)   // LCDC
+    memory.write(0x00,0xFF43)   // SCx
+    memory.write(0x00,0xFF45)   // LYC
+    memory.write(0xFC,0xFF47)   // BGP
+    memory.write(0xFF,0xFF48)   // OBP0
+    memory.write(0xFF,0xFF49)   // OBP1
+    memory.write(0x00,0xFF4A)   // WY
+    memory.write(0xFC,0xFF4B)   // WX
+    memory.write(0x00,0xFFFF)   // IE
 }
 
 /*
@@ -399,13 +460,13 @@ function SCF() {
 
 // Enable Interrupts
 function EI() {
-    cpu.IE = true
+    cpu.IE = 1
     cpu.PC++
 }
 
 // Disable Interrupts
 function DI() {
-    cpu.IE = false
+    cpu.IE = 0
     cpu.PC++
 }
 
@@ -432,3 +493,21 @@ function SWAPHL() {
 /*
     16-Bit Instructions
  */
+
+function PUSH(reg16) {
+    let highByte = cpu[reg16]() & 0xFF00
+    let lowByte = cpu[reg16]() & 0x00FF
+    cpu.SP--
+    memory.write(highByte, cpu.SP)
+    cpu.SP--
+    memory.write(lowByte, cpu.SP)
+    cpu.PC++
+}
+
+function POP(reg16) {
+    cpu.SP++
+    let lowByte = memory.read(cpu.SP)
+    cpu.SP++
+    let highByte = memory.read(cpu.SP)
+    cpu[`set${reg16}`](highByte << 8 | lowByte)
+}

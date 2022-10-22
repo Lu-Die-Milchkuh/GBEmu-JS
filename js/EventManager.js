@@ -16,6 +16,6 @@ document.querySelector("#file-input").addEventListener("change", (event) => {
 })
 
 
-document.querySelector("#speed-slider").addEventListener("input", (event) => {
+document.querySelector("#speed-slider").addEventListener("input", () => {
     document.querySelector("#speed-out").value = `${document.querySelector("#speed-slider").value}%`
 })
