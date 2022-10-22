@@ -281,7 +281,7 @@ function ADDCR(reg8) {
 }
 
 // Add memory and carry to A
-function ADCCM(data) {
+function ADDCM(data) {
     let carry = cpu.flags.C ? 1 : 0
     cpu.flags.N = false
     cpu.flags.C = ((cpu.A + data + carry) > 255)
@@ -363,7 +363,7 @@ function JRC(offset, condition) {
 }
 
 // Call Subroutine, original PC will be stored in Stack
-function Call(address) {
+function CALL(address) {
     let highByte = cpu.PC & 0xFF00
     let lowByte = cpu.PC & 0x00FF
     cpu.SP--
