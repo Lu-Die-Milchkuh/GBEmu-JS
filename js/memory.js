@@ -28,6 +28,7 @@ memory.read = (address) => {
 }
 
 memory.write = (data,address) => {
+
     if(address >= 0x014F && address <= 0x7FFF) {
         console.log(`Tried to write ${data.toString(16)} into ROM at address ${address.toString(16)}`)
     }
@@ -36,7 +37,8 @@ memory.write = (data,address) => {
     }
     else if(address >= 0xC000 && address <= 0xDFFF) {
         memory.wram[address & 0x2000] = data
-    } else {
+    }
+    else {
         cpu.IE = data
     }
 }
