@@ -10,6 +10,7 @@ document.querySelector("#file-input").addEventListener("change", (event) => {
         let buffer = reader.result
         let tempArray = new Uint8Array(buffer)
         memory.rom = Array.from(tempArray)
+        read_rom_info()
         run()
     }
 
@@ -42,9 +43,5 @@ document.querySelector("#reset-button").addEventListener("click", () => {
 // Pause Button
 document.querySelector("#pause-button").addEventListener("click", () => {
     paused = !paused
-    if (paused) {
-        document.querySelector("#pause-button").textContent = "Resume"
-    } else {
-        document.querySelector("#pause-button").textContent = "Pause"
-    }
+    document.querySelector("#pause-button").textContent = paused ? "Resume" : "Pause"
 })
