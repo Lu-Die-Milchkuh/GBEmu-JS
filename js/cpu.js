@@ -77,37 +77,37 @@ cpu.reset = () => {
     cpu.setHL(0x014D)
     cpu.SP = 0xFFFE
     cpu.PC = 0x0000
-    memory.write(0x00,0xFF05)   // TIMA
-    memory.write(0x00,0xFF06)   // TMA
-    memory.write(0x00,0xFF07)   // TAC
-    memory.write(0x80,0xFF10)
-    memory.write(0xBF,0xFF11)
-    memory.write(0xF3,0xFF12)
-    memory.write(0xBF,0xFF14)
-    memory.write(0x3F,0xFF16)
-    memory.write(0x00,0xFF17)
-    memory.write(0xBF,0xFF19)
-    memory.write(0x7F,0xFF1A)
-    memory.write(0xFF,0xFF1B)
-    memory.write(0x9F,0xFF1C)
-    memory.write(0xBF,0xFF1E)
-    memory.write(0xFF,0xFF20)
-    memory.write(0x00,0xFF21)
-    memory.write(0x00,0xFF22)
-    memory.write(0xBF,0xFF23)
-    memory.write(0x77,0xFF24)
-    memory.write(0xF3,0xFF25)
-    memory.write(0xF1,0xFF26)
-    memory.write(0x91,0xFF40)
-    memory.write(0x00,0xFF42)   // LCDC
-    memory.write(0x00,0xFF43)   // SCx
-    memory.write(0x00,0xFF45)   // LYC
-    memory.write(0xFC,0xFF47)   // BGP
-    memory.write(0xFF,0xFF48)   // OBP0
-    memory.write(0xFF,0xFF49)   // OBP1
-    memory.write(0x00,0xFF4A)   // WY
-    memory.write(0xFC,0xFF4B)   // WX
-    memory.write(0x00,0xFFFF)   // IE
+    memory.write(0x00, 0xFF05)   // TIMA
+    memory.write(0x00, 0xFF06)   // TMA
+    memory.write(0x00, 0xFF07)   // TAC
+    memory.write(0x80, 0xFF10)
+    memory.write(0xBF, 0xFF11)
+    memory.write(0xF3, 0xFF12)
+    memory.write(0xBF, 0xFF14)
+    memory.write(0x3F, 0xFF16)
+    memory.write(0x00, 0xFF17)
+    memory.write(0xBF, 0xFF19)
+    memory.write(0x7F, 0xFF1A)
+    memory.write(0xFF, 0xFF1B)
+    memory.write(0x9F, 0xFF1C)
+    memory.write(0xBF, 0xFF1E)
+    memory.write(0xFF, 0xFF20)
+    memory.write(0x00, 0xFF21)
+    memory.write(0x00, 0xFF22)
+    memory.write(0xBF, 0xFF23)
+    memory.write(0x77, 0xFF24)
+    memory.write(0xF3, 0xFF25)
+    memory.write(0xF1, 0xFF26)
+    memory.write(0x91, 0xFF40)
+    memory.write(0x00, 0xFF42)   // LCDC
+    memory.write(0x00, 0xFF43)   // SCx
+    memory.write(0x00, 0xFF45)   // LYC
+    memory.write(0xFC, 0xFF47)   // BGP
+    memory.write(0xFF, 0xFF48)   // OBP0
+    memory.write(0xFF, 0xFF49)   // OBP1
+    memory.write(0x00, 0xFF4A)   // WY
+    memory.write(0xFC, 0xFF4B)   // WX
+    memory.write(0x00, 0xFFFF)   // IE
 }
 
 /*
@@ -433,8 +433,8 @@ function SETR(reg8, n) {
 
 function SETM(n) {
     let data = memory.read(cpu.HL())
-    data |= (1<<n)
-    memory.write(data,cpu.HL())
+    data |= (1 << n)
+    memory.write(data, cpu.HL())
     cpu.PC++
 }
 
@@ -446,14 +446,14 @@ function RESR(reg8, n) {
 
 function RESM(n) {
     let data = memory.read(cpu.HL())
-    data &= (0<<n)
-    memory.write(data,cpu.HL())
+    data &= (0 << n)
+    memory.write(data, cpu.HL())
     cpu.PC++
 }
 
 // Check if a Bit at given index is set
 function BIT(index, data) {
-    cpu.Z = (data & (1<<index));
+    cpu.Z = (data & (1 << index));
     cpu.PC++
 }
 
@@ -508,11 +508,6 @@ function SWAPHL() {
     cpu.L = temp
     cpu.PC++
 }
-
-
-
-
-
 
 
 /*

@@ -1338,3 +1338,6 @@ const prefix_lookup = {
     0xff: () => {
     }
 }
+
+const cycles_lookup = {}
+const prefix_cycles_lookup = {}

@@ -7,9 +7,11 @@
         @import "Styles.css";
     </style>
     <script src="./js/EventManager.js" type="module"></script>
+    <script src="./js/cpu.js"></script>
+    <script src="./js/Lookup.js"></script>
     <script src="./js/memory.js"></script>
     <script src="./js/Emulator.js"></script>
-
+    <noscript>Javascript not enabled! Please enable it or switch to a newer Browser</noscript>
 
 </head>
 <body>
@@ -24,7 +26,7 @@
         <input id="file-input" type="file" accept=".gb,.gbc">
         <button id="reset-button">Reset</button>
         <button id="stop-button">Stop</button>
-
+        <button id="pause-button">Pause</button>
 
         <form id="speed-control">
             <label for="speed-slider">Set Emulation Speed(1 - 200%)</label>
