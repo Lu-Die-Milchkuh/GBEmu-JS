@@ -431,9 +431,29 @@ function SETR(reg8, n) {
     cpu.PC++
 }
 
+function SETM(n) {
+    let data = memory.read(cpu.HL())
+    data |= (1<<n)
+    memory.write(data,cpu.HL())
+    cpu.PC++
+}
+
 // Clear a Bit at position n of register
 function RESR(reg8, n) {
     cpu[reg8] &= ~(1 << n)
+    cpu.PC++
+}
+
+function RESM(n) {
+    let data = memory.read(cpu.HL())
+    data &= (0<<n)
+    memory.write(data,cpu.HL())
+    cpu.PC++
+}
+
+// Check if a Bit at given index is set
+function BIT(index, data) {
+    cpu.Z = (data & (1<<index));
     cpu.PC++
 }
 
@@ -488,6 +508,11 @@ function SWAPHL() {
     cpu.L = temp
     cpu.PC++
 }
+
+
+
+
+
 
 
 /*
