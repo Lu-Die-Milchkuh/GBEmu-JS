@@ -510,6 +510,49 @@ function SWAPHL() {
 }
 
 
+// Rotate Left through Carry
+function RLCR(reg8) {
+    cpu.flags.C = (cpu[reg8] & 0x80) ? true : false
+    cpu[reg8] = cpu[reg8] << 1
+    cpu.PC++
+
+}
+
+function RLCM() {
+}
+
+// Rotate Right through Carry
+function RRCR(reg8) {
+    cpu.flags.C = (cpu[reg8] & 0x1) ? true : false
+    cpu[reg8] = cpu[reg8] >> 1
+    cpu.PC++
+}
+
+function RRCM() {
+}
+
+
+// Rotate Right
+function RRR(reg8) {
+    let temp = cpu[reg8] & 0x1
+    cpu[reg8] = cpu[reg8] >> 1 | temp << 7
+    cpu.PC++
+}
+
+function RRM() {
+}
+
+// Rotate Left
+function RLR(reg8) {
+    let temp = cpu[reg8] & 0x80
+    cpu[reg8] = cpu[reg8] << 1 | temp >> 7
+    cpu.PC++
+}
+
+function RLM() {
+}
+
+
 /*
     16-Bit Instructions
  */

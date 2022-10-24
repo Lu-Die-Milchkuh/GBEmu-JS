@@ -1373,66 +1373,97 @@ const prefix_lookup = {
         SETR("B",4)
     },
     0xe1: () => {
+        SETR("C",4)
     },
     0xe2: () => {
+        SETR("D",4)
     },
     0xe3: () => {
+        SETR("E",4)
     },
     0xe4: () => {
+        SETR("H",4)
     },
     0xe5: () => {
+        SETR("L",4)
     },
     0xe6: () => {
+        SETM(4)
     },
     0xe7: () => {
+        SETR("A",4)
     },
     0xe8: () => {
+        SETR("B",5)
     },
     0xe9: () => {
+        SETR("C",5)
     },
     0xea: () => {
+        SETR("D",5)
     },
     0xeb: () => {
+        SETR("E",5)
     },
     0xec: () => {
+        SETR("H",5)
     },
     0xed: () => {
+        SETR("L",5)
     },
     0xee: () => {
+        SETM(5)
     },
     0xef: () => {
+        SETR("A",5)
     },
     0xf0: () => {
+        SETR("B",6)
     },
     0xf1: () => {
+        SETR("C",6)
     },
     0xf2: () => {
+        SETR("D",6)
     },
     0xf3: () => {
+        SETR("E",6)
     },
     0xf4: () => {
+        SETR("H",6)
     },
     0xf5: () => {
+        SETR("L",6)
     },
     0xf6: () => {
+        SETM(6)
     },
     0xf7: () => {
+        SETR("A",6)
     },
     0xf8: () => {
+        SETR("B",7)
     },
     0xf9: () => {
+        SETR("C",7)
     },
     0xfa: () => {
+        SETR("D",7)
     },
     0xfb: () => {
+        SETR("E",7)
     },
     0xfc: () => {
+        SETR("H",7)
     },
     0xfd: () => {
+        SETR("L",7)
     },
     0xfe: () => {
+        SETM(7)
     },
     0xff: () => {
+        SETR("A",7)
     }
 }
 
