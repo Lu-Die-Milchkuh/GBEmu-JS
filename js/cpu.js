@@ -514,6 +514,7 @@ function SWAPHL() {
 function RLCR(reg8) {
     cpu.flags.C = (cpu[reg8] & 0x80) ? true : false
     cpu[reg8] = cpu[reg8] << 1
+    cpu.flags.Z = cpu[reg8] === 0
     cpu.PC++
 
 }
@@ -525,6 +526,7 @@ function RLCM() {
 function RRCR(reg8) {
     cpu.flags.C = (cpu[reg8] & 0x1) ? true : false
     cpu[reg8] = cpu[reg8] >> 1
+    cpu.flags.Z = cpu[reg8] === 0
     cpu.PC++
 }
 
@@ -536,6 +538,7 @@ function RRCM() {
 function RRR(reg8) {
     let temp = cpu[reg8] & 0x1
     cpu[reg8] = cpu[reg8] >> 1 | temp << 7
+    cpu.flags.Z = cpu[reg8] === 0
     cpu.PC++
 }
 
@@ -546,6 +549,7 @@ function RRM() {
 function RLR(reg8) {
     let temp = cpu[reg8] & 0x80
     cpu[reg8] = cpu[reg8] << 1 | temp >> 7
+    cpu.flags.Z = cpu[reg8] === 0
     cpu.PC++
 }
 
