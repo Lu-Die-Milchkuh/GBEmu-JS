@@ -1370,7 +1370,7 @@ const prefix_lookup = {
         SETR("A",3)
     },
     0xe0: () => {
-        SETR("B")
+        SETR("B",4)
     },
     0xe1: () => {
     },
