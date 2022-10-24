@@ -466,7 +466,7 @@ function NOP() {
     cpu.PC++
 }
 
-// Clear Carry Flag
+// Complement the Carry Flag: true -> false,false -> true
 function CCF() {
     cpu.flags.C = !cpu.flags.C
     cpu.PC++
