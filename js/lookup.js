@@ -3,7 +3,7 @@
 const lookup = {
     0x00: () => {
         NOP()
-        return 4
+
     },
     0x01: () => {
     },
@@ -13,7 +13,7 @@ const lookup = {
     },
     0x04: () => {
         INCR8("B")
-        return 4
+
     },
     0x05: () => {
         DECR8("B")
