@@ -12,7 +12,7 @@ body {
 #game-overlay {
     border: 5px solid black;
     display: inline-block;
-    position: center;
+    /*position: center;*/
 }
 
 #game-screen {

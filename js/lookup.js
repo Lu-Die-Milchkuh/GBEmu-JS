@@ -3,6 +3,7 @@
 const lookup = {
     0x00: () => {
         NOP()
+        return 4
     },
     0x01: () => {
     },
@@ -12,6 +13,7 @@ const lookup = {
     },
     0x04: () => {
         INCR8("B")
+        return 4
     },
     0x05: () => {
         DECR8("B")
@@ -19,6 +21,7 @@ const lookup = {
     0x06: () => {
         LDR("B", memory.read(cpu.PC + 1));
         cpu.PC++
+        cpu.clock.cycles += 4
     },
     0x07: () => {
     },
@@ -28,6 +31,7 @@ const lookup = {
     },
     0x0a: () => {
         LDR("A", memory.read(cpu.BC()))
+        cpu.clock.cycles += 4
     },
     0x0b: () => {
     },
@@ -61,6 +65,7 @@ const lookup = {
     0x16: () => {
         LDR("D", memory.read(cpu.PC + 1));
         cpu.PC++
+        cpu.clock.cycles += 4
     },
     0x17: () => {
     },
@@ -71,6 +76,7 @@ const lookup = {
     },
     0x1a: () => {
         LDR("A", memory.read(cpu.DE()))
+        cpu.clock.cycles += 4
     },
     0x1b: () => {
     },
@@ -106,6 +112,7 @@ const lookup = {
     0x26: () => {
         LDR("H", memory.read(cpu.PC + 1));
         cpu.PC++
+        cpu.clock.cycles += 4
     },
     0x27: () => {
     },
@@ -117,6 +124,7 @@ const lookup = {
     0x2a: () => {
         LDR("A", memory.read(cpu.HL()));
         cpu.setHL(cpu.HL() + 1)
+        cpu.clock.cycles += 4
     },
     0x2b: () => {
     },
@@ -148,6 +156,9 @@ const lookup = {
     0x35: () => {
     },
     0x36: () => {
+        cpu.PC++
+        LDM(memory.read(cpu.PC),cpu.HL())
+        cpu.clock.cycles += 4
     },
     0x37: () => {
         SCF()
@@ -160,6 +171,7 @@ const lookup = {
     0x3a: () => {
         LDR("A", memory.read(cpu.HL()));
         cpu.setHL(cpu.HL() - 1)
+        cpu.clock.cycles += 4
     },
     0x3b: () => {
     },
@@ -891,6 +903,7 @@ const prefix_lookup = {
     },
     0x40: () => {
         BIT(0, cpu.B)
+        return 8
     },
     0x41: () => {
         BIT(0, cpu.C)
@@ -909,6 +922,7 @@ const prefix_lookup = {
     },
     0x46: () => {
         BIT(0, memory.read(cpu.HL()))
+        cpu.clock.cycles += 8
     },
     0x47: () => {
         BIT(0, cpu.A)
@@ -933,6 +947,7 @@ const prefix_lookup = {
     },
     0x4e: () => {
         BIT(1, memory.read(cpu.HL()))
+        cpu.clock.cycles += 8
     },
     0x4f: () => {
         BIT(1, cpu.A)
@@ -957,6 +972,7 @@ const prefix_lookup = {
     },
     0x56: () => {
         BIT(2, memory.read(cpu.HL()))
+        cpu.clock.cycles += 8
     },
     0x57: () => {
         BIT(2, cpu.A)
@@ -981,6 +997,7 @@ const prefix_lookup = {
     },
     0x5e: () => {
         BIT(3, memory.read(cpu.HL()))
+        cpu.clock.cycles += 8
     },
     0x5f: () => {
         BIT(3, cpu.A)
@@ -1005,6 +1022,7 @@ const prefix_lookup = {
     },
     0x66: () => {
         BIT(4, memory.read(cpu.HL()))
+        cpu.clock.cycles += 8
     },
     0x67: () => {
         BIT(4, cpu.A)
@@ -1029,6 +1047,7 @@ const prefix_lookup = {
     },
     0x6e: () => {
         BIT(5, memory.read(cpu.HL()))
+        cpu.clock.cycles += 8
     },
     0x6f: () => {
         BIT(5, cpu.A)
@@ -1053,6 +1072,7 @@ const prefix_lookup = {
     },
     0x76: () => {
         BIT(6, memory.read(cpu.HL()))
+        cpu.clock.cycles += 8
     },
     0x77: () => {
         BIT(6, cpu.A)
@@ -1077,6 +1097,7 @@ const prefix_lookup = {
     },
     0x7e: () => {
         BIT(7, memory.read(cpu.HL()))
+        cpu.clock.cycles += 8
     },
     0x7f: () => {
         BIT(7, cpu.A)
@@ -1467,5 +1488,23 @@ const prefix_lookup = {
     }
 }
 
-const cycles_lookup = {}
-const prefix_cycles_lookup = {}
+const prefix_cycles_lookup = [
+    8,8,8,8,8,8,16,8,8,8,8,8,8,8,8,16,8,
+    8,8,8,8,8,8,16,8,8,8,8,8,8,8,8,16,8,
+    8,8,8,8,8,8,16,8,8,8,8,8,8,8,8,16,8,
+    8,8,8,8,8,8,16,8,8,8,8,8,8,8,8,16,8,
+    8,8,8,8,8,8,16,8,8,8,8,8,8,8,8,16,8,
+    8,8,8,8,8,8,16,8,8,8,8,8,8,8,8,16,8,
+    8,8,8,8,8,8,16,8,8,8,8,8,8,8,8,16,8,
+    8,8,8,8,8,8,16,8,8,8,8,8,8,8,8,16,8,
+    8,8,8,8,8,8,16,8,8,8,8,8,8,8,8,16,8,
+    8,8,8,8,8,8,16,8,8,8,8,8,8,8,8,16,8,
+    8,8,8,8,8,8,16,8,8,8,8,8,8,8,8,16,8,
+    8,8,8,8,8,8,16,8,8,8,8,8,8,8,8,16,8,
+    8,8,8,8,8,8,16,8,8,8,8,8,8,8,8,16,8,
+    8,8,8,8,8,8,16,8,8,8,8,8,8,8,8,16,8,
+    8,8,8,8,8,8,16,8,8,8,8,8,8,8,8,16,8,
+    8,8,8,8,8,8,16,8,8,8,8,8,8,8,8,16,8,
+    8,8,8,8,8,8,16,8,8,8,8,8,8,8,8,16,8
+]
+

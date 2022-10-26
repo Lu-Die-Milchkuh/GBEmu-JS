@@ -27,6 +27,9 @@ let cpu = {
         Z: false,   // Zero Flag
         N: false,   // Subtract Flag
     },
+    clock: {
+        cycles: 0
+    },
 
     // Interrupt Enable Register
     IE: 0
@@ -120,6 +123,7 @@ function INCR8(reg8) {
     cpu.flags.HC = (cpu[reg8] & 0x4)
     cpu.flags.Z = (cpu[reg8] === 0)
     cpu.PC++
+    cpu.clock.cycles += 4
 }
 
 // Increment data at the memory address stored in HL
@@ -133,6 +137,7 @@ function INCM8() {
 
     memory.write(data, address)
     cpu.PC++
+    cpu.clock.cycles += 12
 }
 
 // Decrement a 8-Bit Register
@@ -141,6 +146,7 @@ function DECR8(reg8) {
     cpu.flags.HC = (cpu[reg8] & 0x4)
     cpu.flags.Z = (cpu[reg8] === 0)
     cpu.PC++
+    cpu.clock.cycles += 4
 }
 
 // Decrement Data at the memory address stored in HL
@@ -154,6 +160,7 @@ function DECM8() {
 
     memory.write(data, address)
     cpu.PC++
+    cpu.clock.cycles += 12
 }
 
 // Bitwise XOR  A with register
@@ -161,6 +168,7 @@ function XORR(reg8) {
     cpu.A ^= cpu[reg8]
     cpu.flags.Z = (cpu.A === 0)
     cpu.PC++
+    cpu.clock.cycles += 4
 }
 
 // Bitwise XOR A with memory
@@ -168,6 +176,7 @@ function XORM(data) {
     cpu.A ^= data
     cpu.flags.Z = (cpu.A === 0)
     cpu.PC++
+    cpu.clock.cycles += 8
 }
 
 // Bitwise OR A with register
@@ -175,6 +184,7 @@ function ORR(reg8) {
     cpu.A |= cpu[reg8]
     cpu.flags.Z = (cpu.A === 0)
     cpu.PC++
+    cpu.clock.cycles += 4
 }
 
 // Bitwise OR A with memory
@@ -182,7 +192,7 @@ function ORM(data) {
     cpu.A |= data
     cpu.flags.Z = (cpu.A === 0)
     cpu.PC++
-
+    cpu.clock.cycles += 8
 }
 
 // Bitwise AND A with register
@@ -190,6 +200,7 @@ function ANDR(reg8) {
     cpu.A &= cpu.A
     cpu.flags.Z = (cpu.A === 0)
     cpu.PC++
+    cpu.clock.cycles += 4
 }
 
 // Bitwise AND A with memory
@@ -197,6 +208,7 @@ function ANDM(data) {
     cpu.A &= data;
     cpu.flags.Z = (cpu.A === 0)
     cpu.PC++
+    cpu.clock.cycles += 8
 }
 
 // Subtract register from A
@@ -208,6 +220,7 @@ function SUBR(reg8) {
     cpu.A = ((cpu.A - cpu[reg8]) >>> 0) % 256
     cpu.flags.Z = (cpu.A === 0)
     cpu.PC++
+    cpu.clock.cycles += 4
 }
 
 // Subtract memory from A
@@ -219,6 +232,7 @@ function SUBM(data) {
     cpu.A = ((cpu.A - data) >>> 0) % 256
     cpu.flags.Z = (cpu.A === 0)
     cpu.PC++
+    cpu.clock.cycles += 8
 }
 
 // Subtract register and carry flag from A
@@ -231,6 +245,7 @@ function SBCR(reg8) {
     cpu.A = ((cpu.A - cpu[reg8] - carry) >>> 0) % 256
     cpu.flags.Z = (cpu.A === 0)
     cpu.PC++
+    cpu.clock.cycles += 4
 }
 
 // Subtract memory at address and carry from A
@@ -244,6 +259,7 @@ function SBCM(data) {
     cpu.A = ((cpu.A - data - carry) >>> 0) % 256
     cpu.flags.Z = (cpu.A === 0)
     cpu.PC++
+    cpu.clock.cycles += 8
 }
 
 // Add register to A
@@ -255,6 +271,7 @@ function ADDR(reg8) {
     cpu.A = ((cpu.A + cpu[reg8]) >>> 0) % 256
     cpu.flags.Z = (cpu.A === 0)
     cpu.PC++
+    cpu.clock.cycles += 4
 }
 
 // Add memory and carry to A
@@ -266,6 +283,7 @@ function ADDM(data) {
     cpu.A = ((cpu.A + data) >>> 0) % 256
     cpu.flags.Z = (cpu.A === 0)
     cpu.PC++
+    cpu.clock.cycles += 8
 }
 
 // Add register and carry to a
@@ -278,6 +296,7 @@ function ADDCR(reg8) {
     cpu.A = ((cpu.A + cpu[reg8]) >>> 0) % 256
     cpu.flags.Z = (cpu.A === 0)
     cpu.PC++
+    cpu.clock.cycles += 4
 }
 
 // Add memory and carry to A
@@ -290,6 +309,7 @@ function ADDCM(data) {
     cpu.A = ((cpu.A + data + carry) >>> 0) % 256
     cpu.flags.Z = (cpu.A === 0)
     cpu.PC++
+    cpu.clock.cycles += 8
 }
 
 // Compare A to register, no changes besides flags
@@ -301,6 +321,7 @@ function CPR(reg8) {
     cpu.flags.HC = (temp & 0x4)
     cpu.flags.Z = (temp === 0)
     cpu.PC++
+    cpu.clock.cycles += 4
 }
 
 // Compare A to memory, no changes besides flags
@@ -313,6 +334,7 @@ function CPM(data) {
     cpu.flags.HC = (temp & 0x4)
     cpu.flags.Z = (temp === 0)
     cpu.PC++
+    cpu.clock.cycles += 8
 }
 
 /*
@@ -323,12 +345,14 @@ function CPM(data) {
 function LDR(reg8, data) {
     cpu[reg8] = data
     cpu.PC++
+    cpu.clock.cycles += 4
 }
 
 // Load memory or register content into memory at address
 function LDM(data, address) {
     memory.write(data, address)
     cpu.PC++
+    cpu.clock.cycles += 8
 }
 
 
@@ -338,27 +362,33 @@ function LDM(data, address) {
 
 function JP(address) {
     cpu.PC = address
+    cpu.clock.cycles += 16
 }
 
 // Conditional Jump -> Z,!Z,C,!C
 function JPC(address, condition) {
     if (condition) {
         cpu.PC = address
+        cpu.clock.cycles += 16
     } else {
         cpu.PC++
+        cpu.clock.cycles += 12
     }
 }
 
 // Relative Jump -> PC = PC + offset
 function JR(offset) {
     cpu.PC = (cpu.PC + offset) % 0xFFFF
+    cpu.clock.cycles += 12
 }
 
 function JRC(offset, condition) {
     if (condition) {
         cpu.PC = (cpu.PC + offset) % 0xFFFF
+        cpu.clock.cycles += 12
     } else {
         cpu.PC = (cpu.PC + offset) % 0xFFFF
+        cpu.clock.cycles += 8
     }
 }
 
@@ -371,6 +401,7 @@ function CALL(address) {
     cpu.SP--
     memory.write(lowByte, cpu.SP)
     cpu.PC = address
+    cpu.clock.cycles += 24
 }
 
 // Conditional Call to Subroutine
@@ -383,8 +414,10 @@ function CALLC(address, condition) {
         cpu.SP--
         memory.write(lowByte, cpu.SP)
         cpu.PC = address
+        cpu.clock.cycles += 24
     } else {
         cpu.PC++
+        cpu.clock.cycles += 12
     }
 }
 
@@ -395,7 +428,7 @@ function RET() {
     cpu.SP++
     let lowByte = memory.read(cpu.SP)
     cpu.PC = (highByte << 8 | lowByte)
-
+    cpu.clock.cycles += 16
 }
 
 // Conditional Return from Subroutine
@@ -406,19 +439,23 @@ function RETC(condition) {
         cpu.SP++
         let lowByte = memory.read(cpu.SP)
         cpu.PC = (highByte << 8 | lowByte)
+        cpu.clock.cycles += 20
     } else {
         cpu.PC++
+        cpu.clock.cycles += 8
     }
 
 }
 
 // Return from subroutine and enable Interrupts
 function RETI() {
+    cpu.clock.cycles += 16
 }
 
 // Jump to 8 Byte Address
 function RST(address) {
     cpu.PC = address
+    cpu.clock.cycles += 16
 }
 
 /*
@@ -429,6 +466,7 @@ function RST(address) {
 function SETR(reg8, n) {
     cpu[reg8] |= (1 << n)
     cpu.PC++
+    cpu.clock.cycles += 8
 }
 
 function SETM(n) {
@@ -436,12 +474,14 @@ function SETM(n) {
     data |= (1 << n)
     memory.write(data, cpu.HL())
     cpu.PC++
+    cpu.clock.cycles += 16
 }
 
 // Clear a Bit at position n of register
 function RESR(reg8, n) {
     cpu[reg8] &= ~(1 << n)
     cpu.PC++
+    cpu.clock.cycles += 8
 }
 
 function RESM(n) {
@@ -449,12 +489,14 @@ function RESM(n) {
     data &= (0 << n)
     memory.write(data, cpu.HL())
     cpu.PC++
+    cpu.clock.cycles += 16
 }
 
 // Check if a Bit at given index is set
 function BIT(index, data) {
     cpu.Z = (data & (1 << index));
     cpu.PC++
+    cpu.clock.cycles += 8
 }
 
 /*
@@ -464,30 +506,35 @@ function BIT(index, data) {
 // No Operation, do nothing
 function NOP() {
     cpu.PC++
+    cpu.clock.cycles += 4
 }
 
 // Complement the Carry Flag: true -> false,false -> true
 function CCF() {
     cpu.flags.C = !cpu.flags.C
     cpu.PC++
+    cpu.clock.cycles += 4
 }
 
 // Set Carry Flag
 function SCF() {
     cpu.flags.C = true
     cpu.PC++
+    cpu.clock.cycles += 4
 }
 
 // Enable Interrupts
 function EI() {
     cpu.IE = 1
     cpu.PC++
+    cpu.clock.cycles += 4
 }
 
 // Disable Interrupts
 function DI() {
     cpu.IE = 0
     cpu.PC++
+    cpu.clock.cycles += 4
 }
 
 
@@ -500,6 +547,7 @@ function SWAP(reg8) {
 
     cpu[reg8] = highNibble >> 4 | lowNibble << 4
     cpu.PC++
+    cpu.clock.cycles += 8
 }
 
 function SWAPHL() {
@@ -507,6 +555,7 @@ function SWAPHL() {
     cpu.H = cpu.L
     cpu.L = temp
     cpu.PC++
+    cpu.clock.cycles += 16
 }
 
 
@@ -516,10 +565,12 @@ function RLCR(reg8) {
     cpu[reg8] = cpu[reg8] << 1
     cpu.flags.Z = cpu[reg8] === 0
     cpu.PC++
+    cpu.clock.cycles += 8
 
 }
 
 function RLCM() {
+    cpu.clock.cycles += 16
 }
 
 // Rotate Right through Carry
@@ -528,9 +579,11 @@ function RRCR(reg8) {
     cpu[reg8] = cpu[reg8] >> 1
     cpu.flags.Z = cpu[reg8] === 0
     cpu.PC++
+    cpu.clock.cycles += 8
 }
 
 function RRCM() {
+    cpu.clock.cycles += 16
 }
 
 
@@ -540,9 +593,11 @@ function RRR(reg8) {
     cpu[reg8] = cpu[reg8] >> 1 | temp << 7
     cpu.flags.Z = cpu[reg8] === 0
     cpu.PC++
+    cpu.clock.cycles += 8
 }
 
 function RRM() {
+    cpu.clock.cycles += 16
 }
 
 // Rotate Left
@@ -551,9 +606,11 @@ function RLR(reg8) {
     cpu[reg8] = cpu[reg8] << 1 | temp >> 7
     cpu.flags.Z = cpu[reg8] === 0
     cpu.PC++
+    cpu.clock.cycles += 8
 }
 
 function RLM() {
+    cpu.clock.cycles += 16
 }
 
 
@@ -569,6 +626,7 @@ function PUSH(reg16) {
     cpu.SP--
     memory.write(lowByte, cpu.SP)
     cpu.PC++
+    cpu.clock.cycles += 16
 }
 
 function POP(reg16) {
@@ -577,4 +635,5 @@ function POP(reg16) {
     cpu.SP++
     let highByte = memory.read(cpu.SP)
     cpu[`set${reg16}`](highByte << 8 | lowByte)
+    cpu.clock.cycles += 12
 }

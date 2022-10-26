@@ -2,18 +2,21 @@
 
 // Reading File into memory
 document.querySelector("#file-input").addEventListener("change", (event) => {
-    let reader = new FileReader()
-    const files = event.target.files
+    if (event.target.files.length === 1) {
+        let reader = new FileReader()
+        const files = event.target.files
 
-    reader.readAsArrayBuffer(files[0])
-    reader.onload = () => {
-        let buffer = reader.result
-        let tempArray = new Uint8Array(buffer)
-        memory.rom = Array.from(tempArray)
-        read_rom_info()
-        run()
+        reader.readAsArrayBuffer(files[0])
+        reader.onload = () => {
+            let buffer = reader.result
+            let tempArray = new Uint8Array(buffer)
+            memory.rom = Array.from(tempArray)
+            read_rom_info()
+            running = true
+            paused = false
+            run()
+        }
     }
-
 })
 
 // Speed Slider
