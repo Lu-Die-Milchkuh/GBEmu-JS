@@ -12,8 +12,8 @@ let cpu = {
     H: 0,
     L: 0,
     // 16-Bit Register
-    SP: 0,  // Stack Pointer
-    PC: 0,  // Program Counter
+    SP: 0xFFFE,  // Stack Pointer
+    PC: 0x0100,  // Program Counter
 
     /* CPU State Flags
         Half Carry ->   Check Bit 4 for 8 Bit OP and Bit 7 for 16-Bit OP
@@ -74,12 +74,13 @@ cpu.setHL = (data) => {
 
 // At Startup the Game Boy expects certain Registers and Memory Location to contain the following data
 cpu.reset = () => {
+    memory.reset()
     cpu.setAF(0x01B0)
     cpu.setBC(0x0013)
     cpu.setDE(0x00D8)
     cpu.setHL(0x014D)
     cpu.SP = 0xFFFE
-    cpu.PC = 0x0000
+    cpu.PC = 0x0100
     memory.write(0x00, 0xFF05)   // TIMA
     memory.write(0x00, 0xFF06)   // TMA
     memory.write(0x00, 0xFF07)   // TAC
@@ -394,8 +395,10 @@ function JRC(offset, condition) {
 
 // Call Subroutine, original PC will be stored in Stack
 function CALL(address) {
-    let highByte = cpu.PC & 0xFF00
-    let lowByte = cpu.PC & 0x00FF
+    //console.warn(`PC is ${cpu.PC.toString(16)}`)
+    cpu.PC++
+    let highByte = (cpu.PC & 0xFF00) >> 8
+    let lowByte = (cpu.PC & 0x00FF) //; console.warn(`Low Byte: ${lowByte}, High Byte: ${highByte}`)
     cpu.SP--
     memory.write(highByte, cpu.SP)
     cpu.SP--
@@ -505,6 +508,14 @@ function BIT(index, data) {
 
 // No Operation, do nothing
 function NOP() {
+    cpu.PC++
+    cpu.clock.cycles += 4
+}
+
+function CPL() {
+    cpu.A = ~cpu.A
+    cpu.flags.N = true
+    cpu.flags.HC = true
     cpu.PC++
     cpu.clock.cycles += 4
 }
@@ -636,4 +647,22 @@ function POP(reg16) {
     let highByte = memory.read(cpu.SP)
     cpu[`set${reg16}`](highByte << 8 | lowByte)
     cpu.clock.cycles += 12
+}
+
+function LDR16(reg16,data) {
+    cpu[`set${reg16}`](data)
+    cpu.PC++
+    cpu.clock.cycles += 12
+}
+
+function LDM16(address,data) {
+    memory.write(data,address)
+    cpu.PC++
+}
+
+function INCR16(reg16) {
+    let temp = (cpu[`${reg16}`] + 1) % 0x10000
+    cpu[`set${reg16}`](temp)
+    cpu.PC++
+    cpu.clock.cycles += 8
 }

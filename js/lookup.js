@@ -6,10 +6,19 @@ const lookup = {
 
     },
     0x01: () => {
+        cpu.PC++
+        let highByte = memory.read(cpu.PC)
+        cpu.PC++
+        let lowByte = memory.read(cpu.PC)
+        LDR16("BC",highByte << 8 | lowByte)
+
     },
     0x02: () => {
+        LDM16(cpu.BC(),cpu.A)
+        cpu.clock.cycles += 8
     },
     0x03: () => {
+        INCR16("BC")
     },
     0x04: () => {
         INCR8("B")
@@ -50,6 +59,10 @@ const lookup = {
     0x10: () => {
     },
     0x11: () => {
+        let highByte = memory.read(cpu.PC+1)
+        let lowByte = memory.read(cpu.PC+2)
+        LDR16("DE",highByte << 8 | lowByte)
+        cpu.PC += 2
     },
     0x12: () => {
         LDM(cpu.A, cpu.DE())
@@ -139,6 +152,7 @@ const lookup = {
         cpu.PC++
     },
     0x2f: () => {
+        CPL()
     },
     0x30: () => {
         JRC(memory.read(cpu.PC + 1), cpu.Z === false)
@@ -612,7 +626,11 @@ const lookup = {
         CALLC(memory.read(cpu.PC + 1) << 8 | memory.read(cpu.PC + 2), cpu.Z === true)
     },
     0xcd: () => {
-        CALL(memory.read(cpu.PC + 1) << 8 | memory.PC + 2)
+        cpu.PC++
+        let highByte = memory.read(cpu.PC)
+        cpu.PC++
+        let lowByte = memory.read(cpu.PC)
+        CALL(highByte << 8 | lowByte)
     },
     0xce: () => {
         ADDCM(memory.read(cpu.PC + 1));
@@ -774,6 +792,7 @@ const lookup = {
 // Prefix -> 0xCB -> next byte will indicate the instruction that should be executed
 const prefix_lookup = {
     0x00: () => {
+
     },
     0x01: () => {
     },

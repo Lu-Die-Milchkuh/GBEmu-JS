@@ -17,11 +17,11 @@ async function run() {
         while (cpu.clock.cycles <= max_cycles * ratio) {
             // Opcodes are the Bytes that tell the cpu which instruction it should execute
             let opcode = memory.read(cpu.PC)
-            //console.log(`Executing: ${opcode.toString(16)}`)
+            console.log(`Executing: ${opcode.toString(16)} @ ${cpu.PC.toString(16)}`)
             let temp_cycles = cpu.clock.cycles
 
-            if (opcode === 0xCB) {
-                cpu.PC++
+            if (opcode === 0xCB) { console.log("Prefix Operations")
+                cpu.PC++;
                 opcode = memory.read(cpu.PC)
                 prefix_lookup[opcode]()
             } else {
