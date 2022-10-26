@@ -106,9 +106,18 @@ const lookup = {
     0x1f: () => {
     },
     0x20: () => {
-        JRC(memory.read(cpu.PC + 1), cpu.Z === false)
+        cpu.PC++
+        let offset = memory.read(cpu.PC)
+        console.log(`Condition ${cpu.flags.Z === false}, ${cpu.flags.Z},Offset: ${offset}`)
+        JRC(offset, cpu.flags.Z === false)
     },
     0x21: () => {
+        cpu.PC++
+        let highByte = memory.read(cpu.PC)
+        cpu.PC++
+        let lowByte = memory.read(cpu.PC)
+        let data = lowByte << 8 | highByte
+        LDR16("HL",data)
     },
     0x22: () => {
         LDM(cpu.A, cpu.HL());
@@ -130,7 +139,7 @@ const lookup = {
     0x27: () => {
     },
     0x28: () => {
-        JRC(memory.read(cpu.PC + 1), cpu.Z === true)
+        JRC(memory.read(cpu.PC + 1), cpu.flags.Z === true)
     },
     0x29: () => {
     },
@@ -155,7 +164,7 @@ const lookup = {
         CPL()
     },
     0x30: () => {
-        JRC(memory.read(cpu.PC + 1), cpu.Z === false)
+        JRC(memory.read(cpu.PC + 1), cpu.flags.Z === false)
     },
     0x31: () => {
     },
@@ -178,7 +187,7 @@ const lookup = {
         SCF()
     },
     0x38: () => {
-        JRC(memory.read(cpu.PC + 1), cpu.C === true)
+        JRC(memory.read(cpu.PC + 1), cpu.flags.C === true)
     },
     0x39: () => {
     },
@@ -586,19 +595,31 @@ const lookup = {
         CPR("A")
     },
     0xc0: () => {
-        RETC(cpu.Z === false)
+        RETC(cpu.flags.Z === false)
     },
     0xc1: () => {
         POP("BC")
     },
     0xc2: () => {
-        JPC(memory.read(cpu.PC + 1) << 8 | memory.read(cpu.PC + 2), cpu.Z === false)
+        cpu.PC++
+        let highByte = memory.read(cpu.PC)
+        cpu.PC++
+        let lowByte = memory.read(cpu.PC)
+        JPC(lowByte << 8 | highByte, cpu.flags.Z === false)
     },
     0xc3: () => {
-        JP(memory.read(cpu.PC + 1) << 8 | memory.read(cpu.PC + 2))
+        cpu.PC++
+        let highByte = memory.read(cpu.PC)
+        cpu.PC++
+        let lowByte = memory.read(cpu.PC)
+        JP(lowByte << 8 | highByte)
     },
     0xc4: () => {
-        CALLC(memory.read(cpu.PC + 1) << 8 | memory.read(cpu.PC + 2), cpu.Z === false)
+        cpu.PC++
+        let highByte = memory.read(cpu.PC)
+        cpu.PC++
+        let lowByte = memory.read(cpu.PC)
+        CALLC(lowByte << 8 | highByte, cpu.flags.Z === false)
     },
     0xc5: () => {
         PUSH("BC")
@@ -611,26 +632,34 @@ const lookup = {
         RST(0x00)
     },
     0xc8: () => {
-        RETC(cpu.Z === true)
+        RETC(cpu.flags.Z === true)
     },
     0xc9: () => {
         RET()
     },
     0xca: () => {
-        JPC(memory.read(cpu.PC + 1) << 8 | memory.read(cpu.PC + 2), cpu.Z === true)
+        cpu.PC++
+        let highByte = memory.read(cpu.PC)
+        cpu.PC++
+        let lowByte = memory.read(cpu.PC)
+        JPC(lowByte << 8 | highByte, cpu.flags.Z === true)
     },
     0xcb: () => {
         console.warn("CB Prefix used in wrong lookup table!")
     },
     0xcc: () => {
-        CALLC(memory.read(cpu.PC + 1) << 8 | memory.read(cpu.PC + 2), cpu.Z === true)
+        cpu.PC++
+        let highByte = memory.read(cpu.PC)
+        cpu.PC++
+        let lowByte = memory.read(cpu.PC)
+        CALLC(lowByte << 8 | highByte, cpu.flags.Z === true)
     },
     0xcd: () => {
         cpu.PC++
         let highByte = memory.read(cpu.PC)
         cpu.PC++
         let lowByte = memory.read(cpu.PC)
-        CALL(highByte << 8 | lowByte)
+        CALL(lowByte << 8 | highByte)
     },
     0xce: () => {
         ADDCM(memory.read(cpu.PC + 1));
@@ -640,19 +669,27 @@ const lookup = {
         RST(0x08)
     },
     0xd0: () => {
-        RETC(cpu.C === false)
+        RETC(cpu.flags.C === false)
     },
     0xd1: () => {
         POP("DE")
     },
     0xd2: () => {
-        JPC(memory.read(cpu.PC + 1) << 8 | memory.read(cpu.PC + 2), cpu.C === false)
+        cpu.PC++
+        let highByte = memory.read(cpu.PC)
+        cpu.PC++
+        let lowByte = memory.read(cpu.PC)
+        JPC(lowByte << 8 | highByte, cpu.flags.C === false)
     },
     0xd3: () => {
         console.warn("Illegal Opcode!")
     },
     0xd4: () => {
-        CALLC(memory.read(cpu.PC + 1) << 8 | memory.read(cpu.PC + 2), cpu.C === false)
+        cpu.PC++
+        let highByte = memory.read(cpu.PC)
+        cpu.PC++
+        let lowByte = memory.read(cpu.PC)
+        CALLC(lowByte << 8 | highByte, cpu.flags.C === false)
     },
     0xd5: () => {
         PUSH("DE")
@@ -665,13 +702,17 @@ const lookup = {
         RST(0x10)
     },
     0xd8: () => {
-        RETC(cpu.C === true)
+        RETC(cpu.flags.C === true)
     },
     0xd9: () => {
         RETI()
     },
     0xda: () => {
-        JPC(memory.read(cpu.PC + 1) << 8 | memory.read(cpu.PC + 2), cpu.C === true)
+        cpu.PC++
+        let highByte = memory.read(cpu.PC)
+        cpu.PC++
+        let lowByte = memory.read(cpu.PC)
+        JPC(lowByte << 8 | highByte, cpu.flags.C === true)
     },
     0xdb: () => {
         console.warn("Illegal Opcode!")
@@ -717,10 +758,18 @@ const lookup = {
     0xe8: () => {
     },
     0xe9: () => {
-        JP(memory.read(cpu.PC + 1) << 8 | memory.read(cpu.PC + 2))
+        cpu.PC++
+        let highByte = memory.read(cpu.PC)
+        cpu.PC++
+        let lowByte = memory.read(cpu.PC)
+        JP(lowByte << 8 | highByte)
     },
     0xea: () => {
-        LDM(cpu.A, memory.read(cpu.PC + 1) << 8 | memory.read(cpu.PC + 2));
+        cpu.PC++
+        let highByte = memory.read(cpu.PC)
+        cpu.PC++
+        let lowByte = memory.read(cpu.PC)
+        LDM(cpu.A, lowByte << 8 | highByte);
         cpu.PC++
     },
     0xeb: () => {

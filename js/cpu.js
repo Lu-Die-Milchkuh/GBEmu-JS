@@ -145,7 +145,8 @@ function INCM8() {
 function DECR8(reg8) {
     cpu[reg8] = ((cpu[reg8] - 1) >>> 0) % 256 // Needs to stay in range of an 8-Bit Integer
     cpu.flags.HC = (cpu[reg8] & 0x4)
-    cpu.flags.Z = (cpu[reg8] === 0)
+    cpu.flags.Z = (cpu[reg8] === 0);
+    console.log(`B Zero ${cpu.flags.Z}`)
     cpu.PC++
     cpu.clock.cycles += 4
 }
@@ -384,13 +385,19 @@ function JR(offset) {
 }
 
 function JRC(offset, condition) {
+    cpu.PC++
     if (condition) {
-        cpu.PC = (cpu.PC + offset) % 0xFFFF
-        cpu.clock.cycles += 12
+        // Unsigned Byte!
+        if (offset & 0x80) {
+            console.log(`Negative ${offset - 256}`)
+            cpu.PC = (cpu.PC + (offset - 256)) % 0xFFFF   // Converting to signed integer
+        } else {
+            cpu.PC = (cpu.PC + offset) % 0xFFFF
+        }
     } else {
-        cpu.PC = (cpu.PC + offset) % 0xFFFF
-        cpu.clock.cycles += 8
+        cpu.clock.cycles += 12
     }
+
 }
 
 // Call Subroutine, original PC will be stored in Stack
@@ -400,9 +407,9 @@ function CALL(address) {
     let highByte = (cpu.PC & 0xFF00) >> 8
     let lowByte = (cpu.PC & 0x00FF) //; console.warn(`Low Byte: ${lowByte}, High Byte: ${highByte}`)
     cpu.SP--
-    memory.write(highByte, cpu.SP)
-    cpu.SP--
     memory.write(lowByte, cpu.SP)
+    cpu.SP--
+    memory.write(highByte, cpu.SP)
     cpu.PC = address
     cpu.clock.cycles += 24
 }
@@ -413,9 +420,9 @@ function CALLC(address, condition) {
         let highByte = cpu.PC & 0xFF00
         let lowByte = cpu.PC & 0x00FF
         cpu.SP--
-        memory.write(highByte, cpu.SP)
-        cpu.SP--
         memory.write(lowByte, cpu.SP)
+        cpu.SP--
+        memory.write(highByte, cpu.SP)
         cpu.PC = address
         cpu.clock.cycles += 24
     } else {
@@ -430,7 +437,7 @@ function RET() {
     let highByte = memory.read(cpu.SP)
     cpu.SP++
     let lowByte = memory.read(cpu.SP)
-    cpu.PC = (highByte << 8 | lowByte)
+    cpu.PC = (lowByte << 8 | highByte)
     cpu.clock.cycles += 16
 }
 
@@ -441,7 +448,7 @@ function RETC(condition) {
         let highByte = memory.read(cpu.SP)
         cpu.SP++
         let lowByte = memory.read(cpu.SP)
-        cpu.PC = (highByte << 8 | lowByte)
+        cpu.PC = (lowByte << 8 | highByte)
         cpu.clock.cycles += 20
     } else {
         cpu.PC++
@@ -633,9 +640,9 @@ function PUSH(reg16) {
     let highByte = cpu[reg16]() & 0xFF00
     let lowByte = cpu[reg16]() & 0x00FF
     cpu.SP--
-    memory.write(highByte, cpu.SP)
-    cpu.SP--
     memory.write(lowByte, cpu.SP)
+    cpu.SP--
+    memory.write(highByte, cpu.SP)
     cpu.PC++
     cpu.clock.cycles += 16
 }
@@ -645,18 +652,18 @@ function POP(reg16) {
     let lowByte = memory.read(cpu.SP)
     cpu.SP++
     let highByte = memory.read(cpu.SP)
-    cpu[`set${reg16}`](highByte << 8 | lowByte)
+    cpu[`set${reg16}`](lowByte << 8 | highByte)
     cpu.clock.cycles += 12
 }
 
-function LDR16(reg16,data) {
+function LDR16(reg16, data) {
     cpu[`set${reg16}`](data)
     cpu.PC++
     cpu.clock.cycles += 12
 }
 
-function LDM16(address,data) {
-    memory.write(data,address)
+function LDM16(address, data) {
+    memory.write(data, address)
     cpu.PC++
 }
 
