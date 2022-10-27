@@ -167,6 +167,11 @@ const lookup = {
         JRC(memory.read(cpu.PC + 1), cpu.flags.Z === false)
     },
     0x31: () => {
+        cpu.PC++
+        let lowByte = memory.read(cpu.PC)
+        cpu.PC++
+        let highByte = memory.read(cpu.PC)
+        LDR16("SP",lowByte << 8 | highByte)
     },
     0x32: () => {
         LDM(cpu.A, cpu.HL());

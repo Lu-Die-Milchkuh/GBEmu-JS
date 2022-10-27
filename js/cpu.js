@@ -72,6 +72,10 @@ cpu.setHL = (data) => {
     cpu.L = data & 0x00FF
 }
 
+cpu.setSP = (data) => {
+    cpu.SP = data
+}
+
 // At Startup the Game Boy expects certain Registers and Memory Location to contain the following data
 cpu.reset = () => {
     memory.reset()
