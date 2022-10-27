@@ -150,7 +150,6 @@ function DECR8(reg8) {
     cpu[reg8] = ((cpu[reg8] - 1) >>> 0) % 256 // Needs to stay in range of an 8-Bit Integer
     cpu.flags.HC = (cpu[reg8] & 0x4)
     cpu.flags.Z = (cpu[reg8] === 0);
-    console.log(`B Zero ${cpu.flags.Z}`)
     cpu.PC++
     cpu.clock.cycles += 4
 }
@@ -393,7 +392,7 @@ function JRC(offset, condition) {
     if (condition) {
         // Unsigned Byte!
         if (offset & 0x80) {
-            console.log(`Negative ${offset - 256}`)
+            //console.log(`Negative ${offset - 256}`)
             cpu.PC = (cpu.PC + (offset - 256)) % 0xFFFF   // Converting to signed integer
         } else {
             cpu.PC = (cpu.PC + offset) % 0xFFFF
@@ -669,9 +668,17 @@ function LDR16(reg16, data) {
 function LDM16(address, data) {
     memory.write(data, address)
     cpu.PC++
+    cpu.clock.cycles += 8
 }
 
 function INCR16(reg16) {
+    let temp = (cpu[`${reg16}`] + 1) % 0x10000
+    cpu[`set${reg16}`](temp)
+    cpu.PC++
+    cpu.clock.cycles += 8
+}
+
+function DECR16(reg16) {
     let temp = (cpu[`${reg16}`] + 1) % 0x10000
     cpu[`set${reg16}`](temp)
     cpu.PC++

@@ -15,7 +15,6 @@ const lookup = {
     },
     0x02: () => {
         LDM16(cpu.BC(),cpu.A)
-        cpu.clock.cycles += 8
     },
     0x03: () => {
         INCR16("BC")
@@ -43,6 +42,7 @@ const lookup = {
         cpu.clock.cycles += 4
     },
     0x0b: () => {
+        DECR16("BC")
     },
     0x0c: () => {
         INCR8("C")
@@ -68,6 +68,7 @@ const lookup = {
         LDM(cpu.A, cpu.DE())
     },
     0x13: () => {
+        INCR16("DE")
     },
     0x14: () => {
         INCR8("D")
@@ -92,6 +93,7 @@ const lookup = {
         cpu.clock.cycles += 4
     },
     0x1b: () => {
+        DECR16("DE")
     },
     0x1c: () => {
         INCR8("E")
@@ -108,7 +110,7 @@ const lookup = {
     0x20: () => {
         cpu.PC++
         let offset = memory.read(cpu.PC)
-        console.log(`Condition ${cpu.flags.Z === false}, ${cpu.flags.Z},Offset: ${offset}`)
+        //console.log(`Condition ${cpu.flags.Z === false}, ${cpu.flags.Z},Offset: ${offset}`)
         JRC(offset, cpu.flags.Z === false)
     },
     0x21: () => {
@@ -124,6 +126,7 @@ const lookup = {
         cpu.setHL(cpu.HL() + 1)
     },
     0x23: () => {
+        INCR16("HL")
     },
     0x24: () => {
         INCR8("H")
@@ -149,6 +152,7 @@ const lookup = {
         cpu.clock.cycles += 4
     },
     0x2b: () => {
+        DECR16("HL")
     },
     0x2c: () => {
         INCR8("L")
@@ -202,6 +206,7 @@ const lookup = {
         cpu.clock.cycles += 4
     },
     0x3b: () => {
+        DECR16("SP")
     },
     0x3c: () => {
         INCR8("A")
@@ -210,8 +215,8 @@ const lookup = {
         DECR8("A")
     },
     0x3e: () => {
-        LDR("A", memory.read(cpu.PC + 1));
         cpu.PC++
+        LDR("A", memory.read(cpu.PC));
     },
     0x3f: () => {
         CCF()
@@ -723,6 +728,11 @@ const lookup = {
         console.warn("Illegal Opcode!")
     },
     0xdc: () => {
+        cpu.PC++
+        let lowByte = memory.read(cpu.PC)
+        cpu.PC++
+        let highByte = memory.read(cpu.PC)
+        CALLC(lowByte << 8 | highByte, cpu.flags.C === true)
     },
     0xdd: () => {
         console.warn("Illegal Opcode!")
@@ -965,6 +975,7 @@ const prefix_lookup = {
     0x3a: () => {
     },
     0x3b: () => {
+
     },
     0x3c: () => {
     },
@@ -976,7 +987,7 @@ const prefix_lookup = {
     },
     0x40: () => {
         BIT(0, cpu.B)
-        return 8
+
     },
     0x41: () => {
         BIT(0, cpu.C)
