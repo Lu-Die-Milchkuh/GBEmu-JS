@@ -1,13 +1,27 @@
 "use strict"
 
+import {mmu} from "./mmu.js"
+import {cpu} from "./cpu.js"
+import {lookup,prefix_lookup} from "./lookup.js"
 
 let ratio = 1
 let running = true
-let paused = false
+export let paused = false
 
+export let setRatio = (value) => {
+    ratio = value/100
+    console.log(`Speed Ratio: ${ratio}`)
+}
 
+export let setRunning = (cond) => {
+    running = cond
+}
 
-async function run() {
+export let setPaused = (cond) => {
+    paused = cond
+}
+
+export async function run() {
     const max_cycles = 69905 // 4194304 HZ / 60 HZ
     cpu.reset()
 

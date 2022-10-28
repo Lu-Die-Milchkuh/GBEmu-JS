@@ -1,6 +1,8 @@
 "use strict"
 
-let cpu = {
+import {mmu} from "./mmu.js"
+
+export let cpu = {
     // 8-Bit Register
     A: 0,
     B: 0,
@@ -129,19 +131,19 @@ cpu.reset = () => {
 
 cpu.interruptRoutine = {
     0: () => {
-        RST(0x40) //  VBlank
+        this.RST(0x40) //  VBlank
     },
     1: () => {
-        RST(0x48) // LCD Stat
+       this.RST(0x48) // LCD Stat
     },
     2: () => {
-        RST(0x50) // Timer
+        this.RST(0x50) // Timer
     },
     3: () => {
-        RST(0x58) // Serial
+        this.RST(0x58) // Serial
     },
     4: () => {
-        RST(0x60) // Joypad
+        this.RST(0x60) // Joypad
     }
 }
 
@@ -171,7 +173,7 @@ cpu.requestInterrupt = (int) => {
  */
 
 // Increment a 8-Bit Register
-function INCR8(reg8) {
+cpu.INCR8 = (reg8) => {
     cpu[reg8] = (cpu[reg8] + 1) % 256 // Needs to stay in range of an 8-Bit Integer
     cpu.flags.HC = (cpu[reg8] & 0x4)
     cpu.flags.Z = (cpu[reg8] === 0)
@@ -180,7 +182,7 @@ function INCR8(reg8) {
 }
 
 // Increment data at the mmu address stored in HL
-function INCM8() {
+cpu.INCM8 = () => {
     let address = cpu.HL();
     let data = mmu.read(address)
 
@@ -194,7 +196,7 @@ function INCM8() {
 }
 
 // Decrement a 8-Bit Register
-function DECR8(reg8) {
+cpu.DECR8 = (reg8) => {
     cpu[reg8] = ((cpu[reg8] - 1) >>> 0) % 256 // Needs to stay in range of an 8-Bit Integer
     cpu.flags.HC = (cpu[reg8] & 0x4)
     cpu.flags.Z = (cpu[reg8] === 0);
@@ -203,7 +205,7 @@ function DECR8(reg8) {
 }
 
 // Decrement Data at the mmu address stored in HL
-function DECM8() {
+cpu.DECM8 = () => {
     let address = cpu.HL();
     let data = mmu.read(address)
     data = ((data - 1) >>> 0) % 256
@@ -216,7 +218,7 @@ function DECM8() {
 }
 
 // Bitwise XOR  A with register
-function XORR(reg8) {
+cpu.XORR = (reg8) => {
     cpu.A ^= cpu[reg8]
     cpu.flags.Z = (cpu.A === 0)
     cpu.PC++
@@ -224,7 +226,7 @@ function XORR(reg8) {
 }
 
 // Bitwise XOR A with mmu
-function XORM(data) {
+cpu.XORM = (data) => {
     cpu.A ^= data
     cpu.flags.Z = (cpu.A === 0)
     cpu.PC++
@@ -232,7 +234,7 @@ function XORM(data) {
 }
 
 // Bitwise OR A with register
-function ORR(reg8) {
+cpu.ORR = (reg8) => {
     cpu.A |= cpu[reg8]
     cpu.flags.Z = (cpu.A === 0)
     cpu.PC++
@@ -240,7 +242,7 @@ function ORR(reg8) {
 }
 
 // Bitwise OR A with mmu
-function ORM(data) {
+cpu.ORM = (data) => {
     cpu.A |= data
     cpu.flags.Z = (cpu.A === 0)
     cpu.PC++
@@ -248,7 +250,7 @@ function ORM(data) {
 }
 
 // Bitwise AND A with register
-function ANDR(reg8) {
+cpu.ANDR = (reg8) => {
     cpu.A &= cpu.A
     cpu.flags.Z = (cpu.A === 0)
     cpu.PC++
@@ -256,7 +258,7 @@ function ANDR(reg8) {
 }
 
 // Bitwise AND A with mmu
-function ANDM(data) {
+cpu.ANDM = (data) => {
     cpu.A &= data;
     cpu.flags.Z = (cpu.A === 0)
     cpu.PC++
@@ -264,7 +266,7 @@ function ANDM(data) {
 }
 
 // Subtract register from A
-function SUBR(reg8) {
+cpu.SUBR = (reg8) => {
     cpu.flags.N = true
     cpu.flags.C = (cpu.A < cpu[reg8])
     cpu.flags.HC = ((cpu.A - cpu[reg8]) & 0x4)
@@ -276,7 +278,7 @@ function SUBR(reg8) {
 }
 
 // Subtract mmu from A
-function SUBM(data) {
+cpu.SUBM = (data) => {
     cpu.flags.N = true
     cpu.flags.C = (cpu.A < data)
     cpu.flags.HC = ((cpu.A - data) & 0x4)
@@ -288,7 +290,7 @@ function SUBM(data) {
 }
 
 // Subtract register and carry flag from A
-function SBCR(reg8) {
+cpu.SBCR = (reg8) => {
     let carry = cpu.C ? 1 : 0
     cpu.flags.N = true
     cpu.flags.C = (cpu.A < (cpu[reg8] + carry))
@@ -301,7 +303,7 @@ function SBCR(reg8) {
 }
 
 // Subtract mmu at address and carry from A
-function SBCM(data) {
+cpu.SBCM = (data) => {
     let carry = cpu.C ? 1 : 0
 
     cpu.flags.N = true
@@ -315,7 +317,7 @@ function SBCM(data) {
 }
 
 // Add register to A
-function ADDR(reg8) {
+cpu.ADDR = (reg8) => {
     cpu.flags.N = false
     cpu.flags.C = ((cpu.A + cpu[reg8]) > 255)
     cpu.flags.HC = ((cpu.A + cpu[reg8]) & 0x4)
@@ -327,7 +329,7 @@ function ADDR(reg8) {
 }
 
 // Add mmu and carry to A
-function ADDM(data) {
+cpu.ADDM = (data) => {
     cpu.flags.N = false
     cpu.flags.C = ((cpu.A + data) > 255)
     cpu.flags.HC = ((cpu.A + data) & 0x4)
@@ -339,7 +341,7 @@ function ADDM(data) {
 }
 
 // Add register and carry to a
-function ADDCR(reg8) {
+cpu.ADDCR = (reg8) => {
     let carry = cpu.flags.C ? 1 : 0
     cpu.flags.N = false
     cpu.flags.C = ((cpu.A + cpu[reg8] + carry) > 255)
@@ -352,7 +354,7 @@ function ADDCR(reg8) {
 }
 
 // Add mmu and carry to A
-function ADDCM(data) {
+cpu.ADDCM = (data) => {
     let carry = cpu.flags.C ? 1 : 0
     cpu.flags.N = false
     cpu.flags.C = ((cpu.A + data + carry) > 255)
@@ -365,9 +367,8 @@ function ADDCM(data) {
 }
 
 // Compare A to register, no changes besides flags
-function CPR(reg8) {
+cpu.CPR = (reg8) => {
     let temp = cpu.A - cpu[reg8]
-
     cpu.flags.N = true
     cpu.flags.C = (cpu.A < cpu[reg8])
     cpu.flags.HC = (temp & 0x4)
@@ -377,7 +378,7 @@ function CPR(reg8) {
 }
 
 // Compare A to mmu, no changes besides flags
-function CPM(data) {
+cpu.CPM = (data) => {
 
     let temp = cpu.A - data
 
@@ -394,14 +395,14 @@ function CPM(data) {
 */
 
 // Load register2 or mmu into register1
-function LDR(reg8, data) {
+cpu.LDR = (reg8, data) => {
     cpu[reg8] = data
     cpu.PC++
     cpu.clock.cycles += 4
 }
 
 // Load mmu or register content into mmu at address
-function LDM(data, address) {
+cpu.LDM = (data, address) => {
     mmu.write(data, address)
     cpu.PC++
     cpu.clock.cycles += 8
@@ -412,13 +413,13 @@ function LDM(data, address) {
     Jump Instructions
  */
 
-function JP(address) {
+cpu.JP = (address) => {
     cpu.PC = address
     cpu.clock.cycles += 16
 }
 
 // Conditional Jump -> Z,!Z,C,!C
-function JPC(address, condition) {
+cpu.JPC = (address, condition) => {
     if (condition) {
         cpu.PC = address
         cpu.clock.cycles += 16
@@ -429,12 +430,12 @@ function JPC(address, condition) {
 }
 
 // Relative Jump -> PC = PC + offset
-function JR(offset) {
+cpu.JR = (offset) => {
     cpu.PC = (cpu.PC + offset) % 0xFFFF
     cpu.clock.cycles += 12
 }
 
-function JRC(offset, condition) {
+cpu.JRC = (offset, condition) => {
 
     if (condition) {
         // Unsigned Byte!
@@ -452,7 +453,7 @@ function JRC(offset, condition) {
 }
 
 // Call Subroutine, original PC will be stored in Stack
-function CALL(address) {
+cpu.CALL = (address) => {
     //console.warn(`PC is ${cpu.PC.toString(16)}`)
     cpu.PC++
     let highByte = (cpu.PC & 0xFF00) >> 8
@@ -466,7 +467,7 @@ function CALL(address) {
 }
 
 // Conditional Call to Subroutine
-function CALLC(address, condition) {
+cpu.CALLC = (address, condition) => {
     if (condition) {
         let highByte = cpu.PC & 0xFF00
         let lowByte = cpu.PC & 0x00FF
@@ -483,7 +484,7 @@ function CALLC(address, condition) {
 }
 
 // Return from Subroutine
-function RET() {
+cpu.RET = () => {
     cpu.SP++
     let highByte = mmu.read(cpu.SP)
     cpu.SP++
@@ -493,7 +494,7 @@ function RET() {
 }
 
 // Conditional Return from Subroutine
-function RETC(condition) {
+cpu.RETC = (condition) =>{
     if (condition) {
         cpu.SP++
         let highByte = mmu.read(cpu.SP)
@@ -509,13 +510,13 @@ function RETC(condition) {
 }
 
 // Return from subroutine and enable Interrupts
-function RETI() {
+cpu.RETI = () => {
     cpu.IME = true
     cpu.clock.cycles += 16
 }
 
 // Jump to 8 Byte Address
-function RST(address) {
+cpu.RST = (address) => {
     cpu.PC = address
     cpu.clock.cycles += 16
 }
@@ -525,13 +526,13 @@ function RST(address) {
 */
 
 // Set a Bit at position n of register
-function SETR(reg8, n) {
+cpu.SETR = (reg8, n) => {
     cpu[reg8] |= (1 << n)
     cpu.PC++
     cpu.clock.cycles += 8
 }
 
-function SETM(n) {
+cpu.SETM = (n) => {
     let data = mmu.read(cpu.HL())
     data |= (1 << n)
     mmu.write(data, cpu.HL())
@@ -540,13 +541,13 @@ function SETM(n) {
 }
 
 // Clear a Bit at position n of register
-function RESR(reg8, n) {
+cpu.RESR = (reg8, n) => {
     cpu[reg8] &= ~(1 << n)
     cpu.PC++
     cpu.clock.cycles += 8
 }
 
-function RESM(n) {
+cpu.RESM = (n) => {
     let data = mmu.read(cpu.HL())
     data &= (0 << n)
     mmu.write(data, cpu.HL())
@@ -555,7 +556,7 @@ function RESM(n) {
 }
 
 // Check if a Bit at given index is set
-function BIT(index, data) {
+cpu.BIT = (index, data) => {
     cpu.Z = (data & (1 << index));
     cpu.PC++
     cpu.clock.cycles += 8
@@ -566,12 +567,12 @@ function BIT(index, data) {
 */
 
 // No Operation, do nothing
-function NOP() {
+cpu.NOP = () => {
     cpu.PC++
     cpu.clock.cycles += 4
 }
 
-function CPL() {
+cpu.CPL = () => {
     cpu.A = ~cpu.A
     cpu.flags.N = true
     cpu.flags.HC = true
@@ -580,41 +581,41 @@ function CPL() {
 }
 
 // Complement the Carry Flag: true -> false,false -> true
-function CCF() {
+cpu.CCF = () => {
     cpu.flags.C = !cpu.flags.C
     cpu.PC++
     cpu.clock.cycles += 4
 }
 
 // Set Carry Flag
-function SCF() {
+cpu.SCF = () => {
     cpu.flags.C = true
     cpu.PC++
     cpu.clock.cycles += 4
 }
 
 // Enable Interrupts
-function EI() {
+cpu.EI = () => {
     cpu.IME = true
     cpu.PC++
     cpu.clock.cycles += 4
 }
 
 // Disable Interrupts
-function DI() {
+cpu.DI = () => {
     cpu.IME = false
     cpu.PC++
     cpu.clock.cycles += 4
 }
 
 // TODO: Needs to be implemented correctly!
-function STOP() {
+cpu.STOP = () => {
     cpu.clock.cycles += 4
     //running = false
     paused = true
 }
 
-function HALT() {
+cpu.HALT = () => {
     cpu.clock.cycles += 4
     paused = true
 }
@@ -625,7 +626,7 @@ function HALT() {
 */
 
 // Swap nibbles of register
-function SWAP(reg8) {
+cpu.SWAP = (reg8) => {
     let highNibble = cpu[reg8] & 0xF0
     let lowNibble = cpu[reg8] & 0x0F
 
@@ -635,7 +636,7 @@ function SWAP(reg8) {
 }
 
 // Swap nibbles at memory location
-function SWAPM() {
+cpu.SWAPM = () => {
     let byte = mmu.read(cpu.HL())
     let highNibble = byte & 0xF0
     let lowNibble = byte & 0x0F
@@ -647,7 +648,7 @@ function SWAPM() {
 }
 
 
-function RRA() {
+cpu.RRA = () => {
     cpu.flags.C = !!(cpu.A & 0x10)
     cpu.A = cpu.A >> 1
     cpu.PC++
@@ -655,7 +656,7 @@ function RRA() {
 }
 
 // Rotate Left through Carry
-function RLCR(reg8) {
+cpu.RLCR = (reg8) => {
     cpu.flags.C = !!(cpu[reg8] & 0x80)
     cpu[reg8] = cpu[reg8] << 1
     cpu.flags.Z = cpu[reg8] === 0
@@ -664,12 +665,12 @@ function RLCR(reg8) {
 
 }
 
-function RLCM() {
+cpu.RLCM = () => {
     cpu.clock.cycles += 16
 }
 
 // Rotate Right through Carry
-function RRCR(reg8) {
+cpu.RRCR = (reg8) => {
     cpu.flags.C = !!(cpu[reg8] & 0x1)
     cpu[reg8] = cpu[reg8] >> 1
     cpu.flags.Z = cpu[reg8] === 0
@@ -677,7 +678,7 @@ function RRCR(reg8) {
     cpu.clock.cycles += 8
 }
 
-function RRCM() {
+cpu.RRCM = () => {
     let byte = mmu.read(cpu.HL())
     cpu.flags.C = !!(byte & 0x1)
     byte = byte >> 1
@@ -689,7 +690,7 @@ function RRCM() {
 
 
 // Rotate Right
-function RRR(reg8) {
+cpu.RRR = (reg8) => {
     let temp = cpu[reg8] & 0x1
     cpu[reg8] = cpu[reg8] >> 1 | temp << 7
     cpu.flags.Z = cpu[reg8] === 0
@@ -697,7 +698,7 @@ function RRR(reg8) {
     cpu.clock.cycles += 8
 }
 
-function RRM() {
+cpu.RRM = () => {
     let byte = mmu.read(cpu.HL())
     let temp = byte & 0x1
     byte = byte >> 1 | temp << 7
@@ -707,7 +708,7 @@ function RRM() {
 }
 
 // Rotate Left
-function RLR(reg8) {
+cpu.RLR = (reg8) => {
     let temp = cpu[reg8] & 0x80
     cpu[reg8] = cpu[reg8] << 1 | temp >> 7
     cpu.flags.Z = cpu[reg8] === 0
@@ -715,7 +716,7 @@ function RLR(reg8) {
     cpu.clock.cycles += 8
 }
 
-function RLM() {
+cpu.RLM = () => {
     let byte = mmu.read(cpu.HL())
     let temp = byte & 0x80
     byte = byte << 1 | temp >> 7
@@ -731,7 +732,7 @@ function RLM() {
  */
 
 // Push Register to Stack
-function PUSH(reg16) {
+cpu.PUSH = (reg16) => {
     let highByte = cpu[reg16]() & 0xFF00
     let lowByte = cpu[reg16]() & 0x00FF
     cpu.SP--
@@ -743,7 +744,7 @@ function PUSH(reg16) {
 }
 
 // Get Register back from Stack
-function POP(reg16) {
+cpu.POP = (reg16) => {
     cpu.SP++
     let lowByte = mmu.read(cpu.SP)
     cpu.SP++
@@ -752,19 +753,19 @@ function POP(reg16) {
     cpu.clock.cycles += 12
 }
 
-function LDR16(reg16, data) {
+cpu.LDR16 = (reg16, data) => {
     cpu[`set${reg16}`](data)
     cpu.PC++
     cpu.clock.cycles += 12
 }
 
-function LDM16(address, data) {
+cpu.LDM16 = (address, data) =>{
     mmu.write(data, address)
     cpu.PC++
     cpu.clock.cycles += 8
 }
 
-function INCR16(reg16) {
+cpu.INCR16 = (reg16) => {
     let temp = (cpu[`${reg16}`] + 1) % 0x10000
     cpu[`set${reg16}`](temp)
     cpu.PC++
@@ -772,7 +773,7 @@ function INCR16(reg16) {
 }
 
 // Decrement a 16-Bit Register
-function DECR16(reg16) {
+cpu.DECR16 = (reg16) => {
     let temp = (cpu[`${reg16}`] + 1) % 0x10000
     cpu[`set${reg16}`](temp)
     cpu.PC++

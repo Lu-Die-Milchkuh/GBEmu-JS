@@ -1,8 +1,11 @@
 "use strict"
 
-const lookup = {
+import {cpu} from "./cpu.js"
+import {mmu} from "./mmu.js"
+
+export const lookup = {
     0x00: () => {
-        NOP()
+        cpu.NOP()
 
     },
     0x01: () => {
@@ -10,24 +13,24 @@ const lookup = {
         let highByte = mmu.read(cpu.PC)
         cpu.PC++
         let lowByte = mmu.read(cpu.PC)
-        LDR16("BC",highByte << 8 | lowByte)
+        cpu.LDR16("BC",highByte << 8 | lowByte)
 
     },
     0x02: () => {
-        LDM16(cpu.BC(),cpu.A)
+        cpu.LDM16(cpu.BC(),cpu.A)
     },
     0x03: () => {
-        INCR16("BC")
+        cpu.INCR16("BC")
     },
     0x04: () => {
-        INCR8("B")
+        cpu.INCR8("B")
 
     },
     0x05: () => {
-        DECR8("B")
+        cpu.DECR8("B")
     },
     0x06: () => {
-        LDR("B", mmu.read(cpu.PC + 1));
+        cpu.LDR("B", mmu.read(cpu.PC + 1));
         cpu.PC++
         cpu.clock.cycles += 4
     },
@@ -38,82 +41,82 @@ const lookup = {
     0x09: () => {
     },
     0x0a: () => {
-        LDR("A", mmu.read(cpu.BC()))
+        cpu.LDR("A", mmu.read(cpu.BC()))
         cpu.clock.cycles += 4
     },
     0x0b: () => {
-        DECR16("BC")
+        cpu.DECR16("BC")
     },
     0x0c: () => {
-        INCR8("C")
+        cpu.INCR8("C")
     },
     0x0d: () => {
-        DECR8("C")
+        cpu.DECR8("C")
     },
     0x0e: () => {
-        LDR("C", mmu.read(cpu.PC + 1));
+        cpu.LDR("C", mmu.read(cpu.PC + 1));
         cpu.PC++
     },
     0x0f: () => {
     },
     0x10: () => {
-        STOP()
+        cpu.STOP()
     },
     0x11: () => {
         let highByte = mmu.read(cpu.PC+1)
         let lowByte = mmu.read(cpu.PC+2)
-        LDR16("DE",highByte << 8 | lowByte)
+        cpu.LDR16("DE",highByte << 8 | lowByte)
         cpu.PC += 2
     },
     0x12: () => {
-        LDM(cpu.A, cpu.DE())
+        cpu.LDM(cpu.A, cpu.DE())
     },
     0x13: () => {
-        INCR16("DE")
+        cpu.INCR16("DE")
     },
     0x14: () => {
-        INCR8("D")
+        cpu.INCR8("D")
     },
     0x15: () => {
-        DECR8("D")
+        cpu.DECR8("D")
     },
     0x16: () => {
-        LDR("D", mmu.read(cpu.PC + 1));
+        cpu.LDR("D", mmu.read(cpu.PC + 1));
         cpu.PC++
         cpu.clock.cycles += 4
     },
     0x17: () => {
     },
     0x18: () => {
-        JR(mmu.read(cpu.PC + 1))
+        cpu.JR(mmu.read(cpu.PC + 1))
     },
     0x19: () => {
     },
     0x1a: () => {
-        LDR("A", mmu.read(cpu.DE()))
+        cpu.LDR("A", mmu.read(cpu.DE()))
         cpu.clock.cycles += 4
     },
     0x1b: () => {
-        DECR16("DE")
+        cpu.DECR16("DE")
     },
     0x1c: () => {
-        INCR8("E")
+        cpu.INCR8("E")
     },
     0x1d: () => {
-        DECR8("E")
+        cpu.DECR8("E")
     },
     0x1e: () => {
-        LDR("E", mmu.read(cpu.PC + 1));
+        cpu.LDR("E", mmu.read(cpu.PC + 1));
         cpu.PC++
     },
     0x1f: () => {
-        RRA()
+        cpu.RRA()
     },
     0x20: () => {
         cpu.PC++
         let offset = mmu.read(cpu.PC)
         //console.log(`Condition ${cpu.flags.Z === false}, ${cpu.flags.Z},Offset: ${offset}`)
-        JRC(offset, cpu.flags.Z === false)
+        cpu.JRC(offset, cpu.flags.Z === false)
     },
     0x21: () => {
         cpu.PC++
@@ -121,66 +124,66 @@ const lookup = {
         cpu.PC++
         let lowByte = mmu.read(cpu.PC)
         let data = lowByte << 8 | highByte
-        LDR16("HL",data)
+        cpu.LDR16("HL",data)
     },
     0x22: () => {
-        LDM(cpu.A, cpu.HL());
+        cpu.LDM(cpu.A, cpu.HL());
         cpu.setHL(cpu.HL() + 1)
     },
     0x23: () => {
-        INCR16("HL")
+        cpu.INCR16("HL")
     },
     0x24: () => {
-        INCR8("H")
+        cpu.INCR8("H")
     },
     0x25: () => {
-        DECR8("H")
+        cpu.DECR8("H")
     },
     0x26: () => {
-        LDR("H", mmu.read(cpu.PC + 1));
+        cpu.LDR("H", mmu.read(cpu.PC + 1));
         cpu.PC++
         cpu.clock.cycles += 4
     },
     0x27: () => {
     },
     0x28: () => {
-        JRC(mmu.read(cpu.PC + 1), cpu.flags.Z === true)
+        cpu.JRC(mmu.read(cpu.PC + 1), cpu.flags.Z === true)
     },
     0x29: () => {
     },
     0x2a: () => {
-        LDR("A", mmu.read(cpu.HL()));
+        cpu.LDR("A", mmu.read(cpu.HL()));
         cpu.setHL(cpu.HL() + 1)
         cpu.clock.cycles += 4
     },
     0x2b: () => {
-        DECR16("HL")
+        cpu.DECR16("HL")
     },
     0x2c: () => {
-        INCR8("L")
+        cpu.INCR8("L")
     },
     0x2d: () => {
-        DECR8("L")
+        cpu.DECR8("L")
     },
     0x2e: () => {
-        LDR("L", mmu.read(cpu.PC + 1));
+        cpu.LDR("L", mmu.read(cpu.PC + 1));
         cpu.PC++
     },
     0x2f: () => {
-        CPL()
+        cpu.CPL()
     },
     0x30: () => {
-        JRC(mmu.read(cpu.PC + 1), cpu.flags.Z === false)
+        cpu.JRC(mmu.read(cpu.PC + 1), cpu.flags.Z === false)
     },
     0x31: () => {
         cpu.PC++
         let lowByte = mmu.read(cpu.PC)
         cpu.PC++
         let highByte = mmu.read(cpu.PC)
-        LDR16("SP",lowByte << 8 | highByte)
+        cpu.LDR16("SP",lowByte << 8 | highByte)
     },
     0x32: () => {
-        LDM(cpu.A, cpu.HL());
+        cpu.LDM(cpu.A, cpu.HL());
         cpu.setHL(cpu.HL() - 1)
     },
     0x33: () => {
@@ -191,470 +194,470 @@ const lookup = {
     },
     0x36: () => {
         cpu.PC++
-        LDM(mmu.read(cpu.PC),cpu.HL())
+        cpu.LDM(mmu.read(cpu.PC),cpu.HL())
         cpu.clock.cycles += 4
     },
     0x37: () => {
-        SCF()
+        cpu.SCF()
     },
     0x38: () => {
-        JRC(mmu.read(cpu.PC + 1), cpu.flags.C === true)
+        cpu.JRC(mmu.read(cpu.PC + 1), cpu.flags.C === true)
     },
     0x39: () => {
     },
     0x3a: () => {
-        LDR("A", mmu.read(cpu.HL()));
+        cpu.LDR("A", mmu.read(cpu.HL()));
         cpu.setHL(cpu.HL() - 1)
         cpu.clock.cycles += 4
     },
     0x3b: () => {
-        DECR16("SP")
+        cpu.DECR16("SP")
     },
     0x3c: () => {
-        INCR8("A")
+        cpu.INCR8("A")
     },
     0x3d: () => {
-        DECR8("A")
+        cpu.DECR8("A")
     },
     0x3e: () => {
         cpu.PC++
-        LDR("A", mmu.read(cpu.PC));
+        cpu.LDR("A", mmu.read(cpu.PC));
     },
     0x3f: () => {
-        CCF()
+        cpu.CCF()
     },
     0x40: () => {
-        LDR("B", cpu.B)
+        cpu.LDR("B", cpu.B)
     },
     0x41: () => {
-        LDR("B", cpu.C)
+        cpu.LDR("B", cpu.C)
     },
     0x42: () => {
-        LDR("B", cpu.D)
+        cpu.LDR("B", cpu.D)
     },
     0x43: () => {
-        LDR("B", cpu.E)
+        cpu.LDR("B", cpu.E)
     },
     0x44: () => {
-        LDR("B", cpu.H)
+        cpu.LDR("B", cpu.H)
     },
     0x45: () => {
-        LDR("B", cpu.L)
+        cpu.LDR("B", cpu.L)
     },
     0x46: () => {
-        LDR("B", mmu.read(cpu.HL()))
+        cpu.LDR("B", mmu.read(cpu.HL()))
     },
     0x47: () => {
-        LDR("B", cpu.A)
+        cpu.LDR("B", cpu.A)
     },
     0x48: () => {
-        LDR("C", cpu.B)
+        cpu.LDR("C", cpu.B)
     },
     0x49: () => {
-        LDR("C", cpu.C)
+        cpu.LDR("C", cpu.C)
     },
     0x4a: () => {
-        LDR("C", cpu.D)
+        cpu.LDR("C", cpu.D)
     },
     0x4b: () => {
-        LDR("C", cpu.E)
+        cpu.LDR("C", cpu.E)
     },
     0x4c: () => {
-        LDR("C", cpu.H)
+        cpu.LDR("C", cpu.H)
     },
     0x4d: () => {
-        LDR("C", cpu.L)
+        cpu.LDR("C", cpu.L)
     },
     0x4e: () => {
-        LDR("C", mmu.read(cpu.HL()))
+        cpu.LDR("C", mmu.read(cpu.HL()))
     },
     0x4f: () => {
-        LDR("C", cpu.A)
+        cpu.LDR("C", cpu.A)
     },
     0x50: () => {
-        LDR("D", cpu.B)
+        cpu.LDR("D", cpu.B)
     },
     0x51: () => {
-        LDR("D", cpu.C)
+        cpu.LDR("D", cpu.C)
     },
     0x52: () => {
-        LDR("D", cpu.D)
+        cpu.LDR("D", cpu.D)
     },
     0x53: () => {
-        LDR("D", cpu.E)
+        cpu.LDR("D", cpu.E)
     },
     0x54: () => {
-        LDR("D", cpu.H)
+        cpu.LDR("D", cpu.H)
     },
     0x55: () => {
-        LDR("D", cpu.L)
+        cpu.LDR("D", cpu.L)
     },
     0x56: () => {
-        LDR("D", mmu.read(cpu.HL()))
+        cpu.LDR("D", mmu.read(cpu.HL()))
     },
     0x57: () => {
-        LDR("D", cpu.A)
+        cpu.LDR("D", cpu.A)
     },
     0x58: () => {
-        LDR("E", cpu.B)
+        cpu.LDR("E", cpu.B)
     },
     0x59: () => {
-        LDR("E", cpu.C)
+        cpu.LDR("E", cpu.C)
     },
     0x5a: () => {
-        LDR("E", cpu.D)
+        cpu.LDR("E", cpu.D)
     },
     0x5b: () => {
-        LDR("E", cpu.E)
+        cpu.LDR("E", cpu.E)
     },
     0x5c: () => {
-        LDR("E", cpu.H)
+        cpu.LDR("E", cpu.H)
     },
     0x5d: () => {
-        LDR("E", cpu.L)
+        cpu.LDR("E", cpu.L)
     },
     0x5e: () => {
-        LDR("E", mmu.read(cpu.HL()))
+        cpu.LDR("E", mmu.read(cpu.HL()))
     },
     0x5f: () => {
-        LDR("D", cpu.A)
+        cpu.LDR("D", cpu.A)
     },
     0x60: () => {
-        LDR("H", cpu.B)
+        cpu.LDR("H", cpu.B)
     },
     0x61: () => {
-        LDR("H", cpu.C)
+        cpu.LDR("H", cpu.C)
     },
     0x62: () => {
-        LDR("H", cpu.D)
+        cpu.LDR("H", cpu.D)
     },
     0x63: () => {
-        LDR("H", cpu.E)
+        cpu.LDR("H", cpu.E)
     },
     0x64: () => {
-        LDR("H", cpu.H)
+        cpu.LDR("H", cpu.H)
     },
     0x65: () => {
-        LDR("H", cpu.L)
+        cpu.LDR("H", cpu.L)
     },
     0x66: () => {
-        LDR("H", mmu.read(cpu.HL()))
+        cpu.LDR("H", mmu.read(cpu.HL()))
     },
     0x67: () => {
-        LDR("H", cpu.A)
+        cpu.LDR("H", cpu.A)
     },
     0x68: () => {
-        LDR("L", cpu.B)
+        cpu.LDR("L", cpu.B)
     },
     0x69: () => {
         LDR("L", cpu.C)
     },
     0x6a: () => {
-        LDR("L", cpu.D)
+        cpu.LDR("L", cpu.D)
     },
     0x6b: () => {
-        LDR("L", cpu.E)
+        cpu.LDR("L", cpu.E)
     },
     0x6c: () => {
-        LDR("L", cpu.H)
+        cpu.LDR("L", cpu.H)
     },
     0x6d: () => {
-        LDR("L", cpu.L)
+        cpu.LDR("L", cpu.L)
     },
     0x6e: () => {
-        LDR("L", mmu.read(cpu.HL()))
+        cpu.LDR("L", mmu.read(cpu.HL()))
     },
     0x6f: () => {
-        LDR("L", cpu.A)
+        cpu.LDR("L", cpu.A)
     },
     0x70: () => {
-        LDM(cpu.B, mmu.read(cpu.HL()))
+        cpu.LDM(cpu.B, mmu.read(cpu.HL()))
     },
     0x71: () => {
-        LDM(cpu.C, mmu.read(cpu.HL()))
+        cpu.LDM(cpu.C, mmu.read(cpu.HL()))
     },
     0x72: () => {
-        LDM(cpu.D, mmu.read(cpu.HL()))
+        cpu.LDM(cpu.D, mmu.read(cpu.HL()))
     },
     0x73: () => {
-        LDM(cpu.E, mmu.read(cpu.HL()))
+        cpu.LDM(cpu.E, mmu.read(cpu.HL()))
     },
     0x74: () => {
-        LDM(cpu.H, mmu.read(cpu.HL()))
+        cpu.LDM(cpu.H, mmu.read(cpu.HL()))
     },
     0x75: () => {
-        LDM(cpu.L, mmu.read(cpu.HL()))
+        cpu.LDM(cpu.L, mmu.read(cpu.HL()))
     },
     0x76: () => {
     },
     0x77: () => {
-        LDM(cpu.A, mmu.read(cpu.HL()))
+        cpu.LDM(cpu.A, mmu.read(cpu.HL()))
     },
     0x78: () => {
-        LDR("A", cpu.B)
+        cpu.LDR("A", cpu.B)
     },
     0x79: () => {
-        LDR("A", cpu.C)
+        cpu.LDR("A", cpu.C)
     },
     0x7a: () => {
-        LDR("A", cpu.D)
+        cpu.LDR("A", cpu.D)
     },
     0x7b: () => {
-        LDR("A", cpu.E)
+        cpu.LDR("A", cpu.E)
     },
     0x7c: () => {
-        LDR("A", cpu.H)
+        cpu.LDR("A", cpu.H)
     },
     0x7d: () => {
-        LDR("A", cpu.L)
+        cpu.LDR("A", cpu.L)
     },
     0x7e: () => {
-        LDR("A", mmu.read(cpu.HL()))
+        cpu.LDR("A", mmu.read(cpu.HL()))
     },
     0x7f: () => {
-        LDR("A", cpu.A)
+        cpu.LDR("A", cpu.A)
     },
     0x80: () => {
-        ADDR("B")
+        cpu.ADDR("B")
     },
     0x81: () => {
-        ADDR("C")
+        cpu.ADDR("C")
     },
     0x82: () => {
-        ADDR("D")
+        cpu.ADDR("D")
     },
     0x83: () => {
-        ADDR("E")
+        cpu.ADDR("E")
     },
     0x84: () => {
-        ADDR("H")
+        cpu.ADDR("H")
     },
     0x85: () => {
-        ADDR("L")
+        cpu.ADDR("L")
     },
     0x86: () => {
-        ADDM(mmu.read(cpu.HL()))
+        cpu.ADDM(mmu.read(cpu.HL()))
     },
     0x87: () => {
-        ADDR("A")
+        cpu.ADDR("A")
     },
     0x88: () => {
-        ADDCR("B")
+        cpu.ADDCR("B")
     },
     0x89: () => {
-        ADDCR("C")
+        cpu.ADDCR("C")
     },
     0x8a: () => {
-        ADDCR("D")
+        cpu.ADDCR("D")
     },
     0x8b: () => {
-        ADDCR("E")
+        cpu.ADDCR("E")
     },
     0x8c: () => {
-        ADDCR("H")
+        cpu.ADDCR("H")
     },
     0x8d: () => {
-        ADDCR("L")
+        cpu.ADDCR("L")
     },
     0x8e: () => {
-        ADDCM(mmu.read(cpu.HL()))
+        cpu.ADDCM(mmu.read(cpu.HL()))
     },
     0x8f: () => {
-        ADDCR("A")
+        cpu.ADDCR("A")
     },
     0x90: () => {
-        SUBR("B")
+        cpu.SUBR("B")
     },
     0x91: () => {
-        SUBR("C")
+        cpu.SUBR("C")
     },
     0x92: () => {
-        SUBR("D")
+        cpu.SUBR("D")
     },
     0x93: () => {
-        SUBR("E")
+        cpu.SUBR("E")
     },
     0x94: () => {
-        SUBR("H")
+        cpu.SUBR("H")
     },
     0x95: () => {
-        SUBR("L")
+        cpu.SUBR("L")
     },
     0x96: () => {
-        SUBM(mmu.read(cpu.HL()))
+        cpu.SUBM(mmu.read(cpu.HL()))
     },
     0x97: () => {
-        SUBR("A")
+        cpu.SUBR("A")
     },
     0x98: () => {
-        SBCR("B")
+        cpu.SBCR("B")
     },
     0x99: () => {
-        SBCR("C")
+        cpu.SBCR("C")
     },
     0x9a: () => {
-        SBCR("D")
+        cpu.SBCR("D")
     },
     0x9b: () => {
-        SBCR("E")
+        cpu.SBCR("E")
     },
     0x9c: () => {
-        SBCR("H")
+        cpu.SBCR("H")
     },
     0x9d: () => {
-        SBCR("L")
+        cpu.SBCR("L")
     },
     0x9e: () => {
-        SBCM(mmu.read(cpu.HL()))
+        cpu.SBCM(mmu.read(cpu.HL()))
     },
     0x9f: () => {
-        SBCR("A")
+        cpu.SBCR("A")
     },
     0xa0: () => {
-        ANDR("B")
+        cpu.ANDR("B")
     },
     0xa1: () => {
-        ANDR("C")
+        cpu.ANDR("C")
     },
     0xa2: () => {
-        ANDR("D")
+        cpu.ANDR("D")
     },
     0xa3: () => {
-        ANDR("E")
+        cpu.ANDR("E")
     },
     0xa4: () => {
-        ANDR("H")
+        cpu.ANDR("H")
     },
     0xa5: () => {
-        ANDR("L")
+        cpu.ANDR("L")
     },
     0xa6: () => {
-        ANDM(mmu.read(cpu.HL()))
+        cpu.ANDM(mmu.read(cpu.HL()))
     },
     0xa7: () => {
-        ANDR("A")
+        cpu.ANDR("A")
     },
     0xa8: () => {
-        XORR("B")
+        cpu.XORR("B")
     },
     0xa9: () => {
-        XORR("C")
+        cpu.XORR("C")
     },
     0xaa: () => {
-        XORR("D")
+        cpu.XORR("D")
     },
     0xab: () => {
-        XORR("E")
+        cpu.XORR("E")
     },
     0xac: () => {
-        XORR("H")
+        cpu.XORR("H")
     },
     0xad: () => {
-        XORR("L")
+        cpu.XORR("L")
     },
     0xae: () => {
-        XORM(mmu.read(cpu.HL()))
+        cpu.XORM(mmu.read(cpu.HL()))
     },
     0xaf: () => {
-        XORR("A")
+        cpu.XORR("A")
     },
     0xb0: () => {
-        ORR("B")
+        cpu.ORR("B")
     },
     0xb1: () => {
-        ORR("C")
+        cpu.ORR("C")
     },
     0xb2: () => {
-        ORR("D")
+        cpu.ORR("D")
     },
     0xb3: () => {
-        ORR("E")
+        cpu.ORR("E")
     },
     0xb4: () => {
-        ORR("H")
+        cpu.ORR("H")
     },
     0xb5: () => {
-        ORR("L")
+        cpu.ORR("L")
     },
     0xb6: () => {
-        ORM(mmu.read(cpu.HL()))
+        cpu.ORM(mmu.read(cpu.HL()))
     },
     0xb7: () => {
-        ORR("A")
+        cpu.ORR("A")
     },
     0xb8: () => {
-        CPR("B")
+        cpu.CPR("B")
     },
     0xb9: () => {
-        CPR("C")
+        cpu.CPR("C")
     },
     0xba: () => {
-        CPR("D")
+        cpu.CPR("D")
     },
     0xbb: () => {
-        CPR("E")
+        cpu.CPR("E")
     },
     0xbc: () => {
-        CPR("H")
+        cpu.CPR("H")
     },
     0xbd: () => {
-        CPR("L")
+        cpu.CPR("L")
     },
     0xbe: () => {
-        CPM(mmu.read(cpu.HL()))
+        cpu.CPM(mmu.read(cpu.HL()))
     },
     0xbf: () => {
-        CPR("A")
+        cpu.CPR("A")
     },
     0xc0: () => {
-        RETC(cpu.flags.Z === false)
+        cpu.RETC(cpu.flags.Z === false)
     },
     0xc1: () => {
-        POP("BC")
+        cpu.POP("BC")
     },
     0xc2: () => {
         cpu.PC++
         let highByte = mmu.read(cpu.PC)
         cpu.PC++
         let lowByte = mmu.read(cpu.PC)
-        JPC(lowByte << 8 | highByte, cpu.flags.Z === false)
+        cpu.JPC(lowByte << 8 | highByte, cpu.flags.Z === false)
     },
     0xc3: () => {
         cpu.PC++
         let highByte = mmu.read(cpu.PC)
         cpu.PC++
         let lowByte = mmu.read(cpu.PC)
-        JP(lowByte << 8 | highByte)
+        cpu.JP(lowByte << 8 | highByte)
     },
     0xc4: () => {
         cpu.PC++
         let highByte = mmu.read(cpu.PC)
         cpu.PC++
         let lowByte = mmu.read(cpu.PC)
-        CALLC(lowByte << 8 | highByte, cpu.flags.Z === false)
+        cpu.CALLC(lowByte << 8 | highByte, cpu.flags.Z === false)
     },
     0xc5: () => {
-        PUSH("BC")
+        cpu.PUSH("BC")
     },
     0xc6: () => {
-        ADDM(mmu.read(cpu.PC + 1));
+        cpu.ADDM(mmu.read(cpu.PC + 1));
         cpu.PC++
     },
     0xc7: () => {
-        RST(0x00)
+        cpu.RST(0x00)
     },
     0xc8: () => {
-        RETC(cpu.flags.Z === true)
+        cpu.RETC(cpu.flags.Z === true)
     },
     0xc9: () => {
-        RET()
+        cpu.RET()
     },
     0xca: () => {
         cpu.PC++
         let highByte = mmu.read(cpu.PC)
         cpu.PC++
         let lowByte = mmu.read(cpu.PC)
-        JPC(lowByte << 8 | highByte, cpu.flags.Z === true)
+        cpu.JPC(lowByte << 8 | highByte, cpu.flags.Z === true)
     },
     0xcb: () => {
         console.warn("CB Prefix used in wrong lookup table!")
@@ -664,34 +667,34 @@ const lookup = {
         let highByte = mmu.read(cpu.PC)
         cpu.PC++
         let lowByte = mmu.read(cpu.PC)
-        CALLC(lowByte << 8 | highByte, cpu.flags.Z === true)
+        cpu.CALLC(lowByte << 8 | highByte, cpu.flags.Z === true)
     },
     0xcd: () => {
         cpu.PC++
         let highByte = mmu.read(cpu.PC)
         cpu.PC++
         let lowByte = mmu.read(cpu.PC)
-        CALL(lowByte << 8 | highByte)
+        cpu.CALL(lowByte << 8 | highByte)
     },
     0xce: () => {
-        ADDCM(mmu.read(cpu.PC + 1));
+        cpu.ADDCM(mmu.read(cpu.PC + 1));
         cpu.PC++
     },
     0xcf: () => {
-        RST(0x08)
+        cpu.RST(0x08)
     },
     0xd0: () => {
-        RETC(cpu.flags.C === false)
+        cpu.RETC(cpu.flags.C === false)
     },
     0xd1: () => {
-        POP("DE")
+        cpu.POP("DE")
     },
     0xd2: () => {
         cpu.PC++
         let highByte = mmu.read(cpu.PC)
         cpu.PC++
         let lowByte = mmu.read(cpu.PC)
-        JPC(lowByte << 8 | highByte, cpu.flags.C === false)
+        cpu.JPC(lowByte << 8 | highByte, cpu.flags.C === false)
     },
     0xd3: () => {
         console.warn("Illegal Opcode!")
@@ -701,30 +704,30 @@ const lookup = {
         let highByte = mmu.read(cpu.PC)
         cpu.PC++
         let lowByte = mmu.read(cpu.PC)
-        CALLC(lowByte << 8 | highByte, cpu.flags.C === false)
+        cpu.CALLC(lowByte << 8 | highByte, cpu.flags.C === false)
     },
     0xd5: () => {
-        PUSH("DE")
+        cpu.PUSH("DE")
     },
     0xd6: () => {
-        SUBM(mmu.read(cpu.PC + 1));
+        cpu.SUBM(mmu.read(cpu.PC + 1));
         cpu.PC++
     },
     0xd7: () => {
-        RST(0x10)
+        cpu.RST(0x10)
     },
     0xd8: () => {
-        RETC(cpu.flags.C === true)
+        cpu.RETC(cpu.flags.C === true)
     },
     0xd9: () => {
-        RETI()
+        cpu.RETI()
     },
     0xda: () => {
         cpu.PC++
         let highByte = mmu.read(cpu.PC)
         cpu.PC++
         let lowByte = mmu.read(cpu.PC)
-        JPC(lowByte << 8 | highByte, cpu.flags.C === true)
+        cpu.JPC(lowByte << 8 | highByte, cpu.flags.C === true)
     },
     0xdb: () => {
         console.warn("Illegal Opcode!")
@@ -734,27 +737,27 @@ const lookup = {
         let lowByte = mmu.read(cpu.PC)
         cpu.PC++
         let highByte = mmu.read(cpu.PC)
-        CALLC(lowByte << 8 | highByte, cpu.flags.C === true)
+        cpu.CALLC(lowByte << 8 | highByte, cpu.flags.C === true)
     },
     0xdd: () => {
         console.warn("Illegal Opcode!")
     },
     0xde: () => {
-        SBCM(mmu.read(cpu.PC + 1));
+        cpu.SBCM(mmu.read(cpu.PC + 1));
         cpu.PC++
     },
     0xdf: () => {
-        RST(0x18)
+        cpu.RST(0x18)
     },
     0xe0: () => {
-        LDM(cpu.A, (0xFF00 + mmu.read(cpu.PC + 1)));
+        cpu.LDM(cpu.A, (0xFF00 + mmu.read(cpu.PC + 1)));
         cpu.PC++
     },
     0xe1: () => {
-        POP("HL")
+        cpu.POP("HL")
     },
     0xe2: () => {
-        LDM(cpu.A, 0xFF00 + cpu.C)
+        cpu.LDM(cpu.A, 0xFF00 + cpu.C)
     },
     0xe3: () => {
         console.warn("Illegal Opcode!")
@@ -763,10 +766,10 @@ const lookup = {
         console.warn("Illegal Opcode!")
     },
     0xe5: () => {
-        PUSH("HL")
+        cpu.PUSH("HL")
     },
     0xe6: () => {
-        ANDM(mmu.read(cpu.PC + 1));
+        cpu.ANDM(mmu.read(cpu.PC + 1));
         cpu.PC++
     },
     0xe7: () => {
@@ -779,14 +782,14 @@ const lookup = {
         let highByte = mmu.read(cpu.PC)
         cpu.PC++
         let lowByte = mmu.read(cpu.PC)
-        JP(lowByte << 8 | highByte)
+        cpu.JP(lowByte << 8 | highByte)
     },
     0xea: () => {
         cpu.PC++
         let highByte = mmu.read(cpu.PC)
         cpu.PC++
         let lowByte = mmu.read(cpu.PC)
-        LDM(cpu.A, lowByte << 8 | highByte);
+        cpu.LDM(cpu.A, lowByte << 8 | highByte);
         cpu.PC++
     },
     0xeb: () => {
@@ -799,37 +802,37 @@ const lookup = {
         console.warn("Illegal Opcode!")
     },
     0xee: () => {
-        XORM(mmu.read(cpu.PC + 1));
+        cpu.XORM(mmu.read(cpu.PC + 1));
         cpu.PC++
     },
     0xef: () => {
-        RST(0x28)
+        cpu.RST(0x28)
     },
     0xf0: () => {
-        LDR("A", mmu.read(0xFF00 + mmu.read(cpu.PC + 1)));
+        cpu.LDR("A", mmu.read(0xFF00 + mmu.read(cpu.PC + 1)));
         cpu.PC++
     },
     0xf1: () => {
-        POP("AF")
+        cpu.POP("AF")
     },
     0xf2: () => {
-        LDR("A", mmu.read(0xFF00 + cpu.C))
+        cpu.LDR("A", mmu.read(0xFF00 + cpu.C))
     },
     0xf3: () => {
-        DI()
+        cpu.DI()
     },
     0xf4: () => {
         console.warn("Illegal Opcode!")
     },
     0xf5: () => {
-        PUSH("AF")
+        cpu.PUSH("AF")
     },
     0xf6: () => {
-        ORM(mmu.read(cpu.PC + 1));
+        cpu.ORM(mmu.read(cpu.PC + 1));
         cpu.PC++
     },
     0xf7: () => {
-        RST(0x30)
+        cpu.RST(0x30)
     },
     0xf8: () => {
     },
@@ -838,7 +841,7 @@ const lookup = {
     0xfa: () => {
     },
     0xfb: () => {
-        EI()
+        cpu.EI()
     },
     0xfc: () => {
         console.warn("Illegal Opcode!")
@@ -847,111 +850,111 @@ const lookup = {
         console.warn("Illegal Opcode!")
     },
     0xfe: () => {
-        CPM(mmu.read(cpu.PC + 1));
+        cpu.CPM(mmu.read(cpu.PC + 1));
         cpu.PC++
     },
     0xff: () => {
-        RST(0x38)
+        cpu.RST(0x38)
     }
 }
 
 // Prefix -> 0xCB -> next byte will indicate the instruction that should be executed
-const prefix_lookup = {
+export const prefix_lookup = {
     0x00: () => {
-        RLCR("B")
+        cpu.RLCR("B")
     },
     0x01: () => {
-        RLCR("C")
+        cpu.RLCR("C")
     },
     0x02: () => {
-        RLCR("D")
+        cpu.RLCR("D")
     },
     0x03: () => {
-        RLCR("E")
+        cpu.RLCR("E")
     },
     0x04: () => {
-        RLCR("H")
+        cpu.RLCR("H")
     },
     0x05: () => {
-        RLCR("L")
+        cpu.RLCR("L")
     },
     0x06: () => {
-        RLCM()
+        cpu.RLCM()
     },
     0x07: () => {
-        RLCR("A")
+        cpu.RLCR("A")
     },
     0x08: () => {
-        RRCR("B")
+        cpu.RRCR("B")
     },
     0x09: () => {
-        RRCR("C")
+        cpu.RRCR("C")
     },
     0x0a: () => {
-        RRCR("D")
+        cpu.RRCR("D")
     },
     0x0b: () => {
-        RRCR("E")
+        cpu.RRCR("E")
     },
     0x0c: () => {
-        RRCR("H")
+        cpu.RRCR("H")
     },
     0x0d: () => {
-        RRCR("L")
+        cpu.RRCR("L")
     },
     0x0e: () => {
-        RRCM()
+        cpu.RRCM()
     },
     0x0f: () => {
-        RRCR("A")
+        cpu.RRCR("A")
     },
     0x10: () => {
-        RLR("B")
+        cpu.RLR("B")
     },
     0x11: () => {
-        RLR("C")
+        cpu.RLR("C")
     },
     0x12: () => {
-        RLR("D")
+        cpu.RLR("D")
     },
     0x13: () => {
-        RLR("E")
+        cpu.RLR("E")
     },
     0x14: () => {
-        RLR("H")
+        cpu.RLR("H")
     },
     0x15: () => {
-        RLR("L")
+        cpu.RLR("L")
     },
     0x16: () => {
-        RLM()
+        cpu.RLM()
     },
     0x17: () => {
-        RLR("A")
+        cpu.RLR("A")
     },
     0x18: () => {
-        RRR("B")
+        cpu.RRR("B")
     },
     0x19: () => {
-        RRR("C")
+        cpu.RRR("C")
     },
     0x1a: () => {
-        RRR("D")
+        cpu.RRR("D")
     },
     0x1b: () => {
-        RRR("E")
+        cpu.RRR("E")
     },
     0x1c: () => {
-        RRR("H")
+        cpu.RRR("H")
     },
     0x1d: () => {
-        RRR("L")
+        cpu.RRR("L")
     },
     0x1e: () => {
-        RRM()
+        cpu.RRM()
     },
     0x1f: () => {
-        RRR("A")
+        cpu.RRR("A")
     },
     0x20: () => {
     },
@@ -986,28 +989,28 @@ const prefix_lookup = {
     0x2f: () => {
     },
     0x30: () => {
-        SWAP("B")
+        cpu.SWAP("B")
     },
     0x31: () => {
-        SWAP("C")
+        cpu.SWAP("C")
     },
     0x32: () => {
-        SWAP("D")
+        cpu.SWAP("D")
     },
     0x33: () => {
-        SWAP("E")
+        cpu.SWAP("E")
     },
     0x34: () => {
-        SWAP("H")
+        cpu.SWAP("H")
     },
     0x35: () => {
-        SWAP("L")
+        cpu.SWAP("L")
     },
     0x36: () => {
-        SWAP()
+        cpu.SWAP()
     },
     0x37: () => {
-        SWAP("A")
+        cpu.SWAP("A")
     },
     0x38: () => {
     },
@@ -1027,589 +1030,588 @@ const prefix_lookup = {
     0x3f: () => {
     },
     0x40: () => {
-        BIT(0, cpu.B)
-
+        cpu.BIT(0, cpu.B)
     },
     0x41: () => {
-        BIT(0, cpu.C)
+        cpu.BIT(0, cpu.C)
     },
     0x42: () => {
-        BIT(0, cpu.D)
+        cpu.BIT(0, cpu.D)
     },
     0x43: () => {
-        BIT(0, cpu.E)
+        cpu.BIT(0, cpu.E)
     },
     0x44: () => {
-        BIT(0, cpu.H)
+        cpu.BIT(0, cpu.H)
     },
     0x45: () => {
-        BIT(0, cpu.L)
+        cpu.BIT(0, cpu.L)
     },
     0x46: () => {
-        BIT(0, mmu.read(cpu.HL()))
+        cpu.BIT(0, mmu.read(cpu.HL()))
         cpu.clock.cycles += 8
     },
     0x47: () => {
-        BIT(0, cpu.A)
+        cpu.BIT(0, cpu.A)
     },
     0x48: () => {
-        BIT(1, cpu.B)
+        cpu.BIT(1, cpu.B)
     },
     0x49: () => {
-        BIT(1, cpu.C)
+        cpu.BIT(1, cpu.C)
     },
     0x4a: () => {
-        BIT(1, cpu.D)
+        cpu.BIT(1, cpu.D)
     },
     0x4b: () => {
-        BIT(1, cpu.E)
+        cpu.BIT(1, cpu.E)
     },
     0x4c: () => {
-        BIT(1, cpu.H)
+        cpu.BIT(1, cpu.H)
     },
     0x4d: () => {
-        BIT(1, cpu.L)
+        cpu.BIT(1, cpu.L)
     },
     0x4e: () => {
-        BIT(1, mmu.read(cpu.HL()))
+        cpu.BIT(1, mmu.read(cpu.HL()))
         cpu.clock.cycles += 8
     },
     0x4f: () => {
-        BIT(1, cpu.A)
+        cpu.BIT(1, cpu.A)
     },
     0x50: () => {
-        BIT(2, cpu.B)
+        cpu.BIT(2, cpu.B)
     },
     0x51: () => {
-        BIT(2, cpu.C)
+        cpu.BIT(2, cpu.C)
     },
     0x52: () => {
-        BIT(2, cpu.D)
+        cpu.BIT(2, cpu.D)
     },
     0x53: () => {
-        BIT(2, cpu.E)
+        cpu.BIT(2, cpu.E)
     },
     0x54: () => {
-        BIT(2, cpu.H)
+        cpu.BIT(2, cpu.H)
     },
     0x55: () => {
-        BIT(2, cpu.L)
+        cpu.BIT(2, cpu.L)
     },
     0x56: () => {
-        BIT(2, mmu.read(cpu.HL()))
+        cpu.BIT(2, mmu.read(cpu.HL()))
         cpu.clock.cycles += 8
     },
     0x57: () => {
-        BIT(2, cpu.A)
+        cpu.BIT(2, cpu.A)
     },
     0x58: () => {
-        BIT(3, cpu.B)
+        cpu.BIT(3, cpu.B)
     },
     0x59: () => {
-        BIT(3, cpu.C)
+        cpu.BIT(3, cpu.C)
     },
     0x5a: () => {
-        BIT(3, cpu.D)
+        cpu.BIT(3, cpu.D)
     },
     0x5b: () => {
-        BIT(3, cpu.E)
+        cpu.BIT(3, cpu.E)
     },
     0x5c: () => {
-        BIT(3, cpu.H)
+        cpu.BIT(3, cpu.H)
     },
     0x5d: () => {
-        BIT(3, cpu.L)
+        cpu.BIT(3, cpu.L)
     },
     0x5e: () => {
-        BIT(3, mmu.read(cpu.HL()))
+        cpu.BIT(3, mmu.read(cpu.HL()))
         cpu.clock.cycles += 8
     },
     0x5f: () => {
-        BIT(3, cpu.A)
+        cpu.BIT(3, cpu.A)
     },
     0x60: () => {
-        BIT(4, cpu.B)
+        cpu.BIT(4, cpu.B)
     },
     0x61: () => {
-        BIT(4, cpu.C)
+        cpu.BIT(4, cpu.C)
     },
     0x62: () => {
-        BIT(4, cpu.D)
+        cpu.BIT(4, cpu.D)
     },
     0x63: () => {
-        BIT(4, cpu.E)
+        cpu.BIT(4, cpu.E)
     },
     0x64: () => {
-        BIT(4, cpu.H)
+        cpu.BIT(4, cpu.H)
     },
     0x65: () => {
-        BIT(4, cpu.L)
+        cpu.BIT(4, cpu.L)
     },
     0x66: () => {
-        BIT(4, mmu.read(cpu.HL()))
+        cpu.BIT(4, mmu.read(cpu.HL()))
         cpu.clock.cycles += 8
     },
     0x67: () => {
-        BIT(4, cpu.A)
+        cpu.BIT(4, cpu.A)
     },
     0x68: () => {
-        BIT(5, cpu.B)
+        cpu.BIT(5, cpu.B)
     },
     0x69: () => {
-        BIT(5, cpu.C)
+        cpu.BIT(5, cpu.C)
     },
     0x6a: () => {
-        BIT(5, cpu.D)
+        cpu.BIT(5, cpu.D)
     },
     0x6b: () => {
-        BIT(5, cpu.E)
+        cpu.BIT(5, cpu.E)
     },
     0x6c: () => {
-        BIT(5, cpu.H)
+        cpu.BIT(5, cpu.H)
     },
     0x6d: () => {
-        BIT(5, cpu.L)
+        cpu.BIT(5, cpu.L)
     },
     0x6e: () => {
-        BIT(5, mmu.read(cpu.HL()))
+        cpu.BIT(5, mmu.read(cpu.HL()))
         cpu.clock.cycles += 8
     },
     0x6f: () => {
-        BIT(5, cpu.A)
+        cpu.BIT(5, cpu.A)
     },
     0x70: () => {
-        BIT(6, cpu.B)
+        cpu.BIT(6, cpu.B)
     },
     0x71: () => {
-        BIT(6, cpu.C)
+        cpu.BIT(6, cpu.C)
     },
     0x72: () => {
-        BIT(6, cpu.D)
+        cpu.BIT(6, cpu.D)
     },
     0x73: () => {
-        BIT(6, cpu.E)
+        cpu.BIT(6, cpu.E)
     },
     0x74: () => {
-        BIT(6, cpu.H)
+        cpu.BIT(6, cpu.H)
     },
     0x75: () => {
-        BIT(6, cpu.L)
+        cpu.BIT(6, cpu.L)
     },
     0x76: () => {
-        BIT(6, mmu.read(cpu.HL()))
+        cpu.BIT(6, mmu.read(cpu.HL()))
         cpu.clock.cycles += 8
     },
     0x77: () => {
-        BIT(6, cpu.A)
+        cpu.BIT(6, cpu.A)
     },
     0x78: () => {
-        BIT(7, cpu.B)
+        cpu.BIT(7, cpu.B)
     },
     0x79: () => {
-        BIT(7, cpu.C)
+        cpu.BIT(7, cpu.C)
     },
     0x7a: () => {
-        BIT(7, cpu.D)
+        cpu.BIT(7, cpu.D)
     },
     0x7b: () => {
-        BIT(7, cpu.E)
+        cpu.BIT(7, cpu.E)
     },
     0x7c: () => {
-        BIT(7, cpu.H)
+        cpu.BIT(7, cpu.H)
     },
     0x7d: () => {
-        BIT(7, cpu.L)
+        cpu.BIT(7, cpu.L)
     },
     0x7e: () => {
-        BIT(7, mmu.read(cpu.HL()))
+        cpu.BIT(7, mmu.read(cpu.HL()))
         cpu.clock.cycles += 8
     },
     0x7f: () => {
-        BIT(7, cpu.A)
+        cpu.BIT(7, cpu.A)
     },
     0x80: () => {
-        RESR("B",0)
+        cpu.RESR("B",0)
     },
     0x81: () => {
-        RESR("C",0)
+        cpu.RESR("C",0)
     },
     0x82: () => {
-        RESR("D",0)
+        cpu.RESR("D",0)
     },
     0x83: () => {
-        RESR("E",0)
+        cpu.RESR("E",0)
     },
     0x84: () => {
-        RESR("H",0)
+        cpu.RESR("H",0)
     },
     0x85: () => {
-        RESR("L",0)
+        cpu.RESR("L",0)
     },
     0x86: () => {
-        RESM(0)
+        cpu.RESM(0)
     },
     0x87: () => {
-        RESR("A",0)
+        cpu.RESR("A",0)
     },
     0x88: () => {
-        RESR("B",1)
+        cpu.RESR("B",1)
     },
     0x89: () => {
-        RESR("C",1)
+        cpu.RESR("C",1)
     },
     0x8a: () => {
-        RESR("D",1)
+        cpu.RESR("D",1)
     },
     0x8b: () => {
-        RESR("E",1)
+        cpu.RESR("E",1)
     },
     0x8c: () => {
-        RESR("H",1)
+        cpu.RESR("H",1)
     },
     0x8d: () => {
-        RESR("L",1)
+        cpu.RESR("L",1)
     },
     0x8e: () => {
-        RESM(1)
+        cpu.RESM(1)
     },
     0x8f: () => {
-        RESR("A",1)
+        cpu.RESR("A",1)
     },
     0x90: () => {
-        RESR("B",2)
+        cpu.RESR("B",2)
     },
     0x91: () => {
-        RESR("C",2)
+        cpu.RESR("C",2)
     },
     0x92: () => {
-        RESR("D",2)
+        cpu.RESR("D",2)
     },
     0x93: () => {
-        RESR("E",2)
+        cpu.RESR("E",2)
     },
     0x94: () => {
-        RESR("H",2)
+        cpu.RESR("H",2)
     },
     0x95: () => {
-        RESR("L",2)
+        cpu.RESR("L",2)
     },
     0x96: () => {
-        RESM(2)
+        cpu.RESM(2)
     },
     0x97: () => {
-        RESR("A",2)
+        cpu.RESR("A",2)
     },
     0x98: () => {
-        RESR("B",3)
+        cpu.RESR("B",3)
     },
     0x99: () => {
-        RESR("C",3)
+        cpu.RESR("C",3)
     },
     0x9a: () => {
-        RESR("D",3)
+        cpu.RESR("D",3)
     },
     0x9b: () => {
-        RESR("E",3)
+        cpu.RESR("E",3)
     },
     0x9c: () => {
-        RESR("H",3)
+        cpu.RESR("H",3)
     },
     0x9d: () => {
-        RESR("L",3)
+        cpu.RESR("L",3)
     },
     0x9e: () => {
-        RESM(3)
+        cpu.RESM(3)
     },
     0x9f: () => {
-        RESR("A",3)
+        cpu.RESR("A",3)
     },
     0xa0: () => {
-        RESR("B",4)
+        cpu.RESR("B",4)
     },
     0xa1: () => {
-        RESR("C",4)
+        cpu.RESR("C",4)
     },
     0xa2: () => {
-        RESR("D",4)
+        cpu.RESR("D",4)
     },
     0xa3: () => {
-        RESR("E",4)
+        cpu.RESR("E",4)
     },
     0xa4: () => {
-        RESR("H",4)
+        cpu.RESR("H",4)
     },
     0xa5: () => {
-        RESR("L",4)
+        cpu.RESR("L",4)
     },
     0xa6: () => {
-        RESM(4)
+        cpu.RESM(4)
     },
     0xa7: () => {
-        RESR("A",4)
+        cpu.RESR("A",4)
     },
     0xa8: () => {
-        RESR("B",5)
+        cpu.RESR("B",5)
     },
     0xa9: () => {
-        RESR("C",5)
+        cpu.RESR("C",5)
     },
     0xaa: () => {
-        RESR("D",5)
+        cpu.RESR("D",5)
     },
     0xab: () => {
-        RESR("E",5)
+        cpu.RESR("E",5)
     },
     0xac: () => {
-        RESR("H",5)
+        cpu.RESR("H",5)
     },
     0xad: () => {
-        RESR("L",5)
+        cpu.RESR("L",5)
     },
     0xae: () => {
-        RESM(5)
+        cpu.RESM(5)
     },
     0xaf: () => {
-        RESR("A",5)
+        cpu.RESR("A",5)
     },
     0xb0: () => {
-        RESR("B",6)
+        cpu.RESR("B",6)
     },
     0xb1: () => {
-        RESR("C",6)
+        cpu.RESR("C",6)
     },
     0xb2: () => {
-        RESR("D",6)
+        cpu.RESR("D",6)
     },
     0xb3: () => {
-        RESR("E",6)
+        cpu.RESR("E",6)
     },
     0xb4: () => {
-        RESR("H",6)
+        cpu.RESR("H",6)
     },
     0xb5: () => {
-        RESR("L",6)
+        cpu.RESR("L",6)
     },
     0xb6: () => {
-        RESM(6)
+        cpu.RESM(6)
     },
     0xb7: () => {
-        RESR("A",6)
+        cpu.RESR("A",6)
     },
     0xb8: () => {
-        RESR("B",7)
+        cpu.RESR("B",7)
     },
     0xb9: () => {
-        RESR("C",7)
+        cpu.RESR("C",7)
     },
     0xba: () => {
-        RESR("D",7)
+        cpu.RESR("D",7)
     },
     0xbb: () => {
-        RESR("E",7)
+        cpu.RESR("E",7)
     },
     0xbc: () => {
-        RESR("H",7)
+        cpu.RESR("H",7)
     },
     0xbd: () => {
-        RESR("L",7)
+        cpu.RESR("L",7)
     },
     0xbe: () => {
-        RESM(7)
+        cpu.RESM(7)
     },
     0xbf: () => {
-        RESR("A",7)
+        cpu.RESR("A",7)
     },
     0xc0: () => {
-        SETR("B",0)
+        cpu.SETR("B",0)
     },
     0xc1: () => {
-        SETR("C",0)
+        cpu.SETR("C",0)
     },
     0xc2: () => {
-        SETR("D",0)
+        cpu.SETR("D",0)
     },
     0xc3: () => {
-        SETR("E",0)
+        cpu.SETR("E",0)
     },
     0xc4: () => {
-        SETR("H",0)
+        cpu.SETR("H",0)
     },
     0xc5: () => {
-        SETR("L",0)
+        cpu.SETR("L",0)
     },
     0xc6: () => {
-        SETM(0)
+        cpu.SETM(0)
     },
     0xc7: () => {
-        SETR("A",0)
+        cpu.SETR("A",0)
     },
     0xc8: () => {
-        SETR("B",1)
+        cpu.SETR("B",1)
     },
     0xc9: () => {
-        SETR("C",1)
+        cpu.SETR("C",1)
     },
     0xca: () => {
-        SETR("D",1)
+        cpu.SETR("D",1)
     },
     0xcb: () => {
-        SETR("E",1)
+        cpu.SETR("E",1)
     },
     0xcc: () => {
-        SETR("H",1)
+        cpu.SETR("H",1)
     },
     0xcd: () => {
-        SETR("L",1)
+        cpu.SETR("L",1)
     },
     0xce: () => {
-        SETM(1)
+        cpu.SETM(1)
     },
     0xcf: () => {
-        SETR("A",1)
+        cpu.SETR("A",1)
     },
     0xd0: () => {
-        SETR("B",2)
+        cpu.SETR("B",2)
     },
     0xd1: () => {
-        SETR("C",2)
+        cpu.SETR("C",2)
     },
     0xd2: () => {
-        SETR("D",2)
+        cpu.SETR("D",2)
     },
     0xd3: () => {
-        SETR("E",2)
+        cpu.SETR("E",2)
     },
     0xd4: () => {
-        SETR("H",2)
+        cpu.SETR("H",2)
     },
     0xd5: () => {
-        SETR("L",2)
+        cpu.SETR("L",2)
     },
     0xd6: () => {
-        SETM(2)
+        cpu.SETM(2)
     },
     0xd7: () => {
-        SETR("A",2)
+        cpu.SETR("A",2)
     },
     0xd8: () => {
-        SETR("B",3)
+        cpu.SETR("B",3)
     },
     0xd9: () => {
-        SETR("C",2)
+        cpu.SETR("C",2)
     },
     0xda: () => {
-        SETR("D",3)
+        cpu.SETR("D",3)
     },
     0xdb: () => {
-        SETR("E",3)
+        cpu.SETR("E",3)
     },
     0xdc: () => {
-        SETR("H",3)
+        cpu.SETR("H",3)
     },
     0xdd: () => {
-        SETR("L",3)
+        cpu.SETR("L",3)
     },
     0xde: () => {
-        SETM(3)
+        cpu.SETM(3)
     },
     0xdf: () => {
-        SETR("A",3)
+        cpu.SETR("A",3)
     },
     0xe0: () => {
-        SETR("B",4)
+        cpu.SETR("B",4)
     },
     0xe1: () => {
-        SETR("C",4)
+        cpu.SETR("C",4)
     },
     0xe2: () => {
-        SETR("D",4)
+        cpu.SETR("D",4)
     },
     0xe3: () => {
-        SETR("E",4)
+        cpu.SETR("E",4)
     },
     0xe4: () => {
-        SETR("H",4)
+        cpu.SETR("H",4)
     },
     0xe5: () => {
-        SETR("L",4)
+        cpu.SETR("L",4)
     },
     0xe6: () => {
-        SETM(4)
+        cpu.SETM(4)
     },
     0xe7: () => {
-        SETR("A",4)
+        cpu.SETR("A",4)
     },
     0xe8: () => {
-        SETR("B",5)
+        cpu.SETR("B",5)
     },
     0xe9: () => {
-        SETR("C",5)
+        cpu.SETR("C",5)
     },
     0xea: () => {
-        SETR("D",5)
+        cpu.SETR("D",5)
     },
     0xeb: () => {
-        SETR("E",5)
+        cpu.SETR("E",5)
     },
     0xec: () => {
-        SETR("H",5)
+        cpu.SETR("H",5)
     },
     0xed: () => {
-        SETR("L",5)
+        cpu.SETR("L",5)
     },
     0xee: () => {
-        SETM(5)
+        cpu.SETM(5)
     },
     0xef: () => {
-        SETR("A",5)
+        cpu.SETR("A",5)
     },
     0xf0: () => {
-        SETR("B",6)
+        cpu.SETR("B",6)
     },
     0xf1: () => {
-        SETR("C",6)
+        cpu.SETR("C",6)
     },
     0xf2: () => {
-        SETR("D",6)
+        cpu.SETR("D",6)
     },
     0xf3: () => {
-        SETR("E",6)
+        cpu.SETR("E",6)
     },
     0xf4: () => {
-        SETR("H",6)
+        cpu.SETR("H",6)
     },
     0xf5: () => {
-        SETR("L",6)
+        cpu.SETR("L",6)
     },
     0xf6: () => {
-        SETM(6)
+        cpu.SETM(6)
     },
     0xf7: () => {
-        SETR("A",6)
+        cpu.SETR("A",6)
     },
     0xf8: () => {
-        SETR("B",7)
+        cpu.SETR("B",7)
     },
     0xf9: () => {
-        SETR("C",7)
+        cpu.SETR("C",7)
     },
     0xfa: () => {
-        SETR("D",7)
+        cpu.SETR("D",7)
     },
     0xfb: () => {
-        SETR("E",7)
+        cpu.SETR("E",7)
     },
     0xfc: () => {
-        SETR("H",7)
+        cpu.SETR("H",7)
     },
     0xfd: () => {
-        SETR("L",7)
+        cpu.SETR("L",7)
     },
     0xfe: () => {
-        SETM(7)
+        cpu.SETM(7)
     },
     0xff: () => {
-        SETR("A",7)
+        cpu.SETR("A",7)
     }
 }
 

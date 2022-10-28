@@ -1,5 +1,10 @@
 "use strict"
 
+import {setPaused, setRunning,setRatio,run,paused} from "./emulator.js"
+import {read_rom_info} from "./cartridge.js"
+import {mmu} from "./mmu.js"
+import {cpu} from "./cpu.js"
+
 document.querySelector("#file-input").addEventListener("change", (event) => {
     if (event.target.files.length === 1) {
         let reader = new FileReader()
@@ -11,40 +16,50 @@ document.querySelector("#file-input").addEventListener("change", (event) => {
             let tempArray = new Uint8Array(buffer)
             mmu.rom = Array.from(tempArray)
             read_rom_info()
-            running = true
-            paused = false
-            run().then(() => console.log("Emulation Stopped"),() => console.warn("Something went wrong in run()"))
+            //running = true
+            setRunning(true)
+            setPaused(false)
+            //paused = false
+            run().then(() => console.log("Emulation Stopped")).catch(err => console.log(err))
         }
-
     }
 })
 
 // Speed Slider
 document.querySelector("#speed-slider").addEventListener("input", () => {
-    document.querySelector("#speed-out").value = `${document.querySelector("#speed-slider").value}%`
-    paused = true
-    ratio = document.querySelector("#speed-slider").value / 100
-    console.log(`Speed Ratio: ${ratio}`)
-    paused = false
+    let value = document.querySelector("#speed-slider").value
+    document.querySelector("#speed-out").value = `${value}%`
+    //paused = true
+    setPaused(true)
+    //ratio = document.querySelector("#speed-slider").value / 100
+    setRatio(value)
+    //console.log(`Speed Ratio: ${ratio}`)
+    //paused = false
+    setRatio(value)
 })
 
 // Stop Button
 document.querySelector("#stop-button").addEventListener("click", () => {
-    running = false
-    paused = false
+    //running = false
+    //paused = false
+    setRunning(false)
+    setPaused(false)
     //console.log("Stopped Emulation")
 })
 
 // Reset Button
 document.querySelector("#reset-button").addEventListener("click", () => {
-    paused = true
+    //paused = true
+    setPaused(true)
     cpu.reset()
     console.log("Reset Emulation")
-    paused = false
+    //paused = false
+    setPaused(false)
 })
 
 // Pause Button
 document.querySelector("#pause-button").addEventListener("click", () => {
-    paused = !paused
+    //paused = !paused
+    setPaused(!paused)
     document.querySelector("#pause-button").textContent = paused ? "Resume" : "Pause"
 })

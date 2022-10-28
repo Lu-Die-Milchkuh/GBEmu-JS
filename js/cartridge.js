@@ -1,6 +1,8 @@
 "use strict"
 
-function read_rom_info() {
+import {mmu} from "./mmu.js";
+
+export function read_rom_info() {
     const info = {
         "title": [],
         "type": 0,

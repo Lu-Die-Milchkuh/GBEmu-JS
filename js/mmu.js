@@ -1,6 +1,9 @@
 "use strict"
 
-let mmu = {
+import {gpu} from "./gpu.js"
+import {cpu} from "./cpu.js"
+
+export let mmu = {
     wram: new Array(0x2000), // 8192 Bytes of Work RAM
     rom: [], // Array to store ROM content in
     //vram: new Array(0x2000), // Video Memory
@@ -10,10 +13,11 @@ let mmu = {
 }
 
 mmu.reset = () => {
-    mmu.wram.fill(0)
-    gpu.vram.fill(0)
-    mmu.hram.fill(0)
-    mmu.extram.fill(0)
+    mmu.wram.fill(0x0)
+    gpu.vram.fill(0x0)
+    gpu.oam.fill(0x0)
+    mmu.hram.fill(0x0)
+    mmu.extram.fill(0x0)
 }
 
 mmu.read = (address) => {
