@@ -134,7 +134,7 @@ cpu.interruptRoutine = {
         this.RST(0x40) //  VBlank
     },
     1: () => {
-       this.RST(0x48) // LCD Stat
+        this.RST(0x48) // LCD Stat
     },
     2: () => {
         this.RST(0x50) // Timer
@@ -494,7 +494,7 @@ cpu.RET = () => {
 }
 
 // Conditional Return from Subroutine
-cpu.RETC = (condition) =>{
+cpu.RETC = (condition) => {
     if (condition) {
         cpu.SP++
         let highByte = mmu.read(cpu.SP)
@@ -759,7 +759,7 @@ cpu.LDR16 = (reg16, data) => {
     cpu.clock.cycles += 12
 }
 
-cpu.LDM16 = (address, data) =>{
+cpu.LDM16 = (address, data) => {
     mmu.write(data, address)
     cpu.PC++
     cpu.clock.cycles += 8

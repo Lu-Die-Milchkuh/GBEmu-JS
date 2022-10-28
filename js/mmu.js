@@ -27,17 +27,15 @@ mmu.read = (address) => {
         data = mmu.rom[address]
     } else if (address >= 0x8000 && address <= 0x9FFF) {    // VRAM
         data = gpu.vram[address & 0x2000]
-    } else if(address >= 0xA000 && address <= 0xBFFF) {     // External RAM
+    } else if (address >= 0xA000 && address <= 0xBFFF) {     // External RAM
         data = mmu.extram[address % 0x1FFF]
-    }
-    else if (address >= 0xC000 && address <= 0xDFFF) {    // Work RAM
+    } else if (address >= 0xC000 && address <= 0xDFFF) {    // Work RAM
         data = mmu.wram[address & 0x2000]
     } else if (address >= 0xE000 && address <= 0xFDFF) {    // Echo RAM
         data = mmu.wram[(address - 0x2000) & 0x2000]
-    } else if(address >= 0xFF00 && address <= 0xFF7F) {     // IO Register
+    } else if (address >= 0xFF00 && address <= 0xFF7F) {     // IO Register
         data = mmu.io_reg[address % 0x7F]
-    }
-    else if (address >= 0xFF80 && address <= 0xFFFE) {    // High RAM
+    } else if (address >= 0xFF80 && address <= 0xFFFE) {    // High RAM
         data = mmu.hram[address % 0x2000]
     } else {
         data = cpu.IE
@@ -54,10 +52,9 @@ mmu.write = (data, address) => {
         gpu.vram[address & 0x2000] = data
     } else if (address >= 0xC000 && address <= 0xDFFF) {    // Work RAM
         mmu.wram[address & 0x2000] = data
-    } else if(address >= 0xFF00 && address <= 0xFF7F) {     // IO Register
+    } else if (address >= 0xFF00 && address <= 0xFF7F) {     // IO Register
 
-    }
-    else if (address >= 0xFF80 && address <= 0xFFFE) {    // High RAM
+    } else if (address >= 0xFF80 && address <= 0xFFFE) {    // High RAM
         mmu.hram[address % 0x2000] = data
     } else {
         cpu.IE = data

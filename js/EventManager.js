@@ -1,6 +1,6 @@
 "use strict"
 
-import {setPaused, setRunning,setRatio,run,paused} from "./emulator.js"
+import {setPaused, setRunning, setRatio, run, paused} from "./emulator.js"
 import {read_rom_info} from "./cartridge.js"
 import {mmu} from "./mmu.js"
 import {cpu} from "./cpu.js"

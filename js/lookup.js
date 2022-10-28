@@ -13,11 +13,11 @@ export const lookup = {
         let highByte = mmu.read(cpu.PC)
         cpu.PC++
         let lowByte = mmu.read(cpu.PC)
-        cpu.LDR16("BC",highByte << 8 | lowByte)
+        cpu.LDR16("BC", highByte << 8 | lowByte)
 
     },
     0x02: () => {
-        cpu.LDM16(cpu.BC(),cpu.A)
+        cpu.LDM16(cpu.BC(), cpu.A)
     },
     0x03: () => {
         cpu.INCR16("BC")
@@ -63,9 +63,9 @@ export const lookup = {
         cpu.STOP()
     },
     0x11: () => {
-        let highByte = mmu.read(cpu.PC+1)
-        let lowByte = mmu.read(cpu.PC+2)
-        cpu.LDR16("DE",highByte << 8 | lowByte)
+        let highByte = mmu.read(cpu.PC + 1)
+        let lowByte = mmu.read(cpu.PC + 2)
+        cpu.LDR16("DE", highByte << 8 | lowByte)
         cpu.PC += 2
     },
     0x12: () => {
@@ -124,7 +124,7 @@ export const lookup = {
         cpu.PC++
         let lowByte = mmu.read(cpu.PC)
         let data = lowByte << 8 | highByte
-        cpu.LDR16("HL",data)
+        cpu.LDR16("HL", data)
     },
     0x22: () => {
         cpu.LDM(cpu.A, cpu.HL());
@@ -180,7 +180,7 @@ export const lookup = {
         let lowByte = mmu.read(cpu.PC)
         cpu.PC++
         let highByte = mmu.read(cpu.PC)
-        cpu.LDR16("SP",lowByte << 8 | highByte)
+        cpu.LDR16("SP", lowByte << 8 | highByte)
     },
     0x32: () => {
         cpu.LDM(cpu.A, cpu.HL());
@@ -194,7 +194,7 @@ export const lookup = {
     },
     0x36: () => {
         cpu.PC++
-        cpu.LDM(mmu.read(cpu.PC),cpu.HL())
+        cpu.LDM(mmu.read(cpu.PC), cpu.HL())
         cpu.clock.cycles += 4
     },
     0x37: () => {
@@ -1230,408 +1230,408 @@ export const prefix_lookup = {
         cpu.BIT(7, cpu.A)
     },
     0x80: () => {
-        cpu.RESR("B",0)
+        cpu.RESR("B", 0)
     },
     0x81: () => {
-        cpu.RESR("C",0)
+        cpu.RESR("C", 0)
     },
     0x82: () => {
-        cpu.RESR("D",0)
+        cpu.RESR("D", 0)
     },
     0x83: () => {
-        cpu.RESR("E",0)
+        cpu.RESR("E", 0)
     },
     0x84: () => {
-        cpu.RESR("H",0)
+        cpu.RESR("H", 0)
     },
     0x85: () => {
-        cpu.RESR("L",0)
+        cpu.RESR("L", 0)
     },
     0x86: () => {
         cpu.RESM(0)
     },
     0x87: () => {
-        cpu.RESR("A",0)
+        cpu.RESR("A", 0)
     },
     0x88: () => {
-        cpu.RESR("B",1)
+        cpu.RESR("B", 1)
     },
     0x89: () => {
-        cpu.RESR("C",1)
+        cpu.RESR("C", 1)
     },
     0x8a: () => {
-        cpu.RESR("D",1)
+        cpu.RESR("D", 1)
     },
     0x8b: () => {
-        cpu.RESR("E",1)
+        cpu.RESR("E", 1)
     },
     0x8c: () => {
-        cpu.RESR("H",1)
+        cpu.RESR("H", 1)
     },
     0x8d: () => {
-        cpu.RESR("L",1)
+        cpu.RESR("L", 1)
     },
     0x8e: () => {
         cpu.RESM(1)
     },
     0x8f: () => {
-        cpu.RESR("A",1)
+        cpu.RESR("A", 1)
     },
     0x90: () => {
-        cpu.RESR("B",2)
+        cpu.RESR("B", 2)
     },
     0x91: () => {
-        cpu.RESR("C",2)
+        cpu.RESR("C", 2)
     },
     0x92: () => {
-        cpu.RESR("D",2)
+        cpu.RESR("D", 2)
     },
     0x93: () => {
-        cpu.RESR("E",2)
+        cpu.RESR("E", 2)
     },
     0x94: () => {
-        cpu.RESR("H",2)
+        cpu.RESR("H", 2)
     },
     0x95: () => {
-        cpu.RESR("L",2)
+        cpu.RESR("L", 2)
     },
     0x96: () => {
         cpu.RESM(2)
     },
     0x97: () => {
-        cpu.RESR("A",2)
+        cpu.RESR("A", 2)
     },
     0x98: () => {
-        cpu.RESR("B",3)
+        cpu.RESR("B", 3)
     },
     0x99: () => {
-        cpu.RESR("C",3)
+        cpu.RESR("C", 3)
     },
     0x9a: () => {
-        cpu.RESR("D",3)
+        cpu.RESR("D", 3)
     },
     0x9b: () => {
-        cpu.RESR("E",3)
+        cpu.RESR("E", 3)
     },
     0x9c: () => {
-        cpu.RESR("H",3)
+        cpu.RESR("H", 3)
     },
     0x9d: () => {
-        cpu.RESR("L",3)
+        cpu.RESR("L", 3)
     },
     0x9e: () => {
         cpu.RESM(3)
     },
     0x9f: () => {
-        cpu.RESR("A",3)
+        cpu.RESR("A", 3)
     },
     0xa0: () => {
-        cpu.RESR("B",4)
+        cpu.RESR("B", 4)
     },
     0xa1: () => {
-        cpu.RESR("C",4)
+        cpu.RESR("C", 4)
     },
     0xa2: () => {
-        cpu.RESR("D",4)
+        cpu.RESR("D", 4)
     },
     0xa3: () => {
-        cpu.RESR("E",4)
+        cpu.RESR("E", 4)
     },
     0xa4: () => {
-        cpu.RESR("H",4)
+        cpu.RESR("H", 4)
     },
     0xa5: () => {
-        cpu.RESR("L",4)
+        cpu.RESR("L", 4)
     },
     0xa6: () => {
         cpu.RESM(4)
     },
     0xa7: () => {
-        cpu.RESR("A",4)
+        cpu.RESR("A", 4)
     },
     0xa8: () => {
-        cpu.RESR("B",5)
+        cpu.RESR("B", 5)
     },
     0xa9: () => {
-        cpu.RESR("C",5)
+        cpu.RESR("C", 5)
     },
     0xaa: () => {
-        cpu.RESR("D",5)
+        cpu.RESR("D", 5)
     },
     0xab: () => {
-        cpu.RESR("E",5)
+        cpu.RESR("E", 5)
     },
     0xac: () => {
-        cpu.RESR("H",5)
+        cpu.RESR("H", 5)
     },
     0xad: () => {
-        cpu.RESR("L",5)
+        cpu.RESR("L", 5)
     },
     0xae: () => {
         cpu.RESM(5)
     },
     0xaf: () => {
-        cpu.RESR("A",5)
+        cpu.RESR("A", 5)
     },
     0xb0: () => {
-        cpu.RESR("B",6)
+        cpu.RESR("B", 6)
     },
     0xb1: () => {
-        cpu.RESR("C",6)
+        cpu.RESR("C", 6)
     },
     0xb2: () => {
-        cpu.RESR("D",6)
+        cpu.RESR("D", 6)
     },
     0xb3: () => {
-        cpu.RESR("E",6)
+        cpu.RESR("E", 6)
     },
     0xb4: () => {
-        cpu.RESR("H",6)
+        cpu.RESR("H", 6)
     },
     0xb5: () => {
-        cpu.RESR("L",6)
+        cpu.RESR("L", 6)
     },
     0xb6: () => {
         cpu.RESM(6)
     },
     0xb7: () => {
-        cpu.RESR("A",6)
+        cpu.RESR("A", 6)
     },
     0xb8: () => {
-        cpu.RESR("B",7)
+        cpu.RESR("B", 7)
     },
     0xb9: () => {
-        cpu.RESR("C",7)
+        cpu.RESR("C", 7)
     },
     0xba: () => {
-        cpu.RESR("D",7)
+        cpu.RESR("D", 7)
     },
     0xbb: () => {
-        cpu.RESR("E",7)
+        cpu.RESR("E", 7)
     },
     0xbc: () => {
-        cpu.RESR("H",7)
+        cpu.RESR("H", 7)
     },
     0xbd: () => {
-        cpu.RESR("L",7)
+        cpu.RESR("L", 7)
     },
     0xbe: () => {
         cpu.RESM(7)
     },
     0xbf: () => {
-        cpu.RESR("A",7)
+        cpu.RESR("A", 7)
     },
     0xc0: () => {
-        cpu.SETR("B",0)
+        cpu.SETR("B", 0)
     },
     0xc1: () => {
-        cpu.SETR("C",0)
+        cpu.SETR("C", 0)
     },
     0xc2: () => {
-        cpu.SETR("D",0)
+        cpu.SETR("D", 0)
     },
     0xc3: () => {
-        cpu.SETR("E",0)
+        cpu.SETR("E", 0)
     },
     0xc4: () => {
-        cpu.SETR("H",0)
+        cpu.SETR("H", 0)
     },
     0xc5: () => {
-        cpu.SETR("L",0)
+        cpu.SETR("L", 0)
     },
     0xc6: () => {
         cpu.SETM(0)
     },
     0xc7: () => {
-        cpu.SETR("A",0)
+        cpu.SETR("A", 0)
     },
     0xc8: () => {
-        cpu.SETR("B",1)
+        cpu.SETR("B", 1)
     },
     0xc9: () => {
-        cpu.SETR("C",1)
+        cpu.SETR("C", 1)
     },
     0xca: () => {
-        cpu.SETR("D",1)
+        cpu.SETR("D", 1)
     },
     0xcb: () => {
-        cpu.SETR("E",1)
+        cpu.SETR("E", 1)
     },
     0xcc: () => {
-        cpu.SETR("H",1)
+        cpu.SETR("H", 1)
     },
     0xcd: () => {
-        cpu.SETR("L",1)
+        cpu.SETR("L", 1)
     },
     0xce: () => {
         cpu.SETM(1)
     },
     0xcf: () => {
-        cpu.SETR("A",1)
+        cpu.SETR("A", 1)
     },
     0xd0: () => {
-        cpu.SETR("B",2)
+        cpu.SETR("B", 2)
     },
     0xd1: () => {
-        cpu.SETR("C",2)
+        cpu.SETR("C", 2)
     },
     0xd2: () => {
-        cpu.SETR("D",2)
+        cpu.SETR("D", 2)
     },
     0xd3: () => {
-        cpu.SETR("E",2)
+        cpu.SETR("E", 2)
     },
     0xd4: () => {
-        cpu.SETR("H",2)
+        cpu.SETR("H", 2)
     },
     0xd5: () => {
-        cpu.SETR("L",2)
+        cpu.SETR("L", 2)
     },
     0xd6: () => {
         cpu.SETM(2)
     },
     0xd7: () => {
-        cpu.SETR("A",2)
+        cpu.SETR("A", 2)
     },
     0xd8: () => {
-        cpu.SETR("B",3)
+        cpu.SETR("B", 3)
     },
     0xd9: () => {
-        cpu.SETR("C",2)
+        cpu.SETR("C", 2)
     },
     0xda: () => {
-        cpu.SETR("D",3)
+        cpu.SETR("D", 3)
     },
     0xdb: () => {
-        cpu.SETR("E",3)
+        cpu.SETR("E", 3)
     },
     0xdc: () => {
-        cpu.SETR("H",3)
+        cpu.SETR("H", 3)
     },
     0xdd: () => {
-        cpu.SETR("L",3)
+        cpu.SETR("L", 3)
     },
     0xde: () => {
         cpu.SETM(3)
     },
     0xdf: () => {
-        cpu.SETR("A",3)
+        cpu.SETR("A", 3)
     },
     0xe0: () => {
-        cpu.SETR("B",4)
+        cpu.SETR("B", 4)
     },
     0xe1: () => {
-        cpu.SETR("C",4)
+        cpu.SETR("C", 4)
     },
     0xe2: () => {
-        cpu.SETR("D",4)
+        cpu.SETR("D", 4)
     },
     0xe3: () => {
-        cpu.SETR("E",4)
+        cpu.SETR("E", 4)
     },
     0xe4: () => {
-        cpu.SETR("H",4)
+        cpu.SETR("H", 4)
     },
     0xe5: () => {
-        cpu.SETR("L",4)
+        cpu.SETR("L", 4)
     },
     0xe6: () => {
         cpu.SETM(4)
     },
     0xe7: () => {
-        cpu.SETR("A",4)
+        cpu.SETR("A", 4)
     },
     0xe8: () => {
-        cpu.SETR("B",5)
+        cpu.SETR("B", 5)
     },
     0xe9: () => {
-        cpu.SETR("C",5)
+        cpu.SETR("C", 5)
     },
     0xea: () => {
-        cpu.SETR("D",5)
+        cpu.SETR("D", 5)
     },
     0xeb: () => {
-        cpu.SETR("E",5)
+        cpu.SETR("E", 5)
     },
     0xec: () => {
-        cpu.SETR("H",5)
+        cpu.SETR("H", 5)
     },
     0xed: () => {
-        cpu.SETR("L",5)
+        cpu.SETR("L", 5)
     },
     0xee: () => {
         cpu.SETM(5)
     },
     0xef: () => {
-        cpu.SETR("A",5)
+        cpu.SETR("A", 5)
     },
     0xf0: () => {
-        cpu.SETR("B",6)
+        cpu.SETR("B", 6)
     },
     0xf1: () => {
-        cpu.SETR("C",6)
+        cpu.SETR("C", 6)
     },
     0xf2: () => {
-        cpu.SETR("D",6)
+        cpu.SETR("D", 6)
     },
     0xf3: () => {
-        cpu.SETR("E",6)
+        cpu.SETR("E", 6)
     },
     0xf4: () => {
-        cpu.SETR("H",6)
+        cpu.SETR("H", 6)
     },
     0xf5: () => {
-        cpu.SETR("L",6)
+        cpu.SETR("L", 6)
     },
     0xf6: () => {
         cpu.SETM(6)
     },
     0xf7: () => {
-        cpu.SETR("A",6)
+        cpu.SETR("A", 6)
     },
     0xf8: () => {
-        cpu.SETR("B",7)
+        cpu.SETR("B", 7)
     },
     0xf9: () => {
-        cpu.SETR("C",7)
+        cpu.SETR("C", 7)
     },
     0xfa: () => {
-        cpu.SETR("D",7)
+        cpu.SETR("D", 7)
     },
     0xfb: () => {
-        cpu.SETR("E",7)
+        cpu.SETR("E", 7)
     },
     0xfc: () => {
-        cpu.SETR("H",7)
+        cpu.SETR("H", 7)
     },
     0xfd: () => {
-        cpu.SETR("L",7)
+        cpu.SETR("L", 7)
     },
     0xfe: () => {
         cpu.SETM(7)
     },
     0xff: () => {
-        cpu.SETR("A",7)
+        cpu.SETR("A", 7)
     }
 }
 
 const prefix_cycles_lookup = [
-    8,8,8,8,8,8,16,8,8,8,8,8,8,8,8,16,8,
-    8,8,8,8,8,8,16,8,8,8,8,8,8,8,8,16,8,
-    8,8,8,8,8,8,16,8,8,8,8,8,8,8,8,16,8,
-    8,8,8,8,8,8,16,8,8,8,8,8,8,8,8,16,8,
-    8,8,8,8,8,8,16,8,8,8,8,8,8,8,8,16,8,
-    8,8,8,8,8,8,16,8,8,8,8,8,8,8,8,16,8,
-    8,8,8,8,8,8,16,8,8,8,8,8,8,8,8,16,8,
-    8,8,8,8,8,8,16,8,8,8,8,8,8,8,8,16,8,
-    8,8,8,8,8,8,16,8,8,8,8,8,8,8,8,16,8,
-    8,8,8,8,8,8,16,8,8,8,8,8,8,8,8,16,8,
-    8,8,8,8,8,8,16,8,8,8,8,8,8,8,8,16,8,
-    8,8,8,8,8,8,16,8,8,8,8,8,8,8,8,16,8,
-    8,8,8,8,8,8,16,8,8,8,8,8,8,8,8,16,8,
-    8,8,8,8,8,8,16,8,8,8,8,8,8,8,8,16,8,
-    8,8,8,8,8,8,16,8,8,8,8,8,8,8,8,16,8,
-    8,8,8,8,8,8,16,8,8,8,8,8,8,8,8,16,8,
-    8,8,8,8,8,8,16,8,8,8,8,8,8,8,8,16,8
+    8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 8, 16, 8,
+    8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 8, 16, 8,
+    8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 8, 16, 8,
+    8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 8, 16, 8,
+    8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 8, 16, 8,
+    8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 8, 16, 8,
+    8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 8, 16, 8,
+    8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 8, 16, 8,
+    8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 8, 16, 8,
+    8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 8, 16, 8,
+    8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 8, 16, 8,
+    8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 8, 16, 8,
+    8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 8, 16, 8,
+    8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 8, 16, 8,
+    8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 8, 16, 8,
+    8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 8, 16, 8,
+    8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 8, 16, 8
 ]
 

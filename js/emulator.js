@@ -2,14 +2,14 @@
 
 import {mmu} from "./mmu.js"
 import {cpu} from "./cpu.js"
-import {lookup,prefix_lookup} from "./lookup.js"
+import {lookup, prefix_lookup} from "./lookup.js"
 
 let ratio = 1
 let running = true
 export let paused = false
 
 export let setRatio = (value) => {
-    ratio = value/100
+    ratio = value / 100
     console.log(`Speed Ratio: ${ratio}`)
 }
 
