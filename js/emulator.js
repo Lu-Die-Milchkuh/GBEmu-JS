@@ -1,8 +1,10 @@
 "use strict"
 
+
 let ratio = 1
 let running = true
 let paused = false
+
 
 
 async function run() {
@@ -19,7 +21,7 @@ async function run() {
         while (cpu.clock.cycles <= max_cycles * ratio && !paused && running) {
             // Opcodes are the Bytes that tell the cpu which instruction it should execute
             let opcode = mmu.read(cpu.PC)
-            console.log(`Executing: ${opcode.toString(16)} @ ${cpu.PC.toString(16)}`)
+            //console.log(`Executing: ${opcode.toString(16)} @ ${cpu.PC.toString(16)}`)
             let temp_cycles = cpu.clock.cycles
 
             if (opcode === 0xCB) {
@@ -33,7 +35,7 @@ async function run() {
 
             temp_cycles = cpu.clock.cycles - temp_cycles // Elapsed Cycles
         }
-        await new Promise(resolve => setTimeout(resolve, 10))
+        await new Promise(resolve => setTimeout(resolve, 100))
     }
 
 }

@@ -1,6 +1,5 @@
 "use strict"
 
-
 let cpu = {
     // 8-Bit Register
     A: 0,
@@ -31,8 +30,18 @@ let cpu = {
         cycles: 0
     },
 
-    // Interrupt Enable Register
+    // Interrupt Master Enable Register
+    IME: false,
+    // Interrupt Enable
     IE: 0
+}
+
+const Interrupts = {
+    vblank: 0,
+    lcd_stat: 1,
+    timer: 2,
+    serial: 3,
+    joypad: 4
 }
 
 // Some Register can be paired together
@@ -118,31 +127,43 @@ cpu.reset = () => {
     mmu.write(0x00, 0xFFFF)   // IE
 }
 
-cpu.interrupts = {
-    vblank: 0,
-    lcd_stat: 0,
-    timer: 0,
-    seria: 0,
-    joypad: 0
+cpu.interruptRoutine = {
+    0: () => {
+        RST(0x40) //  VBlank
+    },
+    1: () => {
+        RST(0x48) // LCD Stat
+    },
+    2: () => {
+        RST(0x50) // Timer
+    },
+    3: () => {
+        RST(0x58) // Serial
+    },
+    4: () => {
+        RST(0x60) // Joypad
+    }
 }
+
 cpu.checkInterrupt = () => {
-    if(!cpu.IE) return
+    if (!cpu.IME) return
 
     let int = mmu.read(0xFF0F)
-    let request = mmu.read(0xFFFF)
 
-    for(let i = 0; i < 5; i++) {
-        if(int & (1<<i) === 1 && cpu.IE & (1<<i) === 1) {    // 1 -> Interrupt Enabled
-            cpu.interrupts[i] = 1
-            cpu.IE &= (0<<i)
+    for (let i = 0; i < 5; i++) {
+        if (int & (1 << i) === 1 && cpu.IE & (1 << i) === 1) {    // 1 -> Interrupt Enabled
+            cpu.interruptRoutine[i]()
+            cpu.IME = false
         }
     }
 }
 
-cpu.requestInterrupt = (data) => {
-    // Interrupt Register are stored at 0xFF0F
-    mmu.write(data,0xFF0F)
-
+cpu.requestInterrupt = (int) => {
+    // Interrupt Register is stored at 0xFF0F
+    let byte = mmu.read(0xFF0F)
+    byte |= (1 << int)
+    mmu.write(byte, 0xFF0F)
+    // TODO CPU UnHalt
 }
 
 /*
@@ -185,7 +206,6 @@ function DECR8(reg8) {
 function DECM8() {
     let address = cpu.HL();
     let data = mmu.read(address)
-
     data = ((data - 1) >>> 0) % 256
     cpu.flags.HC = (data & 0x4)
     cpu.flags.Z = (data === 0)
@@ -415,7 +435,7 @@ function JR(offset) {
 }
 
 function JRC(offset, condition) {
-    cpu.PC++
+
     if (condition) {
         // Unsigned Byte!
         if (offset & 0x80) {
@@ -425,6 +445,7 @@ function JRC(offset, condition) {
             cpu.PC = (cpu.PC + offset) % 0xFFFF
         }
     } else {
+        cpu.PC++
         cpu.clock.cycles += 12
     }
 
@@ -489,6 +510,7 @@ function RETC(condition) {
 
 // Return from subroutine and enable Interrupts
 function RETI() {
+    cpu.IME = true
     cpu.clock.cycles += 16
 }
 
@@ -573,14 +595,14 @@ function SCF() {
 
 // Enable Interrupts
 function EI() {
-    cpu.IE = 1
+    cpu.IME = true
     cpu.PC++
     cpu.clock.cycles += 4
 }
 
 // Disable Interrupts
 function DI() {
-    cpu.IE = 0
+    cpu.IME = false
     cpu.PC++
     cpu.clock.cycles += 4
 }
@@ -616,10 +638,10 @@ function SWAP(reg8) {
 function SWAPM() {
     let byte = mmu.read(cpu.HL())
     let highNibble = byte & 0xF0
-    let lowNibble = byte  & 0x0F
+    let lowNibble = byte & 0x0F
 
     byte = highNibble >> 4 | lowNibble << 4
-    mmu.write(byte,cpu.HL())
+    mmu.write(byte, cpu.HL())
     cpu.PC++
     cpu.clock.cycles += 16
 }
@@ -660,7 +682,7 @@ function RRCM() {
     cpu.flags.C = !!(byte & 0x1)
     byte = byte >> 1
     cpu.flags.Z = byte === 0
-    mmu.write(byte,cpu.HL())
+    mmu.write(byte, cpu.HL())
     cpu.PC++
     cpu.clock.cycles += 16
 }
@@ -679,7 +701,7 @@ function RRM() {
     let byte = mmu.read(cpu.HL())
     let temp = byte & 0x1
     byte = byte >> 1 | temp << 7
-    mmu.write(byte,cpu.HL())
+    mmu.write(byte, cpu.HL())
     cpu.PC++
     cpu.clock.cycles += 16
 }
@@ -698,7 +720,7 @@ function RLM() {
     let temp = byte & 0x80
     byte = byte << 1 | temp >> 7
     cpu.flags.Z = byte === 0
-    mmu.write(byte,cpu.HL())
+    mmu.write(byte, cpu.HL())
     cpu.PC++
     cpu.clock.cycles += 16
 }

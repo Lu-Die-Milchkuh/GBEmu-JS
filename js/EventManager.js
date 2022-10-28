@@ -1,6 +1,5 @@
 "use strict"
 
-// Reading File into mmu
 document.querySelector("#file-input").addEventListener("change", (event) => {
     if (event.target.files.length === 1) {
         let reader = new FileReader()
@@ -16,6 +15,7 @@ document.querySelector("#file-input").addEventListener("change", (event) => {
             paused = false
             run().then(() => console.log("Emulation Stopped"),() => console.warn("Something went wrong in run()"))
         }
+
     }
 })
 
