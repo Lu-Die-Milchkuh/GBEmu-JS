@@ -14,7 +14,7 @@ document.querySelector("#file-input").addEventListener("change", (event) => {
             read_rom_info()
             running = true
             paused = false
-            run()
+            run().then(() => console.log("Emulation Stopped"),() => console.warn("Something went wrong in run()"))
         }
     }
 })
@@ -32,7 +32,7 @@ document.querySelector("#speed-slider").addEventListener("input", () => {
 document.querySelector("#stop-button").addEventListener("click", () => {
     running = false
     paused = false
-    console.log("Stopped Emulation")
+    //console.log("Stopped Emulation")
 })
 
 // Reset Button

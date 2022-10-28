@@ -57,6 +57,7 @@ const lookup = {
     0x0f: () => {
     },
     0x10: () => {
+        STOP()
     },
     0x11: () => {
         let highByte = mmu.read(cpu.PC+1)
@@ -106,6 +107,7 @@ const lookup = {
         cpu.PC++
     },
     0x1f: () => {
+        RRA()
     },
     0x20: () => {
         cpu.PC++
@@ -862,64 +864,94 @@ const prefix_lookup = {
         RLCR("C")
     },
     0x02: () => {
+        RLCR("D")
     },
     0x03: () => {
+        RLCR("E")
     },
     0x04: () => {
+        RLCR("H")
     },
     0x05: () => {
+        RLCR("L")
     },
     0x06: () => {
+        RLCM()
     },
     0x07: () => {
+        RLCR("A")
     },
     0x08: () => {
+        RRCR("B")
     },
     0x09: () => {
+        RRCR("C")
     },
     0x0a: () => {
+        RRCR("D")
     },
     0x0b: () => {
+        RRCR("E")
     },
     0x0c: () => {
+        RRCR("H")
     },
     0x0d: () => {
+        RRCR("L")
     },
     0x0e: () => {
+        RRCM()
     },
     0x0f: () => {
+        RRCR("A")
     },
     0x10: () => {
+        RLR("B")
     },
     0x11: () => {
+        RLR("C")
     },
     0x12: () => {
+        RLR("D")
     },
     0x13: () => {
+        RLR("E")
     },
     0x14: () => {
+        RLR("H")
     },
     0x15: () => {
+        RLR("L")
     },
     0x16: () => {
+        RLM()
     },
     0x17: () => {
+        RLR("A")
     },
     0x18: () => {
+        RRR("B")
     },
     0x19: () => {
+        RRR("C")
     },
     0x1a: () => {
+        RRR("D")
     },
     0x1b: () => {
+        RRR("E")
     },
     0x1c: () => {
+        RRR("H")
     },
     0x1d: () => {
+        RRR("L")
     },
     0x1e: () => {
+        RRM()
     },
     0x1f: () => {
+        RRR("A")
     },
     0x20: () => {
     },
@@ -954,20 +986,28 @@ const prefix_lookup = {
     0x2f: () => {
     },
     0x30: () => {
+        SWAP("B")
     },
     0x31: () => {
+        SWAP("C")
     },
     0x32: () => {
+        SWAP("D")
     },
     0x33: () => {
+        SWAP("E")
     },
     0x34: () => {
+        SWAP("H")
     },
     0x35: () => {
+        SWAP("L")
     },
     0x36: () => {
+        SWAP()
     },
     0x37: () => {
+        SWAP("A")
     },
     0x38: () => {
     },

@@ -118,6 +118,33 @@ cpu.reset = () => {
     mmu.write(0x00, 0xFFFF)   // IE
 }
 
+cpu.interrupts = {
+    vblank: 0,
+    lcd_stat: 0,
+    timer: 0,
+    seria: 0,
+    joypad: 0
+}
+cpu.checkInterrupt = () => {
+    if(!cpu.IE) return
+
+    let int = mmu.read(0xFF0F)
+    let request = mmu.read(0xFFFF)
+
+    for(let i = 0; i < 5; i++) {
+        if(int & (1<<i) === 1 && cpu.IE & (1<<i) === 1) {    // 1 -> Interrupt Enabled
+            cpu.interrupts[i] = 1
+            cpu.IE &= (0<<i)
+        }
+    }
+}
+
+cpu.requestInterrupt = (data) => {
+    // Interrupt Register are stored at 0xFF0F
+    mmu.write(data,0xFF0F)
+
+}
+
 /*
     8 Bit ALU Instructions
  */
@@ -558,10 +585,24 @@ function DI() {
     cpu.clock.cycles += 4
 }
 
+// TODO: Needs to be implemented correctly!
+function STOP() {
+    cpu.clock.cycles += 4
+    //running = false
+    paused = true
+}
+
+function HALT() {
+    cpu.clock.cycles += 4
+    paused = true
+}
+
 
 /*
     Rotate and Shift Commands
 */
+
+// Swap nibbles of register
 function SWAP(reg8) {
     let highNibble = cpu[reg8] & 0xF0
     let lowNibble = cpu[reg8] & 0x0F
@@ -571,18 +612,29 @@ function SWAP(reg8) {
     cpu.clock.cycles += 8
 }
 
-function SWAPHL() {
-    let temp = cpu.H
-    cpu.H = cpu.L
-    cpu.L = temp
+// Swap nibbles at memory location
+function SWAPM() {
+    let byte = mmu.read(cpu.HL())
+    let highNibble = byte & 0xF0
+    let lowNibble = byte  & 0x0F
+
+    byte = highNibble >> 4 | lowNibble << 4
+    mmu.write(byte,cpu.HL())
     cpu.PC++
     cpu.clock.cycles += 16
 }
 
 
+function RRA() {
+    cpu.flags.C = !!(cpu.A & 0x10)
+    cpu.A = cpu.A >> 1
+    cpu.PC++
+    cpu.clock.cycles += 4
+}
+
 // Rotate Left through Carry
 function RLCR(reg8) {
-    cpu.flags.C = (cpu[reg8] & 0x80) ? true : false
+    cpu.flags.C = !!(cpu[reg8] & 0x80)
     cpu[reg8] = cpu[reg8] << 1
     cpu.flags.Z = cpu[reg8] === 0
     cpu.PC++
