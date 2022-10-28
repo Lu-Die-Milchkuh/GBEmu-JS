@@ -1,6 +1,6 @@
 "use strict"
 
-// Reading File into memory
+// Reading File into mmu
 document.querySelector("#file-input").addEventListener("change", (event) => {
     if (event.target.files.length === 1) {
         let reader = new FileReader()
@@ -10,7 +10,7 @@ document.querySelector("#file-input").addEventListener("change", (event) => {
         reader.onload = () => {
             let buffer = reader.result
             let tempArray = new Uint8Array(buffer)
-            memory.rom = Array.from(tempArray)
+            mmu.rom = Array.from(tempArray)
             read_rom_info()
             running = true
             paused = false

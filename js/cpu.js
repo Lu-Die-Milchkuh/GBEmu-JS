@@ -78,44 +78,44 @@ cpu.setSP = (data) => {
 
 // At Startup the Game Boy expects certain Registers and Memory Location to contain the following data
 cpu.reset = () => {
-    memory.reset()
+    mmu.reset()
     cpu.setAF(0x01B0)
     cpu.setBC(0x0013)
     cpu.setDE(0x00D8)
     cpu.setHL(0x014D)
     cpu.SP = 0xFFFE
     cpu.PC = 0x0100
-    memory.write(0x00, 0xFF05)   // TIMA
-    memory.write(0x00, 0xFF06)   // TMA
-    memory.write(0x00, 0xFF07)   // TAC
-    memory.write(0x80, 0xFF10)
-    memory.write(0xBF, 0xFF11)
-    memory.write(0xF3, 0xFF12)
-    memory.write(0xBF, 0xFF14)
-    memory.write(0x3F, 0xFF16)
-    memory.write(0x00, 0xFF17)
-    memory.write(0xBF, 0xFF19)
-    memory.write(0x7F, 0xFF1A)
-    memory.write(0xFF, 0xFF1B)
-    memory.write(0x9F, 0xFF1C)
-    memory.write(0xBF, 0xFF1E)
-    memory.write(0xFF, 0xFF20)
-    memory.write(0x00, 0xFF21)
-    memory.write(0x00, 0xFF22)
-    memory.write(0xBF, 0xFF23)
-    memory.write(0x77, 0xFF24)
-    memory.write(0xF3, 0xFF25)
-    memory.write(0xF1, 0xFF26)
-    memory.write(0x91, 0xFF40)
-    memory.write(0x00, 0xFF42)   // LCDC
-    memory.write(0x00, 0xFF43)   // SCx
-    memory.write(0x00, 0xFF45)   // LYC
-    memory.write(0xFC, 0xFF47)   // BGP
-    memory.write(0xFF, 0xFF48)   // OBP0
-    memory.write(0xFF, 0xFF49)   // OBP1
-    memory.write(0x00, 0xFF4A)   // WY
-    memory.write(0xFC, 0xFF4B)   // WX
-    memory.write(0x00, 0xFFFF)   // IE
+    mmu.write(0x00, 0xFF05)   // TIMA
+    mmu.write(0x00, 0xFF06)   // TMA
+    mmu.write(0x00, 0xFF07)   // TAC
+    mmu.write(0x80, 0xFF10)
+    mmu.write(0xBF, 0xFF11)
+    mmu.write(0xF3, 0xFF12)
+    mmu.write(0xBF, 0xFF14)
+    mmu.write(0x3F, 0xFF16)
+    mmu.write(0x00, 0xFF17)
+    mmu.write(0xBF, 0xFF19)
+    mmu.write(0x7F, 0xFF1A)
+    mmu.write(0xFF, 0xFF1B)
+    mmu.write(0x9F, 0xFF1C)
+    mmu.write(0xBF, 0xFF1E)
+    mmu.write(0xFF, 0xFF20)
+    mmu.write(0x00, 0xFF21)
+    mmu.write(0x00, 0xFF22)
+    mmu.write(0xBF, 0xFF23)
+    mmu.write(0x77, 0xFF24)
+    mmu.write(0xF3, 0xFF25)
+    mmu.write(0xF1, 0xFF26)
+    mmu.write(0x91, 0xFF40)
+    mmu.write(0x00, 0xFF42)   // LCDC
+    mmu.write(0x00, 0xFF43)   // SCx
+    mmu.write(0x00, 0xFF45)   // LYC
+    mmu.write(0xFC, 0xFF47)   // BGP
+    mmu.write(0xFF, 0xFF48)   // OBP0
+    mmu.write(0xFF, 0xFF49)   // OBP1
+    mmu.write(0x00, 0xFF4A)   // WY
+    mmu.write(0xFC, 0xFF4B)   // WX
+    mmu.write(0x00, 0xFFFF)   // IE
 }
 
 /*
@@ -131,16 +131,16 @@ function INCR8(reg8) {
     cpu.clock.cycles += 4
 }
 
-// Increment data at the memory address stored in HL
+// Increment data at the mmu address stored in HL
 function INCM8() {
     let address = cpu.HL();
-    let data = memory.read(address)
+    let data = mmu.read(address)
 
     data = ((data + 1) >>> 0) % 256
     cpu.flags.HC = (data & 0x4)
     cpu.flags.Z = (data === 0)
 
-    memory.write(data, address)
+    mmu.write(data, address)
     cpu.PC++
     cpu.clock.cycles += 12
 }
@@ -154,16 +154,16 @@ function DECR8(reg8) {
     cpu.clock.cycles += 4
 }
 
-// Decrement Data at the memory address stored in HL
+// Decrement Data at the mmu address stored in HL
 function DECM8() {
     let address = cpu.HL();
-    let data = memory.read(address)
+    let data = mmu.read(address)
 
     data = ((data - 1) >>> 0) % 256
     cpu.flags.HC = (data & 0x4)
     cpu.flags.Z = (data === 0)
 
-    memory.write(data, address)
+    mmu.write(data, address)
     cpu.PC++
     cpu.clock.cycles += 12
 }
@@ -176,7 +176,7 @@ function XORR(reg8) {
     cpu.clock.cycles += 4
 }
 
-// Bitwise XOR A with memory
+// Bitwise XOR A with mmu
 function XORM(data) {
     cpu.A ^= data
     cpu.flags.Z = (cpu.A === 0)
@@ -192,7 +192,7 @@ function ORR(reg8) {
     cpu.clock.cycles += 4
 }
 
-// Bitwise OR A with memory
+// Bitwise OR A with mmu
 function ORM(data) {
     cpu.A |= data
     cpu.flags.Z = (cpu.A === 0)
@@ -208,7 +208,7 @@ function ANDR(reg8) {
     cpu.clock.cycles += 4
 }
 
-// Bitwise AND A with memory
+// Bitwise AND A with mmu
 function ANDM(data) {
     cpu.A &= data;
     cpu.flags.Z = (cpu.A === 0)
@@ -228,7 +228,7 @@ function SUBR(reg8) {
     cpu.clock.cycles += 4
 }
 
-// Subtract memory from A
+// Subtract mmu from A
 function SUBM(data) {
     cpu.flags.N = true
     cpu.flags.C = (cpu.A < data)
@@ -253,7 +253,7 @@ function SBCR(reg8) {
     cpu.clock.cycles += 4
 }
 
-// Subtract memory at address and carry from A
+// Subtract mmu at address and carry from A
 function SBCM(data) {
     let carry = cpu.C ? 1 : 0
 
@@ -279,7 +279,7 @@ function ADDR(reg8) {
     cpu.clock.cycles += 4
 }
 
-// Add memory and carry to A
+// Add mmu and carry to A
 function ADDM(data) {
     cpu.flags.N = false
     cpu.flags.C = ((cpu.A + data) > 255)
@@ -304,7 +304,7 @@ function ADDCR(reg8) {
     cpu.clock.cycles += 4
 }
 
-// Add memory and carry to A
+// Add mmu and carry to A
 function ADDCM(data) {
     let carry = cpu.flags.C ? 1 : 0
     cpu.flags.N = false
@@ -329,7 +329,7 @@ function CPR(reg8) {
     cpu.clock.cycles += 4
 }
 
-// Compare A to memory, no changes besides flags
+// Compare A to mmu, no changes besides flags
 function CPM(data) {
 
     let temp = cpu.A - data
@@ -346,16 +346,16 @@ function CPM(data) {
     8-Bit Load Instructions
 */
 
-// Load register2 or memory into register1
+// Load register2 or mmu into register1
 function LDR(reg8, data) {
     cpu[reg8] = data
     cpu.PC++
     cpu.clock.cycles += 4
 }
 
-// Load memory or register content into memory at address
+// Load mmu or register content into mmu at address
 function LDM(data, address) {
-    memory.write(data, address)
+    mmu.write(data, address)
     cpu.PC++
     cpu.clock.cycles += 8
 }
@@ -410,9 +410,9 @@ function CALL(address) {
     let highByte = (cpu.PC & 0xFF00) >> 8
     let lowByte = (cpu.PC & 0x00FF) //; console.warn(`Low Byte: ${lowByte}, High Byte: ${highByte}`)
     cpu.SP--
-    memory.write(lowByte, cpu.SP)
+    mmu.write(lowByte, cpu.SP)
     cpu.SP--
-    memory.write(highByte, cpu.SP)
+    mmu.write(highByte, cpu.SP)
     cpu.PC = address
     cpu.clock.cycles += 24
 }
@@ -423,9 +423,9 @@ function CALLC(address, condition) {
         let highByte = cpu.PC & 0xFF00
         let lowByte = cpu.PC & 0x00FF
         cpu.SP--
-        memory.write(lowByte, cpu.SP)
+        mmu.write(lowByte, cpu.SP)
         cpu.SP--
-        memory.write(highByte, cpu.SP)
+        mmu.write(highByte, cpu.SP)
         cpu.PC = address
         cpu.clock.cycles += 24
     } else {
@@ -437,9 +437,9 @@ function CALLC(address, condition) {
 // Return from Subroutine
 function RET() {
     cpu.SP++
-    let highByte = memory.read(cpu.SP)
+    let highByte = mmu.read(cpu.SP)
     cpu.SP++
-    let lowByte = memory.read(cpu.SP)
+    let lowByte = mmu.read(cpu.SP)
     cpu.PC = (lowByte << 8 | highByte)
     cpu.clock.cycles += 16
 }
@@ -448,9 +448,9 @@ function RET() {
 function RETC(condition) {
     if (condition) {
         cpu.SP++
-        let highByte = memory.read(cpu.SP)
+        let highByte = mmu.read(cpu.SP)
         cpu.SP++
-        let lowByte = memory.read(cpu.SP)
+        let lowByte = mmu.read(cpu.SP)
         cpu.PC = (lowByte << 8 | highByte)
         cpu.clock.cycles += 20
     } else {
@@ -483,9 +483,9 @@ function SETR(reg8, n) {
 }
 
 function SETM(n) {
-    let data = memory.read(cpu.HL())
+    let data = mmu.read(cpu.HL())
     data |= (1 << n)
-    memory.write(data, cpu.HL())
+    mmu.write(data, cpu.HL())
     cpu.PC++
     cpu.clock.cycles += 16
 }
@@ -498,9 +498,9 @@ function RESR(reg8, n) {
 }
 
 function RESM(n) {
-    let data = memory.read(cpu.HL())
+    let data = mmu.read(cpu.HL())
     data &= (0 << n)
-    memory.write(data, cpu.HL())
+    mmu.write(data, cpu.HL())
     cpu.PC++
     cpu.clock.cycles += 16
 }
@@ -596,7 +596,7 @@ function RLCM() {
 
 // Rotate Right through Carry
 function RRCR(reg8) {
-    cpu.flags.C = (cpu[reg8] & 0x1) ? true : false
+    cpu.flags.C = !!(cpu[reg8] & 0x1)
     cpu[reg8] = cpu[reg8] >> 1
     cpu.flags.Z = cpu[reg8] === 0
     cpu.PC++
@@ -604,6 +604,12 @@ function RRCR(reg8) {
 }
 
 function RRCM() {
+    let byte = mmu.read(cpu.HL())
+    cpu.flags.C = !!(byte & 0x1)
+    byte = byte >> 1
+    cpu.flags.Z = byte === 0
+    mmu.write(byte,cpu.HL())
+    cpu.PC++
     cpu.clock.cycles += 16
 }
 
@@ -618,6 +624,11 @@ function RRR(reg8) {
 }
 
 function RRM() {
+    let byte = mmu.read(cpu.HL())
+    let temp = byte & 0x1
+    byte = byte >> 1 | temp << 7
+    mmu.write(byte,cpu.HL())
+    cpu.PC++
     cpu.clock.cycles += 16
 }
 
@@ -631,6 +642,12 @@ function RLR(reg8) {
 }
 
 function RLM() {
+    let byte = mmu.read(cpu.HL())
+    let temp = byte & 0x80
+    byte = byte << 1 | temp >> 7
+    cpu.flags.Z = byte === 0
+    mmu.write(byte,cpu.HL())
+    cpu.PC++
     cpu.clock.cycles += 16
 }
 
@@ -639,22 +656,24 @@ function RLM() {
     16-Bit Instructions
  */
 
+// Push Register to Stack
 function PUSH(reg16) {
     let highByte = cpu[reg16]() & 0xFF00
     let lowByte = cpu[reg16]() & 0x00FF
     cpu.SP--
-    memory.write(lowByte, cpu.SP)
+    mmu.write(lowByte, cpu.SP)
     cpu.SP--
-    memory.write(highByte, cpu.SP)
+    mmu.write(highByte, cpu.SP)
     cpu.PC++
     cpu.clock.cycles += 16
 }
 
+// Get Register back from Stack
 function POP(reg16) {
     cpu.SP++
-    let lowByte = memory.read(cpu.SP)
+    let lowByte = mmu.read(cpu.SP)
     cpu.SP++
-    let highByte = memory.read(cpu.SP)
+    let highByte = mmu.read(cpu.SP)
     cpu[`set${reg16}`](lowByte << 8 | highByte)
     cpu.clock.cycles += 12
 }
@@ -666,7 +685,7 @@ function LDR16(reg16, data) {
 }
 
 function LDM16(address, data) {
-    memory.write(data, address)
+    mmu.write(data, address)
     cpu.PC++
     cpu.clock.cycles += 8
 }
@@ -678,6 +697,7 @@ function INCR16(reg16) {
     cpu.clock.cycles += 8
 }
 
+// Decrement a 16-Bit Register
 function DECR16(reg16) {
     let temp = (cpu[`${reg16}`] + 1) % 0x10000
     cpu[`set${reg16}`](temp)

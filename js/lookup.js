@@ -7,9 +7,9 @@ const lookup = {
     },
     0x01: () => {
         cpu.PC++
-        let highByte = memory.read(cpu.PC)
+        let highByte = mmu.read(cpu.PC)
         cpu.PC++
-        let lowByte = memory.read(cpu.PC)
+        let lowByte = mmu.read(cpu.PC)
         LDR16("BC",highByte << 8 | lowByte)
 
     },
@@ -27,7 +27,7 @@ const lookup = {
         DECR8("B")
     },
     0x06: () => {
-        LDR("B", memory.read(cpu.PC + 1));
+        LDR("B", mmu.read(cpu.PC + 1));
         cpu.PC++
         cpu.clock.cycles += 4
     },
@@ -38,7 +38,7 @@ const lookup = {
     0x09: () => {
     },
     0x0a: () => {
-        LDR("A", memory.read(cpu.BC()))
+        LDR("A", mmu.read(cpu.BC()))
         cpu.clock.cycles += 4
     },
     0x0b: () => {
@@ -51,7 +51,7 @@ const lookup = {
         DECR8("C")
     },
     0x0e: () => {
-        LDR("C", memory.read(cpu.PC + 1));
+        LDR("C", mmu.read(cpu.PC + 1));
         cpu.PC++
     },
     0x0f: () => {
@@ -59,8 +59,8 @@ const lookup = {
     0x10: () => {
     },
     0x11: () => {
-        let highByte = memory.read(cpu.PC+1)
-        let lowByte = memory.read(cpu.PC+2)
+        let highByte = mmu.read(cpu.PC+1)
+        let lowByte = mmu.read(cpu.PC+2)
         LDR16("DE",highByte << 8 | lowByte)
         cpu.PC += 2
     },
@@ -77,19 +77,19 @@ const lookup = {
         DECR8("D")
     },
     0x16: () => {
-        LDR("D", memory.read(cpu.PC + 1));
+        LDR("D", mmu.read(cpu.PC + 1));
         cpu.PC++
         cpu.clock.cycles += 4
     },
     0x17: () => {
     },
     0x18: () => {
-        JR(memory.read(cpu.PC + 1))
+        JR(mmu.read(cpu.PC + 1))
     },
     0x19: () => {
     },
     0x1a: () => {
-        LDR("A", memory.read(cpu.DE()))
+        LDR("A", mmu.read(cpu.DE()))
         cpu.clock.cycles += 4
     },
     0x1b: () => {
@@ -102,22 +102,22 @@ const lookup = {
         DECR8("E")
     },
     0x1e: () => {
-        LDR("E", memory.read(cpu.PC + 1));
+        LDR("E", mmu.read(cpu.PC + 1));
         cpu.PC++
     },
     0x1f: () => {
     },
     0x20: () => {
         cpu.PC++
-        let offset = memory.read(cpu.PC)
+        let offset = mmu.read(cpu.PC)
         //console.log(`Condition ${cpu.flags.Z === false}, ${cpu.flags.Z},Offset: ${offset}`)
         JRC(offset, cpu.flags.Z === false)
     },
     0x21: () => {
         cpu.PC++
-        let highByte = memory.read(cpu.PC)
+        let highByte = mmu.read(cpu.PC)
         cpu.PC++
-        let lowByte = memory.read(cpu.PC)
+        let lowByte = mmu.read(cpu.PC)
         let data = lowByte << 8 | highByte
         LDR16("HL",data)
     },
@@ -135,19 +135,19 @@ const lookup = {
         DECR8("H")
     },
     0x26: () => {
-        LDR("H", memory.read(cpu.PC + 1));
+        LDR("H", mmu.read(cpu.PC + 1));
         cpu.PC++
         cpu.clock.cycles += 4
     },
     0x27: () => {
     },
     0x28: () => {
-        JRC(memory.read(cpu.PC + 1), cpu.flags.Z === true)
+        JRC(mmu.read(cpu.PC + 1), cpu.flags.Z === true)
     },
     0x29: () => {
     },
     0x2a: () => {
-        LDR("A", memory.read(cpu.HL()));
+        LDR("A", mmu.read(cpu.HL()));
         cpu.setHL(cpu.HL() + 1)
         cpu.clock.cycles += 4
     },
@@ -161,20 +161,20 @@ const lookup = {
         DECR8("L")
     },
     0x2e: () => {
-        LDR("L", memory.read(cpu.PC + 1));
+        LDR("L", mmu.read(cpu.PC + 1));
         cpu.PC++
     },
     0x2f: () => {
         CPL()
     },
     0x30: () => {
-        JRC(memory.read(cpu.PC + 1), cpu.flags.Z === false)
+        JRC(mmu.read(cpu.PC + 1), cpu.flags.Z === false)
     },
     0x31: () => {
         cpu.PC++
-        let lowByte = memory.read(cpu.PC)
+        let lowByte = mmu.read(cpu.PC)
         cpu.PC++
-        let highByte = memory.read(cpu.PC)
+        let highByte = mmu.read(cpu.PC)
         LDR16("SP",lowByte << 8 | highByte)
     },
     0x32: () => {
@@ -189,19 +189,19 @@ const lookup = {
     },
     0x36: () => {
         cpu.PC++
-        LDM(memory.read(cpu.PC),cpu.HL())
+        LDM(mmu.read(cpu.PC),cpu.HL())
         cpu.clock.cycles += 4
     },
     0x37: () => {
         SCF()
     },
     0x38: () => {
-        JRC(memory.read(cpu.PC + 1), cpu.flags.C === true)
+        JRC(mmu.read(cpu.PC + 1), cpu.flags.C === true)
     },
     0x39: () => {
     },
     0x3a: () => {
-        LDR("A", memory.read(cpu.HL()));
+        LDR("A", mmu.read(cpu.HL()));
         cpu.setHL(cpu.HL() - 1)
         cpu.clock.cycles += 4
     },
@@ -216,7 +216,7 @@ const lookup = {
     },
     0x3e: () => {
         cpu.PC++
-        LDR("A", memory.read(cpu.PC));
+        LDR("A", mmu.read(cpu.PC));
     },
     0x3f: () => {
         CCF()
@@ -240,7 +240,7 @@ const lookup = {
         LDR("B", cpu.L)
     },
     0x46: () => {
-        LDR("B", memory.read(cpu.HL()))
+        LDR("B", mmu.read(cpu.HL()))
     },
     0x47: () => {
         LDR("B", cpu.A)
@@ -264,7 +264,7 @@ const lookup = {
         LDR("C", cpu.L)
     },
     0x4e: () => {
-        LDR("C", memory.read(cpu.HL()))
+        LDR("C", mmu.read(cpu.HL()))
     },
     0x4f: () => {
         LDR("C", cpu.A)
@@ -288,7 +288,7 @@ const lookup = {
         LDR("D", cpu.L)
     },
     0x56: () => {
-        LDR("D", memory.read(cpu.HL()))
+        LDR("D", mmu.read(cpu.HL()))
     },
     0x57: () => {
         LDR("D", cpu.A)
@@ -312,7 +312,7 @@ const lookup = {
         LDR("E", cpu.L)
     },
     0x5e: () => {
-        LDR("E", memory.read(cpu.HL()))
+        LDR("E", mmu.read(cpu.HL()))
     },
     0x5f: () => {
         LDR("D", cpu.A)
@@ -336,7 +336,7 @@ const lookup = {
         LDR("H", cpu.L)
     },
     0x66: () => {
-        LDR("H", memory.read(cpu.HL()))
+        LDR("H", mmu.read(cpu.HL()))
     },
     0x67: () => {
         LDR("H", cpu.A)
@@ -360,33 +360,33 @@ const lookup = {
         LDR("L", cpu.L)
     },
     0x6e: () => {
-        LDR("L", memory.read(cpu.HL()))
+        LDR("L", mmu.read(cpu.HL()))
     },
     0x6f: () => {
         LDR("L", cpu.A)
     },
     0x70: () => {
-        LDM(cpu.B, memory.read(cpu.HL()))
+        LDM(cpu.B, mmu.read(cpu.HL()))
     },
     0x71: () => {
-        LDM(cpu.C, memory.read(cpu.HL()))
+        LDM(cpu.C, mmu.read(cpu.HL()))
     },
     0x72: () => {
-        LDM(cpu.D, memory.read(cpu.HL()))
+        LDM(cpu.D, mmu.read(cpu.HL()))
     },
     0x73: () => {
-        LDM(cpu.E, memory.read(cpu.HL()))
+        LDM(cpu.E, mmu.read(cpu.HL()))
     },
     0x74: () => {
-        LDM(cpu.H, memory.read(cpu.HL()))
+        LDM(cpu.H, mmu.read(cpu.HL()))
     },
     0x75: () => {
-        LDM(cpu.L, memory.read(cpu.HL()))
+        LDM(cpu.L, mmu.read(cpu.HL()))
     },
     0x76: () => {
     },
     0x77: () => {
-        LDM(cpu.A, memory.read(cpu.HL()))
+        LDM(cpu.A, mmu.read(cpu.HL()))
     },
     0x78: () => {
         LDR("A", cpu.B)
@@ -407,7 +407,7 @@ const lookup = {
         LDR("A", cpu.L)
     },
     0x7e: () => {
-        LDR("A", memory.read(cpu.HL()))
+        LDR("A", mmu.read(cpu.HL()))
     },
     0x7f: () => {
         LDR("A", cpu.A)
@@ -431,7 +431,7 @@ const lookup = {
         ADDR("L")
     },
     0x86: () => {
-        ADDM(memory.read(cpu.HL()))
+        ADDM(mmu.read(cpu.HL()))
     },
     0x87: () => {
         ADDR("A")
@@ -455,7 +455,7 @@ const lookup = {
         ADDCR("L")
     },
     0x8e: () => {
-        ADDCM(memory.read(cpu.HL()))
+        ADDCM(mmu.read(cpu.HL()))
     },
     0x8f: () => {
         ADDCR("A")
@@ -479,7 +479,7 @@ const lookup = {
         SUBR("L")
     },
     0x96: () => {
-        SUBM(memory.read(cpu.HL()))
+        SUBM(mmu.read(cpu.HL()))
     },
     0x97: () => {
         SUBR("A")
@@ -503,7 +503,7 @@ const lookup = {
         SBCR("L")
     },
     0x9e: () => {
-        SBCM(memory.read(cpu.HL()))
+        SBCM(mmu.read(cpu.HL()))
     },
     0x9f: () => {
         SBCR("A")
@@ -527,7 +527,7 @@ const lookup = {
         ANDR("L")
     },
     0xa6: () => {
-        ANDM(memory.read(cpu.HL()))
+        ANDM(mmu.read(cpu.HL()))
     },
     0xa7: () => {
         ANDR("A")
@@ -551,7 +551,7 @@ const lookup = {
         XORR("L")
     },
     0xae: () => {
-        XORM(memory.read(cpu.HL()))
+        XORM(mmu.read(cpu.HL()))
     },
     0xaf: () => {
         XORR("A")
@@ -575,7 +575,7 @@ const lookup = {
         ORR("L")
     },
     0xb6: () => {
-        ORM(memory.read(cpu.HL()))
+        ORM(mmu.read(cpu.HL()))
     },
     0xb7: () => {
         ORR("A")
@@ -599,7 +599,7 @@ const lookup = {
         CPR("L")
     },
     0xbe: () => {
-        CPM(memory.read(cpu.HL()))
+        CPM(mmu.read(cpu.HL()))
     },
     0xbf: () => {
         CPR("A")
@@ -612,30 +612,30 @@ const lookup = {
     },
     0xc2: () => {
         cpu.PC++
-        let highByte = memory.read(cpu.PC)
+        let highByte = mmu.read(cpu.PC)
         cpu.PC++
-        let lowByte = memory.read(cpu.PC)
+        let lowByte = mmu.read(cpu.PC)
         JPC(lowByte << 8 | highByte, cpu.flags.Z === false)
     },
     0xc3: () => {
         cpu.PC++
-        let highByte = memory.read(cpu.PC)
+        let highByte = mmu.read(cpu.PC)
         cpu.PC++
-        let lowByte = memory.read(cpu.PC)
+        let lowByte = mmu.read(cpu.PC)
         JP(lowByte << 8 | highByte)
     },
     0xc4: () => {
         cpu.PC++
-        let highByte = memory.read(cpu.PC)
+        let highByte = mmu.read(cpu.PC)
         cpu.PC++
-        let lowByte = memory.read(cpu.PC)
+        let lowByte = mmu.read(cpu.PC)
         CALLC(lowByte << 8 | highByte, cpu.flags.Z === false)
     },
     0xc5: () => {
         PUSH("BC")
     },
     0xc6: () => {
-        ADDM(memory.read(cpu.PC + 1));
+        ADDM(mmu.read(cpu.PC + 1));
         cpu.PC++
     },
     0xc7: () => {
@@ -649,9 +649,9 @@ const lookup = {
     },
     0xca: () => {
         cpu.PC++
-        let highByte = memory.read(cpu.PC)
+        let highByte = mmu.read(cpu.PC)
         cpu.PC++
-        let lowByte = memory.read(cpu.PC)
+        let lowByte = mmu.read(cpu.PC)
         JPC(lowByte << 8 | highByte, cpu.flags.Z === true)
     },
     0xcb: () => {
@@ -659,20 +659,20 @@ const lookup = {
     },
     0xcc: () => {
         cpu.PC++
-        let highByte = memory.read(cpu.PC)
+        let highByte = mmu.read(cpu.PC)
         cpu.PC++
-        let lowByte = memory.read(cpu.PC)
+        let lowByte = mmu.read(cpu.PC)
         CALLC(lowByte << 8 | highByte, cpu.flags.Z === true)
     },
     0xcd: () => {
         cpu.PC++
-        let highByte = memory.read(cpu.PC)
+        let highByte = mmu.read(cpu.PC)
         cpu.PC++
-        let lowByte = memory.read(cpu.PC)
+        let lowByte = mmu.read(cpu.PC)
         CALL(lowByte << 8 | highByte)
     },
     0xce: () => {
-        ADDCM(memory.read(cpu.PC + 1));
+        ADDCM(mmu.read(cpu.PC + 1));
         cpu.PC++
     },
     0xcf: () => {
@@ -686,9 +686,9 @@ const lookup = {
     },
     0xd2: () => {
         cpu.PC++
-        let highByte = memory.read(cpu.PC)
+        let highByte = mmu.read(cpu.PC)
         cpu.PC++
-        let lowByte = memory.read(cpu.PC)
+        let lowByte = mmu.read(cpu.PC)
         JPC(lowByte << 8 | highByte, cpu.flags.C === false)
     },
     0xd3: () => {
@@ -696,16 +696,16 @@ const lookup = {
     },
     0xd4: () => {
         cpu.PC++
-        let highByte = memory.read(cpu.PC)
+        let highByte = mmu.read(cpu.PC)
         cpu.PC++
-        let lowByte = memory.read(cpu.PC)
+        let lowByte = mmu.read(cpu.PC)
         CALLC(lowByte << 8 | highByte, cpu.flags.C === false)
     },
     0xd5: () => {
         PUSH("DE")
     },
     0xd6: () => {
-        SUBM(memory.read(cpu.PC + 1));
+        SUBM(mmu.read(cpu.PC + 1));
         cpu.PC++
     },
     0xd7: () => {
@@ -719,9 +719,9 @@ const lookup = {
     },
     0xda: () => {
         cpu.PC++
-        let highByte = memory.read(cpu.PC)
+        let highByte = mmu.read(cpu.PC)
         cpu.PC++
-        let lowByte = memory.read(cpu.PC)
+        let lowByte = mmu.read(cpu.PC)
         JPC(lowByte << 8 | highByte, cpu.flags.C === true)
     },
     0xdb: () => {
@@ -729,23 +729,23 @@ const lookup = {
     },
     0xdc: () => {
         cpu.PC++
-        let lowByte = memory.read(cpu.PC)
+        let lowByte = mmu.read(cpu.PC)
         cpu.PC++
-        let highByte = memory.read(cpu.PC)
+        let highByte = mmu.read(cpu.PC)
         CALLC(lowByte << 8 | highByte, cpu.flags.C === true)
     },
     0xdd: () => {
         console.warn("Illegal Opcode!")
     },
     0xde: () => {
-        SBCM(memory.read(cpu.PC + 1));
+        SBCM(mmu.read(cpu.PC + 1));
         cpu.PC++
     },
     0xdf: () => {
         RST(0x18)
     },
     0xe0: () => {
-        LDM(cpu.A, (0xFF00 + memory.read(cpu.PC + 1)));
+        LDM(cpu.A, (0xFF00 + mmu.read(cpu.PC + 1)));
         cpu.PC++
     },
     0xe1: () => {
@@ -764,7 +764,7 @@ const lookup = {
         PUSH("HL")
     },
     0xe6: () => {
-        ANDM(memory.read(cpu.PC + 1));
+        ANDM(mmu.read(cpu.PC + 1));
         cpu.PC++
     },
     0xe7: () => {
@@ -774,16 +774,16 @@ const lookup = {
     },
     0xe9: () => {
         cpu.PC++
-        let highByte = memory.read(cpu.PC)
+        let highByte = mmu.read(cpu.PC)
         cpu.PC++
-        let lowByte = memory.read(cpu.PC)
+        let lowByte = mmu.read(cpu.PC)
         JP(lowByte << 8 | highByte)
     },
     0xea: () => {
         cpu.PC++
-        let highByte = memory.read(cpu.PC)
+        let highByte = mmu.read(cpu.PC)
         cpu.PC++
-        let lowByte = memory.read(cpu.PC)
+        let lowByte = mmu.read(cpu.PC)
         LDM(cpu.A, lowByte << 8 | highByte);
         cpu.PC++
     },
@@ -797,21 +797,21 @@ const lookup = {
         console.warn("Illegal Opcode!")
     },
     0xee: () => {
-        XORM(memory.read(cpu.PC + 1));
+        XORM(mmu.read(cpu.PC + 1));
         cpu.PC++
     },
     0xef: () => {
         RST(0x28)
     },
     0xf0: () => {
-        LDR("A", memory.read(0xFF00 + memory.read(cpu.PC + 1)));
+        LDR("A", mmu.read(0xFF00 + mmu.read(cpu.PC + 1)));
         cpu.PC++
     },
     0xf1: () => {
         POP("AF")
     },
     0xf2: () => {
-        LDR("A", memory.read(0xFF00 + cpu.C))
+        LDR("A", mmu.read(0xFF00 + cpu.C))
     },
     0xf3: () => {
         DI()
@@ -823,7 +823,7 @@ const lookup = {
         PUSH("AF")
     },
     0xf6: () => {
-        ORM(memory.read(cpu.PC + 1));
+        ORM(mmu.read(cpu.PC + 1));
         cpu.PC++
     },
     0xf7: () => {
@@ -845,7 +845,7 @@ const lookup = {
         console.warn("Illegal Opcode!")
     },
     0xfe: () => {
-        CPM(memory.read(cpu.PC + 1));
+        CPM(mmu.read(cpu.PC + 1));
         cpu.PC++
     },
     0xff: () => {
@@ -856,9 +856,10 @@ const lookup = {
 // Prefix -> 0xCB -> next byte will indicate the instruction that should be executed
 const prefix_lookup = {
     0x00: () => {
-
+        RLCR("B")
     },
     0x01: () => {
+        RLCR("C")
     },
     0x02: () => {
     },
@@ -1005,7 +1006,7 @@ const prefix_lookup = {
         BIT(0, cpu.L)
     },
     0x46: () => {
-        BIT(0, memory.read(cpu.HL()))
+        BIT(0, mmu.read(cpu.HL()))
         cpu.clock.cycles += 8
     },
     0x47: () => {
@@ -1030,7 +1031,7 @@ const prefix_lookup = {
         BIT(1, cpu.L)
     },
     0x4e: () => {
-        BIT(1, memory.read(cpu.HL()))
+        BIT(1, mmu.read(cpu.HL()))
         cpu.clock.cycles += 8
     },
     0x4f: () => {
@@ -1055,7 +1056,7 @@ const prefix_lookup = {
         BIT(2, cpu.L)
     },
     0x56: () => {
-        BIT(2, memory.read(cpu.HL()))
+        BIT(2, mmu.read(cpu.HL()))
         cpu.clock.cycles += 8
     },
     0x57: () => {
@@ -1080,7 +1081,7 @@ const prefix_lookup = {
         BIT(3, cpu.L)
     },
     0x5e: () => {
-        BIT(3, memory.read(cpu.HL()))
+        BIT(3, mmu.read(cpu.HL()))
         cpu.clock.cycles += 8
     },
     0x5f: () => {
@@ -1105,7 +1106,7 @@ const prefix_lookup = {
         BIT(4, cpu.L)
     },
     0x66: () => {
-        BIT(4, memory.read(cpu.HL()))
+        BIT(4, mmu.read(cpu.HL()))
         cpu.clock.cycles += 8
     },
     0x67: () => {
@@ -1130,7 +1131,7 @@ const prefix_lookup = {
         BIT(5, cpu.L)
     },
     0x6e: () => {
-        BIT(5, memory.read(cpu.HL()))
+        BIT(5, mmu.read(cpu.HL()))
         cpu.clock.cycles += 8
     },
     0x6f: () => {
@@ -1155,7 +1156,7 @@ const prefix_lookup = {
         BIT(6, cpu.L)
     },
     0x76: () => {
-        BIT(6, memory.read(cpu.HL()))
+        BIT(6, mmu.read(cpu.HL()))
         cpu.clock.cycles += 8
     },
     0x77: () => {
@@ -1180,7 +1181,7 @@ const prefix_lookup = {
         BIT(7, cpu.L)
     },
     0x7e: () => {
-        BIT(7, memory.read(cpu.HL()))
+        BIT(7, mmu.read(cpu.HL()))
         cpu.clock.cycles += 8
     },
     0x7f: () => {
