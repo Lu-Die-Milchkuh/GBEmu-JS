@@ -6,7 +6,6 @@ import {cpu} from "./cpu.js"
 export let mmu = {
     wram: new Array(0x2000), // 8192 Bytes of Work RAM
     rom: [], // Array to store ROM content in
-    //vram: new Array(0x2000), // Video Memory
     hram: new Array(0x7E), // 126 Bytes of High RAM
     extram: new Array(0x1FFF),
     io_reg: new Array(0x7F)
@@ -21,7 +20,7 @@ mmu.reset = () => {
 }
 
 mmu.read = (address) => {
-    let data = 0
+    let data = 0x0
 
     if (address <= 0x7FFF) {    // ROM
         data = mmu.rom[address]

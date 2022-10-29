@@ -2,6 +2,12 @@
 
 import {mmu} from "./mmu.js";
 
+let cartridge = {
+    rom: [],     // Array to Store ROM Content
+    extram: new Array(0x1FFF)   // External RAM
+}
+
+
 export function read_rom_info() {
     const info = {
         "title": [],

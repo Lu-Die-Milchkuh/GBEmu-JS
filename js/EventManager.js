@@ -5,6 +5,7 @@ import {read_rom_info} from "./cartridge.js"
 import {mmu} from "./mmu.js"
 import {cpu} from "./cpu.js"
 
+// File Input
 document.querySelector("#file-input").addEventListener("change", (event) => {
     if (event.target.files.length === 1) {
         let reader = new FileReader()
@@ -29,13 +30,9 @@ document.querySelector("#file-input").addEventListener("change", (event) => {
 document.querySelector("#speed-slider").addEventListener("input", () => {
     let value = document.querySelector("#speed-slider").value
     document.querySelector("#speed-out").value = `${value}%`
-    //paused = true
     setPaused(true)
-    //ratio = document.querySelector("#speed-slider").value / 100
     setRatio(value)
-    //console.log(`Speed Ratio: ${ratio}`)
-    //paused = false
-    setRatio(value)
+    setPaused(false)
 })
 
 // Stop Button
@@ -49,17 +46,15 @@ document.querySelector("#stop-button").addEventListener("click", () => {
 
 // Reset Button
 document.querySelector("#reset-button").addEventListener("click", () => {
-    //paused = true
     setPaused(true)
     cpu.reset()
     console.log("Reset Emulation")
-    //paused = false
     setPaused(false)
 })
 
 // Pause Button
 document.querySelector("#pause-button").addEventListener("click", () => {
-    //paused = !paused
     setPaused(!paused)
     document.querySelector("#pause-button").textContent = paused ? "Resume" : "Pause"
+    console.log(`Emulation Paused: ${paused}`)
 })

@@ -35,7 +35,10 @@ export let cpu = {
     // Interrupt Master Enable Register
     IME: false,
     // Interrupt Enable
-    IE: 0
+    IE: 0,
+
+    isHalt: false,
+    isStop: false
 }
 
 const Interrupts = {
@@ -165,7 +168,7 @@ cpu.requestInterrupt = (int) => {
     let byte = mmu.read(0xFF0F)
     byte |= (1 << int)
     mmu.write(byte, 0xFF0F)
-    // TODO CPU UnHalt
+    cpu.isHalt = false
 }
 
 /*
@@ -611,13 +614,12 @@ cpu.DI = () => {
 // TODO: Needs to be implemented correctly!
 cpu.STOP = () => {
     cpu.clock.cycles += 4
-    //running = false
-    paused = true
+    cpu.isStop = true
 }
 
 cpu.HALT = () => {
     cpu.clock.cycles += 4
-    paused = true
+    cpu.isHalt = true
 }
 
 

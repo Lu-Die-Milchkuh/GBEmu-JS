@@ -3,9 +3,10 @@
 import {mmu} from "./mmu.js"
 import {cpu} from "./cpu.js"
 import {lookup, prefix_lookup} from "./lookup.js"
+import {timer} from "./timer.js"
 
 let ratio = 1
-let running = true
+export let running = true
 export let paused = false
 
 export let setRatio = (value) => {
@@ -21,6 +22,7 @@ export let setPaused = (cond) => {
     paused = cond
 }
 
+
 export async function run() {
     const max_cycles = 69905 // 4194304 HZ / 60 HZ
     cpu.reset()
@@ -33,21 +35,31 @@ export async function run() {
         }
         cpu.clock.cycles = 0;
         while (cpu.clock.cycles <= max_cycles * ratio && !paused && running) {
-            // Opcodes are the Bytes that tell the cpu which instruction it should execute
-            let opcode = mmu.read(cpu.PC)
-            //console.log(`Executing: ${opcode.toString(16)} @ ${cpu.PC.toString(16)}`)
+
             let temp_cycles = cpu.clock.cycles
 
-            if (opcode === 0xCB) {
-                console.warn(`Prefix CB Instruction!`)
-                cpu.PC++;
-                opcode = mmu.read(cpu.PC)
-                prefix_lookup[opcode]()
-            } else {
-                lookup[opcode]()
-            }
+            if(!cpu.isHalt) {
+                // Opcodes are the Bytes that tell the cpu which instruction it should execute
+                let opcode = mmu.read(cpu.PC)
+                console.log(`Executing: ${opcode.toString(16)} @ ${cpu.PC.toString(16)}`)
 
+
+                if (opcode === 0xCB) {
+                    cpu.PC++;
+                    opcode = mmu.read(cpu.PC)
+                    console.warn(`Prefix CB Instruction: ${opcode.toString(16)}`)
+                    prefix_lookup[opcode]()
+                } else {
+                    lookup[opcode]()
+                }
+            } else {
+                cpu.clock.cycles += 4
+            }
             temp_cycles = cpu.clock.cycles - temp_cycles // Elapsed Cycles
+
+            await timer.updateTimer(temp_cycles)
+            timer.updateDivTimer(temp_cycles)
+            cpu.checkInterrupt()
         }
         await new Promise(resolve => setTimeout(resolve, 100))
     }

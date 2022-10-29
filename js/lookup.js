@@ -660,7 +660,7 @@ export const lookup = {
         cpu.JPC(lowByte << 8 | highByte, cpu.flags.Z === true)
     },
     0xcb: () => {
-        console.warn("CB Prefix used in wrong lookup table!")
+        console.error("CB Prefix used in wrong lookup table!")
     },
     0xcc: () => {
         cpu.PC++
@@ -697,7 +697,7 @@ export const lookup = {
         cpu.JPC(lowByte << 8 | highByte, cpu.flags.C === false)
     },
     0xd3: () => {
-        console.warn("Illegal Opcode!")
+        console.error("Illegal Opcode!")
     },
     0xd4: () => {
         cpu.PC++
@@ -730,7 +730,7 @@ export const lookup = {
         cpu.JPC(lowByte << 8 | highByte, cpu.flags.C === true)
     },
     0xdb: () => {
-        console.warn("Illegal Opcode!")
+        console.error("Illegal Opcode!")
     },
     0xdc: () => {
         cpu.PC++
@@ -740,7 +740,7 @@ export const lookup = {
         cpu.CALLC(lowByte << 8 | highByte, cpu.flags.C === true)
     },
     0xdd: () => {
-        console.warn("Illegal Opcode!")
+        console.error("Illegal Opcode!")
     },
     0xde: () => {
         cpu.SBCM(mmu.read(cpu.PC + 1));
@@ -760,10 +760,10 @@ export const lookup = {
         cpu.LDM(cpu.A, 0xFF00 + cpu.C)
     },
     0xe3: () => {
-        console.warn("Illegal Opcode!")
+        console.error("Illegal Opcode!")
     },
     0xe4: () => {
-        console.warn("Illegal Opcode!")
+        console.error("Illegal Opcode!")
     },
     0xe5: () => {
         cpu.PUSH("HL")
@@ -793,13 +793,13 @@ export const lookup = {
         cpu.PC++
     },
     0xeb: () => {
-        console.warn("Illegal Opcode!")
+        console.error("Illegal Opcode!")
     },
     0xec: () => {
-        console.warn("Illegal Opcode!")
+        console.error("Illegal Opcode!")
     },
     0xed: () => {
-        console.warn("Illegal Opcode!")
+        console.error("Illegal Opcode!")
     },
     0xee: () => {
         cpu.XORM(mmu.read(cpu.PC + 1));
@@ -822,7 +822,7 @@ export const lookup = {
         cpu.DI()
     },
     0xf4: () => {
-        console.warn("Illegal Opcode!")
+        console.error("Illegal Opcode!")
     },
     0xf5: () => {
         cpu.PUSH("AF")
@@ -844,10 +844,10 @@ export const lookup = {
         cpu.EI()
     },
     0xfc: () => {
-        console.warn("Illegal Opcode!")
+        console.error("Illegal Opcode!")
     },
     0xfd: () => {
-        console.warn("Illegal Opcode!")
+        console.error("Illegal Opcode!")
     },
     0xfe: () => {
         cpu.CPM(mmu.read(cpu.PC + 1));
