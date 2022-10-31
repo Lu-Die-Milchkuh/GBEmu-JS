@@ -307,7 +307,7 @@ cpu.SBCR = (reg8) => {
 
 // Subtract mmu at address and carry from A
 cpu.SBCM = (data) => {
-    let carry = cpu.C ? 1 : 0
+    let carry = cpu.flags.C ? 1 : 0
 
     cpu.flags.N = true
     cpu.flags.C = (cpu.A < (data + carry))
@@ -448,9 +448,10 @@ cpu.JRC = (offset, condition) => {
         } else {
             cpu.PC = (cpu.PC + offset) % 0xFFFF
         }
+        cpu.clock.cycles += 12
     } else {
         cpu.PC++
-        cpu.clock.cycles += 12
+        cpu.clock.cycles += 8
     }
 
 }
