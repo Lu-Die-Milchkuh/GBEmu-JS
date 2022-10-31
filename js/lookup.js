@@ -51,10 +51,15 @@ export const lookup = {
         cpu.INCR8("C")
     },
     0x0d: () => {
+        //console.log(`C contains ${cpu.C}`)
         cpu.DECR8("C")
+        //console.log(`${mmu.read(0x219)} ${mmu.read(0x21A)} ${mmu.read(0x21B)}`)
+        //console.log(cpu.flags.Z)
     },
     0x0e: () => {
-        cpu.LDR("C", mmu.read(cpu.PC + 1));
+        cpu.PC++
+        let byte = mmu.read(cpu.PC)
+        cpu.LDR("C", byte)
         cpu.PC++
     },
     0x0f: () => {
@@ -183,8 +188,9 @@ export const lookup = {
         cpu.LDR16("SP", lowByte << 8 | highByte)
     },
     0x32: () => {
-        cpu.LDM(cpu.A, cpu.HL());
-        cpu.setHL(cpu.HL() - 1)
+        cpu.LDM(cpu.A, cpu.HL())
+        let newHL = (cpu.HL() - 1) % 0x10000
+        cpu.setHL(newHL)
     },
     0x33: () => {
     },
@@ -580,7 +586,8 @@ export const lookup = {
         cpu.ORR("L")
     },
     0xb6: () => {
-        cpu.ORM(mmu.read(cpu.HL()))
+        let byte = mmu.read(cpu.HL())
+        cpu.ORM(byte)
     },
     0xb7: () => {
         cpu.ORR("A")
@@ -750,8 +757,11 @@ export const lookup = {
         cpu.RST(0x18)
     },
     0xe0: () => {
-        cpu.LDM(cpu.A, (0xFF00 + mmu.read(cpu.PC + 1)));
         cpu.PC++
+        let offset = mmu.read(cpu.PC)
+        cpu.LDM(cpu.A, (0xFF00 + offset))
+        //cpu.PC++
+        cpu.clock.cycles += 4
     },
     0xe1: () => {
         cpu.POP("HL")
@@ -809,8 +819,10 @@ export const lookup = {
         cpu.RST(0x28)
     },
     0xf0: () => {
-        cpu.LDR("A", mmu.read(0xFF00 + mmu.read(cpu.PC + 1)));
         cpu.PC++
+        let byte = mmu.read(cpu.PC)
+        cpu.LDR("A", mmu.read(0xFF00 + byte))
+
     },
     0xf1: () => {
         cpu.POP("AF")
@@ -850,8 +862,9 @@ export const lookup = {
         console.error("Illegal Opcode!")
     },
     0xfe: () => {
-        cpu.CPM(mmu.read(cpu.PC + 1));
         cpu.PC++
+        let byte = mmu.read(cpu.PC)
+        cpu.CPM(byte)
     },
     0xff: () => {
         cpu.RST(0x38)

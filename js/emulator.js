@@ -4,6 +4,7 @@ import {mmu} from "./mmu.js"
 import {cpu} from "./cpu.js"
 import {lookup, prefix_lookup} from "./lookup.js"
 import {timer} from "./timer.js"
+import {gpu} from "./gpu.js"
 
 let ratio = 1
 export let running = true
@@ -26,6 +27,7 @@ export let setPaused = (cond) => {
 export async function run() {
     const max_cycles = 69905 // 4194304 HZ / 60 HZ
     cpu.reset()
+    gpu.reset()
 
     while (running) {
         while (paused) {
@@ -59,7 +61,9 @@ export async function run() {
 
             await timer.updateTimer(temp_cycles)
             timer.updateDivTimer(temp_cycles)
+            gpu.update(temp_cycles)
             cpu.checkInterrupt()
+
         }
         await new Promise(resolve => setTimeout(resolve, 100))
     }

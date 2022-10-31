@@ -38,7 +38,8 @@ export let cpu = {
     IE: 0,
 
     isHalt: false,
-    isStop: false
+    isStop: false,
+
 }
 
 const Interrupts = {
@@ -202,7 +203,7 @@ cpu.INCM8 = () => {
 cpu.DECR8 = (reg8) => {
     cpu[reg8] = ((cpu[reg8] - 1) >>> 0) % 256 // Needs to stay in range of an 8-Bit Integer
     cpu.flags.HC = (cpu[reg8] & 0x4)
-    cpu.flags.Z = (cpu[reg8] === 0);
+    cpu.flags.Z = cpu[reg8] === 0
     cpu.PC++
     cpu.clock.cycles += 4
 }
@@ -443,9 +444,11 @@ cpu.JRC = (offset, condition) => {
     if (condition) {
         // Unsigned Byte!
         if (offset & 0x80) {
-            //console.log(`Negative ${offset - 256}`)
+            //console.log(`Negative ${offset - 256} (${offset})`)
+            cpu.PC++
             cpu.PC = (cpu.PC + (offset - 256)) % 0xFFFF   // Converting to signed integer
         } else {
+            cpu.PC++
             cpu.PC = (cpu.PC + offset) % 0xFFFF
         }
         cpu.clock.cycles += 12

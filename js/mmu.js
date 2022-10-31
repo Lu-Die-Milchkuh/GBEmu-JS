@@ -17,6 +17,7 @@ mmu.reset = () => {
     gpu.oam.fill(0x0)
     mmu.hram.fill(0x0)
     mmu.extram.fill(0x0)
+    mmu.io_reg.fill(0x0)
 }
 
 mmu.read = (address) => {
@@ -48,7 +49,9 @@ mmu.write = (data, address) => {
     if (address >= 0x014F && address <= 0x7FFF) {   // ROM
         console.warn(`Tried to write ${data.toString(16)} into ROM at address ${address.toString(16)}`)
     } else if (address >= 0x8000 && address <= 0x9FFF) {    // VRAM
+
         gpu.vram[address & 0x2000] = data
+
     } else if (address >= 0xC000 && address <= 0xDFFF) {    // Work RAM
         mmu.wram[address & 0x2000] = data
     } else if (address >= 0xFF00 && address <= 0xFF7F) {     // IO Register
