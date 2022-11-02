@@ -824,7 +824,7 @@ export const lookup = {
         cpu.PC++
         let byte = mmu.read(cpu.PC)
         cpu.LDR("A", mmu.read(0xFF00 + byte))
-        console.error(`OP 0xF0 Address ${(0xFF00 + byte).toString(16)}: ${mmu.read(0xFF44)}`)
+        //console.error(`OP 0xF0 Address ${(0xFF00 + byte).toString(16)}: ${mmu.read(0xFF44)}`)
 
     },
     0xf1: () => {

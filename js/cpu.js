@@ -52,19 +52,19 @@ const Interrupts = {
 
 // Some Register can be paired together
 cpu.AF = () => {
-    return (cpu.A << 8) | cpu.F;
+    return (cpu.A << 8) | cpu.F
 }
 
 cpu.BC = () => {
-    return (cpu.C << 8) | cpu.D;
+    return (cpu.C << 8) | cpu.D
 }
 
 cpu.DE = () => {
-    return (cpu.E << 8) | cpu.D;
+    return (cpu.E << 8) | cpu.D
 }
 
 cpu.HL = () => {
-    return (cpu.L << 8) | cpu.H;
+    return (cpu.L << 8) | cpu.H
 }
 
 cpu.setAF = (data) => {

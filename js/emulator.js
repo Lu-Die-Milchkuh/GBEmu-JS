@@ -26,8 +26,10 @@ export let setPaused = (cond) => {
 
 
 export async function run() {
-    screen.init()
     const max_cycles = 69905 // 4194304 HZ / 60 HZ
+
+    screen.init()
+    mmu.reset()
     gpu.reset()
     cpu.reset()
 
@@ -64,7 +66,6 @@ export async function run() {
 
             gpu.update(temp_cycles)
             timer.cycles(temp_cycles)
-
         }
         await new Promise(resolve => setTimeout(resolve, 100))
     }
