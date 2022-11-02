@@ -52,7 +52,7 @@ const Interrupts = {
 
 // Some Register can be paired together
 cpu.AF = () => {
-    return (cpu.A << 8) | cpu.F
+    return (cpu.F << 8) | cpu.A
 }
 
 cpu.BC = () => {
@@ -68,27 +68,42 @@ cpu.HL = () => {
 }
 
 cpu.setAF = (data) => {
-    cpu.F = (data & 0xFF00) >> 8
-    cpu.A = data & 0x00FF
+    cpu.A = (data & 0xFF00) >> 8
+    cpu.F = data & 0x00FF
 }
 
 cpu.setBC = (data) => {
-    cpu.C = (data & 0xFF00) >> 8
-    cpu.B = data & 0x00FF
+    cpu.B = (data & 0xFF00) >> 8
+    cpu.C = data & 0x00FF
 }
 
 cpu.setDE = (data) => {
-    cpu.E = (data & 0xFF00) >> 8
-    cpu.D = data & 0x00FF
+    cpu.D = (data & 0xFF00) >> 8
+    cpu.E = data & 0x00FF
 }
 
 cpu.setHL = (data) => {
-    cpu.L = (data & 0xFF00) >> 8
-    cpu.H = data & 0x00FF
+    cpu.H = (data & 0xFF00) >> 8
+    cpu.L = data & 0x00FF
 }
 
 cpu.setSP = (data) => {
     cpu.SP = data
+}
+
+/*cpu.setBigEndian = (reg16,address) => {  // Transforming  Little Endian Address(or 16-bit data) into  Big Endian
+    let highByte = address & 0x00FF
+    let lowByte = address & 0xFF00
+    let newAddress = highByte << 8 | lowByte
+    cpu[`set${reg16}`](newAddress)
+}*/
+
+// Convert Little Endian Data to Big Endian
+cpu.toBigEndian = (data) => {
+    let highByte = data & 0x00FF
+    let lowByte = data & 0xFF
+
+    return highByte << 8 | lowByte >> 8
 }
 
 // At Startup the Game Boy expects certain Registers and Memory Location to contain the following data

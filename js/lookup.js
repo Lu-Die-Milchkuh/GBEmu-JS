@@ -10,9 +10,9 @@ export const lookup = {
     },
     0x01: () => {
         cpu.PC++
-        let highByte = mmu.read(cpu.PC)
-        cpu.PC++
         let lowByte = mmu.read(cpu.PC)
+        cpu.PC++
+        let highByte = mmu.read(cpu.PC)
         cpu.LDR16("BC", highByte << 8 | lowByte)
 
     },
@@ -30,8 +30,8 @@ export const lookup = {
         cpu.DECR8("B")
     },
     0x06: () => {
-        cpu.LDR("B", mmu.read(cpu.PC + 1));
         cpu.PC++
+        cpu.LDR("B", mmu.read(cpu.PC));
         cpu.clock.cycles += 4
     },
     0x07: () => {
@@ -67,10 +67,11 @@ export const lookup = {
         cpu.STOP()
     },
     0x11: () => {
-        let highByte = mmu.read(cpu.PC + 1)
-        let lowByte = mmu.read(cpu.PC + 2)
+        cpu.PC++
+        let lowByte = mmu.read(cpu.PC)
+        cpu.PC++
+        let highByte = mmu.read(cpu.PC)
         cpu.LDR16("DE", highByte << 8 | lowByte)
-        cpu.PC += 2
     },
     0x12: () => {
         cpu.LDM(cpu.A, cpu.DE())
@@ -124,15 +125,15 @@ export const lookup = {
     },
     0x21: () => {
         cpu.PC++
-        let highByte = mmu.read(cpu.PC)
-        cpu.PC++
         let lowByte = mmu.read(cpu.PC)
+        cpu.PC++
+        let highByte = mmu.read(cpu.PC)
         let data = lowByte << 8 | highByte
         cpu.LDR16("HL", data)
     },
     0x22: () => {
         cpu.LDM(cpu.A, cpu.HL())
-        let newHL = cpu.HL() + 1
+        let newHL = cpu.toBigEndian(cpu.HL()) + 1
         cpu.setHL(newHL)
     },
     0x23: () => {
@@ -158,7 +159,7 @@ export const lookup = {
     },
     0x2a: () => {
         cpu.LDR("A", mmu.read(cpu.HL()))
-        let newHL = cpu.HL() + 1
+        let newHL = cpu.toBigEndian(cpu.HL()) + 1
         cpu.setHL(newHL)
         cpu.clock.cycles += 4
     },
@@ -190,7 +191,7 @@ export const lookup = {
     },
     0x32: () => {
         cpu.LDM(cpu.A, cpu.HL())
-        let newHL = (cpu.HL() - 1) % 0x10000
+        let newHL = (cpu.toBigEndian(cpu.HL()) + 1) % 0x10000
         cpu.setHL(newHL)
     },
     0x33: () => {
@@ -214,7 +215,7 @@ export const lookup = {
     },
     0x3a: () => {
         cpu.LDR("A", mmu.read(cpu.HL()))
-        let newHL = cpu.HL() + 1
+        let newHL = cpu.toBigEndian(cpu.HL()) + 1
         cpu.setHL(newHL)
         cpu.clock.cycles += 4
     },
@@ -700,9 +701,9 @@ export const lookup = {
     },
     0xd2: () => {
         cpu.PC++
-        let highByte = mmu.read(cpu.PC)
-        cpu.PC++
         let lowByte = mmu.read(cpu.PC)
+        cpu.PC++
+        let highByte = mmu.read(cpu.PC)
         cpu.JPC(lowByte << 8 | highByte, cpu.flags.C === false)
     },
     0xd3: () => {
@@ -710,9 +711,9 @@ export const lookup = {
     },
     0xd4: () => {
         cpu.PC++
-        let highByte = mmu.read(cpu.PC)
-        cpu.PC++
         let lowByte = mmu.read(cpu.PC)
+        cpu.PC++
+        let highByte = mmu.read(cpu.PC)
         cpu.CALLC(lowByte << 8 | highByte, cpu.flags.C === false)
     },
     0xd5: () => {
@@ -733,9 +734,9 @@ export const lookup = {
     },
     0xda: () => {
         cpu.PC++
-        let highByte = mmu.read(cpu.PC)
-        cpu.PC++
         let lowByte = mmu.read(cpu.PC)
+        cpu.PC++
+        let highByte = mmu.read(cpu.PC)
         cpu.JPC(lowByte << 8 | highByte, cpu.flags.C === true)
     },
     0xdb: () => {
@@ -785,22 +786,22 @@ export const lookup = {
         cpu.PC++
     },
     0xe7: () => {
-        RST(0x20)
+        cpu.RST(0x20)
     },
     0xe8: () => {
     },
     0xe9: () => {
         cpu.PC++
-        let highByte = mmu.read(cpu.PC)
-        cpu.PC++
         let lowByte = mmu.read(cpu.PC)
+        cpu.PC++
+        let highByte = mmu.read(cpu.PC)
         cpu.JP(lowByte << 8 | highByte)
     },
     0xea: () => {
         cpu.PC++
-        let highByte = mmu.read(cpu.PC)
-        cpu.PC++
         let lowByte = mmu.read(cpu.PC)
+        cpu.PC++
+        let highByte = mmu.read(cpu.PC)
         cpu.LDM(cpu.A, lowByte << 8 | highByte);
         cpu.PC++
     },
