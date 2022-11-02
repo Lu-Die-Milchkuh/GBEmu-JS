@@ -26,7 +26,13 @@ mmu.read = (address) => {
     if (address <= 0x7FFF) {    // ROM
         data = mmu.rom[address]
     } else if (address >= 0x8000 && address <= 0x9FFF) {    // VRAM
-        data = gpu.vram[address & 0x2000]
+        if(!gpu.vblank) {
+            data = gpu.vram[address & 0x2000]
+        } else {
+            console.warn(`Tried to read from VRAM at ${address.toString(16)} during VBLANK!`)
+            data = 0xFF
+        }
+
     } else if (address >= 0xA000 && address <= 0xBFFF) {     // External RAM
         data = mmu.extram[address % 0x1FFF]
     } else if (address >= 0xC000 && address <= 0xDFFF) {    // Work RAM
@@ -49,13 +55,16 @@ mmu.write = (data, address) => {
     if (address >= 0x014F && address <= 0x7FFF) {   // ROM
         console.warn(`Tried to write ${data.toString(16)} into ROM at address ${address.toString(16)}`)
     } else if (address >= 0x8000 && address <= 0x9FFF) {    // VRAM
-
-        gpu.vram[address & 0x2000] = data
+        if(!gpu.vblank) {
+            gpu.vram[address & 0x2000] = data
+        } else {
+            console.warn(`Tried to write ${data.toString(16)} to VRAM at ${address.toString(16)} during VBLANK!`)
+        }
 
     } else if (address >= 0xC000 && address <= 0xDFFF) {    // Work RAM
         mmu.wram[address & 0x2000] = data
     } else if (address >= 0xFF00 && address <= 0xFF7F) {     // IO Register
-
+        mmu.io_reg[address % 0x7F] = data
     } else if (address >= 0xFF80 && address <= 0xFFFE) {    // High RAM
         mmu.hram[address % 0x2000] = data
     } else {

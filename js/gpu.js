@@ -14,76 +14,91 @@ export let gpu = {
     mode: 2,
     line: 0,
     vblank: false,
+    tile_cache: [],
     frame_buffer: new Array(160 * 144),
     bg_buffer: new Array(256 * 256),
 
-    // Address Macros
-    STAT: 0xFF41,
-    // Viewport Addresses
-    scx: 0xFF43,    // X Pos of BG
-    scy: 0xFF42,    // Y Pos of BG
-    winX: 0xFF4B,   // X Pos of Viewing Area, BG + 7 !
-    winY: 0xFF4A,   // Y Pos of Viewing Area
-
-    LY: 0xFF44,
-    LYC: 0xFF45
 
 }
 
+// TileEntry (for Tile Cache)
+class TileEntry {
+    dirty = true
+    pixels = new Array(64)
+}
+
+/*
+    Macros
+*/
 const OAM_PERIOD = 80
 const TRANSFER_PERIOD = OAM_PERIOD + 172
 const HBLANK_PERIOD = 456
 const FRAME_PERIOD = screen.height * HBLANK_PERIOD
 const VBLANK_PERIOD = FRAME_PERIOD + 4560
 
+// Address Macros
+const STAT = 0xFF41
+// Viewport Addresses
+const SCX = 0xFF43    // X Pos of BG
+const SCY = 0xFF42    // Y Pos of BG
+const WINX = 0xFF4B   // X Pos of Viewing Area, BG + 7 !
+const WINY = 0xFF4A   // Y Pos of Viewing Area
+const LY = 0xFF44
+const LYC = 0xFF45
 
 gpu.reset = () => {
     gpu.clock.frame_cycles = 0
     gpu.clock.scanline_cycles = 0
 
+    for (let i = 0; i < 384; i++) {
+        let tile = new TileEntry()
+        gpu.tile_cache.push(tile)
+    }
 }
 
 gpu.update = (cycles) => {
-    let LCDC = mmu.read(0xFF40)
-    if (!(LCDC & (1 << 7))) return
 
+    let LCDC = gpu.read(0xFF40)
+    if (!(LCDC & (1 << 7))) return
+    console.log("GPU Update")
     let request = 0
     gpu.clock.frame_cycles += cycles
     gpu.clock.scanline_cycles += cycles
     let old_mode = gpu.mode
-
+    gpu.vblank = false
 
     if (gpu.clock.frame_cycles > FRAME_PERIOD) {
+        gpu.vblank = true
         if (old_mode !== 1) {
             gpu.setMode(1)    // We are in VBLANK
             cpu.requestInterrupt(0)
-            request = mmu.read(gpu.STAT) & (1 << 4)
+            request = gpu.read(STAT) & (1 << 4)
         }
 
         if (gpu.clock.frame_cycles > VBLANK_PERIOD) {
             gpu.clock.scanline_cycles = 0
             gpu.clock.frame_cycles = 0
-            mmu.write(0x0, gpu.LY)   // Clear LY
-            gpu.setMode(2)
+            gpu.write(0x0, LY)   // Clear LY
+            gpu.setMode(2)  // Searching OAM
         }
     } else {
 
         if (gpu.clock.scanline_cycles >= 0 && gpu.clock.scanline_cycles <= OAM_PERIOD) {
             if (old_mode !== 2) {
-                gpu.setMode(2)
-                request = mmu.read(gpu.STAT) & (1 << 5)
+                gpu.setMode(2)  // Searching OAM
+                request = gpu.read(STAT) & (1 << 5)
             }
 
         } else if (gpu.clock.scanline_cycles > OAM_PERIOD && gpu.clock.scanline_cycles <= TRANSFER_PERIOD) {
             if (old_mode !== 3) {
-                gpu.setMode(3)
+                gpu.setMode(3)  // Tranfer Data to LCD
                 gpu.update_scanline()
             }
 
         } else if (gpu.clock.scanline_cycles > TRANSFER_PERIOD && gpu.clock.scanline_cycles <= HBLANK_PERIOD) {
             if (old_mode !== 0) {
-                gpu.setMode(0)
-                request = mmu.read(gpu.STAT) & (1 << 3)
+                gpu.setMode(0)  // HBLANK
+                request = gpu.read(STAT) & (1 << 3)
             }
         }
     }
@@ -93,9 +108,9 @@ gpu.update = (cycles) => {
     }
 
     if (gpu.clock.scanline_cycles > HBLANK_PERIOD) {
-        let temp = mmu.read(gpu.LY)
-        temp++
-        mmu.write(temp, gpu.LY)
+        let newLY = gpu.read(LY)
+        newLY = (newLY + 1) & 256
+        gpu.write(newLY, LY)
         gpu.clock.scanline_cycles += 8
         gpu.line_compare()
     }
@@ -103,39 +118,17 @@ gpu.update = (cycles) => {
 
 gpu.line_compare = () => {
 
-    let temp_stat = mmu.read(gpu.STAT)
-    if (mmu.read(gpu.LY) === mmu.read(gpu.LYC)) {
+    let temp_stat = gpu.read(STAT)
+    if (gpu.read(LY) === gpu.read(LYC)) {
         temp_stat |= (1 << 2)
         cpu.requestInterrupt(1)
     } else {
         temp_stat = temp_stat & 0xFB
     }
-    mmu.write(temp_stat, gpu.STAT)
+    gpu.write(temp_stat, STAT)
 }
 
-gpu.setMode = (mode) => {
-    gpu.mode = mode
-    let newSTAT = mmu.read(gpu.STAT)
-    newSTAT &= 0xFC
-    newSTAT |= mode
-    mmu.write(newSTAT, gpu.STAT)
-
-}
-
-gpu.update_scanline = () => {
-    let LCDC = mmu.read(0xFF40)
-
-    if (LCDC & 0x1) {    // 0b0000 0001
-        gpu.draw_background()
-    }
-    if (LCDC & 0x2) {    // 0b0000 0010
-        gpu.draw_sprites()
-    }
-    if (LCDC & 0x20) {   // 0b0010 0000
-        gpu.draw_window()
-    }
-}
-
+/*
 gpu.updateLY = () => {
     mmu.write(gpu.line, gpu.LY)
     let stat = mmu.read(gpu.STAT)
@@ -152,6 +145,29 @@ gpu.updateLY = () => {
         mmu.write(stat, gpu.STAT)
     }
 
+}*/
+
+gpu.setMode = (mode) => {
+    gpu.mode = mode
+    let newSTAT = gpu.read(STAT)
+    newSTAT &= 0xFC
+    newSTAT |= mode
+    gpu.write(newSTAT, STAT)
+
+}
+
+gpu.update_scanline = () => {
+    let LCDC = gpu.read(0xFF40)
+
+    if (LCDC & 0x1) {    // 0b0000 0001
+        gpu.draw_background()
+    }
+    if (LCDC & 0x2) {    // 0b0000 0010
+        gpu.draw_sprites()
+    }
+    if (LCDC & 0x20) {   // 0b0010 0000
+        gpu.draw_window()
+    }
 }
 
 gpu.read_tile_data = (index, startAddr) => {
@@ -162,7 +178,7 @@ gpu.read_tile_data = (index, startAddr) => {
     let start = index * tile_size
 
     for (let i = start; i < start + 0x10; i++) {
-        data.push(mmu.read(startAddr + i))
+        data.push(gpu.read(startAddr + i))
     }
     return data
 }
@@ -189,30 +205,59 @@ gpu.draw_background = () => {
     const size_of_tile = 16
 
     // View Port -> Specify the top left coords of th 160x144 area within the 256x256 BG Map
-    let scx = mmu.read(gpu.scx)
-    let scy = mmu.read(gpu.scy)
+    let scx = gpu.read(SCX)
+    let scy = gpu.read(SCY)
 
     // Specify the top-left coords of the Window
-    let winY = mmu.read(gpu.winY)
-    let winX = mmu.read(gpu.winX) + 7
+    let winY = gpu.read(WINY)
+    let winX = gpu.read(WINX) + 7
 
 
-    let LCDC = mmu.read(0xFF40)
+    let LCDC = gpu.read(0xFF40)
 
     let tile_map_location = (LCDC & (1 << 3)) ? 0x9C00 : 0x9800
     let tile_data_location = (LCDC & (1 << 4)) ? 0x8000 : 0x8800
 
     let signed = tile_data_location === 0x8800
 
+    let display_y = gpu.read(LY)
+    let y = (display_y + gpu.read(SCY)) % 256
+    let row = y / 8
+    let buffer_start = display_y * screen.width
 
     for (let i = 0; i < screen.width; i++) {
-        let index = mmu.read(tile_map_location + i)
-        if (signed) {
+        let x = (i + gpu.read(SCX)) % 256
+        let column = x / 8
+        let tile_map_index = (row * 32) + column
+        let lookup = tile_map_index + tile_map_location
+        let tile_pattern = gpu.read_raw(lookup)
 
-            index = (index & 0x80 ? (index - 256) : index) + 128
+        let vram_location = 0
+
+        if (LCDC & (1 << 4)) {
+            let adjusted = tile_pattern * 16
+            vram_location = tile_data_location + adjusted
+
+        } else {
+            vram_location = tile_pattern + tile_data_location
         }
 
-        let tile = gpu.read_tile_data(index, tile_map_location)
+        let tile_id = gpu.address_to_tile_id(vram_location)
+
+        if (gpu.tile_cache[tile_id].dirty) {
+            gpu.refresh_tile(tile_id)
+        }
+
+
+        let tile = gpu.tile_cache[tile_id]
+
+        let pixel_x = x % 8
+        let pixel_y = y % 8
+        let pixel = tile.pixels[(pixel_y * 8) + pixel_x]
+        let color = gpu.colorize(pixel, palette)
+        let offset = buffer_start + i
+        //if(pixel != 0)
+        gpu.frame_buffer[offset] = color
     }
 }
 
@@ -220,5 +265,44 @@ gpu.draw_sprites = () => {
 }
 gpu.draw_window = () => {
 }
+
+gpu.read = (address) => {
+    let data = 0
+    if (address >= 0x8000 && address <= 0x9FFF) { // VRAM
+        data = gpu.vram[address - 0x8000]
+    } else if (address >= 0xFE00 && address <= 0xFE9F) {
+        data = gpu.oam[address - 0xFE00]
+    }
+    return data
+}
+
+gpu.write = (data, address) => {
+    if (address >= 0x8000 && address <= 0x97FF) {
+        if (gpu.mode === 3) return
+        gpu.vram[address - 0x8000] = data
+    } else if (address >= 0xFF00 && address <= 0xFF7F) {
+        mmu.io_reg[address - 0xFF00] = data
+    }
+}
+
+gpu.refresh_tile = (id) => {
+    let offset = 0x8000 + (id * 16)
+
+    let tile = new Array(64)
+
+    for(let i = 0; i < 8; i++) {
+
+    }
+}
+
+gpu.address_to_tile_id = (address) => {
+    return (address - 0x8000) / 16
+}
+
+gpu.read_raw = (address) => {
+    return gpu.vram[address - 0x8000]
+}
+
+
 
 
