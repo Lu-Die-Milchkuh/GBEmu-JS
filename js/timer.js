@@ -4,62 +4,95 @@ import {mmu} from "./mmu.js"
 import {cpu} from "./cpu.js"
 import  {paused,running} from "./emulator.js"
 
+/*
+    Macros
+*/
+const DIV = 0xFF04
+const TIMA = 0xFF05
+const TMA = 0xFF06
+const TAC = 0xFF07
+const CLOCK_SPEED = 4194304
+
+
 export let timer = {
     mainTime: 0,
-    divTime: 0
+    divTime: 0,
+    divider_counter: 0,
+    timer_counter: 0,
+    frequency: 0
 }
 
-timer.updateTimer = async (cycles) => {
-    let tac = mmu.read(0xFF07)
+timer.cycles = (cycles) => {
+    timer.updateDivTimer(cycles)
 
-    if (!(tac & 0x4)) return // Timer Enable Bit
+    let newFreq = timer.getFreq()
 
-    timer.mainTime += cycles
-
-    let threshold = 64
-
-    switch (tac & 0x3) {  // Input Clock Select Bits (0-1)
-        case 0:
-            threshold = 1024
-            break
-        case 1:
-            threshold = 16
-            break
-        case 2:
-            threshold = 64
-            break
-        case 3:
-            threshold = 256
-            break
+    if(timer.frequency !== newFreq) {
+        timer.frequency = newFreq
     }
 
-    while (timer.mainTime >= threshold && running) {
-        while(paused) {
-            console.log("Timer paused")
-            await new Promise(resolve => setTimeout(resolve, 10))
-        }
-        timer.mainTime -= threshold
-        let byte = mmu.read(0xFF05) + 1
-        mmu.write(byte, 0xFF05)
+    if(timer.isEnabled()) {
+        timer.timer_counter -= cycles
+        if(timer.timer_counter <= 0) {
+            let timer_value = mmu.read(TIMA)
+            timer.setFreq(newFreq)
 
-        if (byte > 0xFF) {   // Overflow
-            let temp = mmu.read(0xFF06)
-
-            mmu.write(temp, 0xFF05)
-            cpu.requestInterrupt(2) // Timer Interrupt
+            if(timer_value === 0xFF) { // Timer will overflow
+                let byte = mmu.read(TMA)
+                mmu.write(byte,TIMA)
+                cpu.requestInterrupt(2)
+            } else {
+                timer_value++
+                mmu.write(timer_value,TIMA)
+            }
         }
     }
-    await new Promise(resolve => setTimeout(resolve, 1))
+
+
 }
+
+
 
 timer.updateDivTimer = (cycles) => {
-    let divThreshold = 256
-    timer.divTime += cycles;
-    if (timer.divTime > divThreshold) {
-        timer.divTime -= divThreshold;
-        let div = mmu.read(0xFF04) + 1
-        mmu.write(div & 0xFF, 0xFF04)
+    timer.divider_counter += cycles
+
+    if (timer.divider_counter >= 256) {
+        let newDiv = mmu.read(DIV)
+        newDiv = (newDiv + 1) & 256
+        mmu.write(newDiv,DIV)
+        timer.divider_counter = 0
     }
+}
+
+timer.setFreq = (freq) => {
+    timer.frequency = freq
+    timer.timer_counter = CLOCK_SPEED / freq
+}
+
+timer.getFreq = () => {
+    let mode = mmu.read(TAC) & 3
+    let freq = undefined
+    switch (mode) {
+        case 0:
+            freq = 4096
+            break
+        case 1:
+            freq = 262144
+            break
+        case 2:
+            freq = 65536
+            break
+        case 3:
+            freq = 16384
+            break
+    }
+
+    return freq
+}
+
+timer.isEnabled = () => {
+    let byte = mmu.read(TAC)
+    return (byte & (1<<2))
 }
 
 timer.resetDiv = () => {

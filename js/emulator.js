@@ -5,6 +5,7 @@ import {cpu} from "./cpu.js"
 import {lookup, prefix_lookup} from "./lookup.js"
 import {timer} from "./timer.js"
 import {gpu} from "./gpu.js"
+import {screen} from "./screen.js"
 
 let ratio = 1
 export let running = true
@@ -25,9 +26,11 @@ export let setPaused = (cond) => {
 
 
 export async function run() {
+    screen.init()
     const max_cycles = 69905 // 4194304 HZ / 60 HZ
-    cpu.reset()
     gpu.reset()
+    cpu.reset()
+
 
     while (running) {
         while (paused) {
@@ -39,11 +42,11 @@ export async function run() {
         while (cpu.clock.cycles <= max_cycles * ratio && !paused && running) {
 
             let temp_cycles = cpu.clock.cycles
-
+            cpu.checkInterrupt()
             if(!cpu.isHalt) {
                 // Opcodes are the Bytes that tell the cpu which instruction it should execute
                 let opcode = mmu.read(cpu.PC)
-                console.log(`Executing: ${opcode.toString(16)} @ ${cpu.PC.toString(16)}`)
+                //console.log(`Executing: ${opcode.toString(16)} @ ${cpu.PC.toString(16)}`)
 
 
                 if (opcode === 0xCB) {
@@ -59,10 +62,8 @@ export async function run() {
             }
             temp_cycles = cpu.clock.cycles - temp_cycles // Elapsed Cycles
 
-            await timer.updateTimer(temp_cycles)
-            timer.updateDivTimer(temp_cycles)
             gpu.update(temp_cycles)
-            cpu.checkInterrupt()
+            timer.cycles(temp_cycles)
 
         }
         await new Promise(resolve => setTimeout(resolve, 100))

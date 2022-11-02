@@ -56,35 +56,35 @@ cpu.AF = () => {
 }
 
 cpu.BC = () => {
-    return (cpu.B << 8) | cpu.C;
+    return (cpu.C << 8) | cpu.D;
 }
 
 cpu.DE = () => {
-    return (cpu.D << 8) | cpu.E;
+    return (cpu.E << 8) | cpu.D;
 }
 
 cpu.HL = () => {
-    return (cpu.H << 8) | cpu.L;
+    return (cpu.L << 8) | cpu.H;
 }
 
 cpu.setAF = (data) => {
-    cpu.A = (data & 0xFF00) >> 8
-    cpu.F = data & 0x00FF
+    cpu.F = (data & 0xFF00) >> 8
+    cpu.A = data & 0x00FF
 }
 
 cpu.setBC = (data) => {
-    cpu.B = (data & 0xFF00) >> 8
-    cpu.C = data & 0x00FF
+    cpu.C = (data & 0xFF00) >> 8
+    cpu.B = data & 0x00FF
 }
 
 cpu.setDE = (data) => {
-    cpu.D = (data & 0xFF00) >> 8
-    cpu.E = data & 0x00FF
+    cpu.E = (data & 0xFF00) >> 8
+    cpu.D = data & 0x00FF
 }
 
 cpu.setHL = (data) => {
-    cpu.H = (data & 0xFF00) >> 8
-    cpu.L = data & 0x00FF
+    cpu.L = (data & 0xFF00) >> 8
+    cpu.H = data & 0x00FF
 }
 
 cpu.setSP = (data) => {
@@ -181,6 +181,7 @@ cpu.INCR8 = (reg8) => {
     cpu[reg8] = (cpu[reg8] + 1) % 256 // Needs to stay in range of an 8-Bit Integer
     cpu.flags.HC = (cpu[reg8] & 0x4)
     cpu.flags.Z = (cpu[reg8] === 0)
+    cpu.flags.N = false
     cpu.PC++
     cpu.clock.cycles += 4
 }
@@ -193,7 +194,7 @@ cpu.INCM8 = () => {
     data = ((data + 1) >>> 0) % 256
     cpu.flags.HC = (data & 0x4)
     cpu.flags.Z = (data === 0)
-
+    cpu.flags.N = false
     mmu.write(data, address)
     cpu.PC++
     cpu.clock.cycles += 12
@@ -504,9 +505,9 @@ cpu.RET = () => {
 cpu.RETC = (condition) => {
     if (condition) {
         cpu.SP++
-        let highByte = mmu.read(cpu.SP)
-        cpu.SP++
         let lowByte = mmu.read(cpu.SP)
+        cpu.SP++
+        let highByte = mmu.read(cpu.SP)
         cpu.PC = (lowByte << 8 | highByte)
         cpu.clock.cycles += 20
     } else {
@@ -518,6 +519,11 @@ cpu.RETC = (condition) => {
 
 // Return from subroutine and enable Interrupts
 cpu.RETI = () => {
+    cpu.SP++
+    let lowByte = mmu.read(cpu.SP)
+    cpu.SP++
+    let highByte = mmu.read(cpu.SP)
+    cpu.PC = (lowByte << 8 | highByte)
     cpu.IME = true
     cpu.clock.cycles += 16
 }
@@ -756,6 +762,7 @@ cpu.POP = (reg16) => {
     cpu.SP++
     let highByte = mmu.read(cpu.SP)
     cpu[`set${reg16}`](lowByte << 8 | highByte)
+    cpu.PC++
     cpu.clock.cycles += 12
 }
 

@@ -33,7 +33,7 @@ class TileEntry {
 const OAM_PERIOD = 80
 const TRANSFER_PERIOD = OAM_PERIOD + 172
 const HBLANK_PERIOD = 456
-const FRAME_PERIOD = screen.height * HBLANK_PERIOD
+const FRAME_PERIOD = 144 * HBLANK_PERIOD
 const VBLANK_PERIOD = FRAME_PERIOD + 4560
 
 // Address Macros
@@ -45,6 +45,7 @@ const WINX = 0xFF4B   // X Pos of Viewing Area, BG + 7 !
 const WINY = 0xFF4A   // Y Pos of Viewing Area
 const LY = 0xFF44
 const LYC = 0xFF45
+const BGP = 0xFF47  // Background Palette
 
 gpu.reset = () => {
     gpu.clock.frame_cycles = 0
@@ -58,10 +59,13 @@ gpu.reset = () => {
 
 gpu.update = (cycles) => {
 
-    let LCDC = gpu.read(0xFF40)
+    let LCDC = mmu.io_reg[0xFF40 - 0xFF00] //gpu.read(0xFF40)
+    //console.log(`LCDC Bit 7: ${(LCDC & (1 << 7)).toString(16)} ${LCDC}`)
     if (!(LCDC & (1 << 7))) return
-    console.log("GPU Update")
-    let request = 0
+
+    console.warn("LCDC Enabled: Updating GPU")
+
+    let request = false
     gpu.clock.frame_cycles += cycles
     gpu.clock.scanline_cycles += cycles
     let old_mode = gpu.mode
@@ -72,7 +76,7 @@ gpu.update = (cycles) => {
         if (old_mode !== 1) {
             gpu.setMode(1)    // We are in VBLANK
             cpu.requestInterrupt(0)
-            request = gpu.read(STAT) & (1 << 4)
+            request = (gpu.read(STAT) & (1 << 4))
         }
 
         if (gpu.clock.frame_cycles > VBLANK_PERIOD) {
@@ -86,16 +90,17 @@ gpu.update = (cycles) => {
         if (gpu.clock.scanline_cycles >= 0 && gpu.clock.scanline_cycles <= OAM_PERIOD) {
             if (old_mode !== 2) {
                 gpu.setMode(2)  // Searching OAM
-                request = gpu.read(STAT) & (1 << 5)
+                request = (gpu.read(STAT) & (1 << 5))
             }
 
-        } else if (gpu.clock.scanline_cycles > OAM_PERIOD && gpu.clock.scanline_cycles <= TRANSFER_PERIOD) {
+        } else if (gpu.clock.scanline_cycles >= OAM_PERIOD && gpu.clock.scanline_cycles <= TRANSFER_PERIOD) {
             if (old_mode !== 3) {
-                gpu.setMode(3)  // Tranfer Data to LCD
+                gpu.setMode(3)  // Transfer Data to LCD
+                console.log("Update Scanline")
                 gpu.update_scanline()
             }
 
-        } else if (gpu.clock.scanline_cycles > TRANSFER_PERIOD && gpu.clock.scanline_cycles <= HBLANK_PERIOD) {
+        } else if (gpu.clock.scanline_cycles >= TRANSFER_PERIOD && gpu.clock.scanline_cycles <= HBLANK_PERIOD) {
             if (old_mode !== 0) {
                 gpu.setMode(0)  // HBLANK
                 request = gpu.read(STAT) & (1 << 3)
@@ -109,9 +114,9 @@ gpu.update = (cycles) => {
 
     if (gpu.clock.scanline_cycles > HBLANK_PERIOD) {
         let newLY = gpu.read(LY)
-        newLY = (newLY + 1) & 256
+        newLY = (newLY + 1) % 256
         gpu.write(newLY, LY)
-        gpu.clock.scanline_cycles += 8
+        gpu.clock.scanline_cycles = 0
         gpu.line_compare()
     }
 }
@@ -119,33 +124,15 @@ gpu.update = (cycles) => {
 gpu.line_compare = () => {
 
     let temp_stat = gpu.read(STAT)
+
     if (gpu.read(LY) === gpu.read(LYC)) {
         temp_stat |= (1 << 2)
         cpu.requestInterrupt(1)
     } else {
-        temp_stat = temp_stat & 0xFB
+        temp_stat = temp_stat & 0b11111011
     }
     gpu.write(temp_stat, STAT)
 }
-
-/*
-gpu.updateLY = () => {
-    mmu.write(gpu.line, gpu.LY)
-    let stat = mmu.read(gpu.STAT)
-
-    // Bit 2 of STAT is set when LY contains the same value as LYC
-    if (mmu.read(gpu.LY) === mmu.read(gpu.LYC)) {
-        stat |= (1 << 2)
-        mmu.write(stat, gpu.STAT)
-        if (stat & (1 << 6)) {
-            cpu.requestInterrupt(1)
-        }
-    } else {
-        stat = stat & (0xFF - (1 << 2))
-        mmu.write(stat, gpu.STAT)
-    }
-
-}*/
 
 gpu.setMode = (mode) => {
     gpu.mode = mode
@@ -223,9 +210,10 @@ gpu.draw_background = () => {
     let display_y = gpu.read(LY)
     let y = (display_y + gpu.read(SCY)) % 256
     let row = y / 8
-    let buffer_start = display_y * screen.width
+    let buffer_start = display_y * 160
+    let palette = gpu.read(BGP)  // Background Palette
 
-    for (let i = 0; i < screen.width; i++) {
+    for (let i = 0; i < 160; i++) {
         let x = (i + gpu.read(SCX)) % 256
         let column = x / 8
         let tile_map_index = (row * 32) + column
@@ -266,6 +254,36 @@ gpu.draw_sprites = () => {
 gpu.draw_window = () => {
 }
 
+gpu.colorize = (shade, palette) => {
+    let colors = [
+        //rr    gg    bb
+        [0x00, 0x00, 0x00], // Black
+        [0x55, 0x55, 0x55], // Grey
+        [0xAA, 0xAA, 0xAA], // Light Grey
+        [0xFF, 0xFF, 0xFF], // White
+    ]
+
+    let real = 0
+    switch (shade) {
+        case 0:
+            real = palette & 3
+            break
+        case 1:
+            real = palette & (3 << 2) >> 2
+            break
+        case 2:
+            real = palette & (3 << 4) >> 4
+            break
+        case 3:
+            real = palette & (3 << 6) >> 6
+            break
+        default:
+            console.error("Invalid Palette Shade!")
+    }
+
+    return colors[real]
+}
+
 gpu.read = (address) => {
     let data = 0
     if (address >= 0x8000 && address <= 0x9FFF) { // VRAM
@@ -277,6 +295,8 @@ gpu.read = (address) => {
 }
 
 gpu.write = (data, address) => {
+    console.warn(`GPU -> Writing ${data.toString(16)} to ${address.toString(16)}`)
+
     if (address >= 0x8000 && address <= 0x97FF) {
         if (gpu.mode === 3) return
         gpu.vram[address - 0x8000] = data
@@ -290,9 +310,24 @@ gpu.refresh_tile = (id) => {
 
     let tile = new Array(64)
 
-    for(let i = 0; i < 8; i++) {
+    for (let y = 0; y < 8; y++) {
+        let lowByte = gpu.read_raw(offset + (y * 2))
+        let highByte = gpu.read_raw(offset + (y + 2) + 1)
+        let x = 7
+        while (x >= 0) {
+            let flip_x = (x - 7) * -1
+            let low_bit = (lowByte >> x) & 1;
+            let high_bit = (highByte >> x) & 1;
 
+            let combined = (high_bit << 1) | low_bit;
+
+            tile[((y * 8) + flip_x)] = combined;
+
+            x -= 1;
+        }
     }
+    gpu.tile_cache[id].dirty = false
+    gpu.tile_cache[id].pixels = tile
 }
 
 gpu.address_to_tile_id = (address) => {

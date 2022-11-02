@@ -60,7 +60,6 @@ export const lookup = {
         cpu.PC++
         let byte = mmu.read(cpu.PC)
         cpu.LDR("C", byte)
-        cpu.PC++
     },
     0x0f: () => {
     },
@@ -132,8 +131,9 @@ export const lookup = {
         cpu.LDR16("HL", data)
     },
     0x22: () => {
-        cpu.LDM(cpu.A, cpu.HL());
-        cpu.setHL(cpu.HL() + 1)
+        cpu.LDM(cpu.A, cpu.HL())
+        let newHL = cpu.HL() + 1
+        cpu.setHL(newHL)
     },
     0x23: () => {
         cpu.INCR16("HL")
@@ -157,8 +157,9 @@ export const lookup = {
     0x29: () => {
     },
     0x2a: () => {
-        cpu.LDR("A", mmu.read(cpu.HL()));
-        cpu.setHL(cpu.HL() + 1)
+        cpu.LDR("A", mmu.read(cpu.HL()))
+        let newHL = cpu.HL() + 1
+        cpu.setHL(newHL)
         cpu.clock.cycles += 4
     },
     0x2b: () => {
@@ -212,8 +213,9 @@ export const lookup = {
     0x39: () => {
     },
     0x3a: () => {
-        cpu.LDR("A", mmu.read(cpu.HL()));
-        cpu.setHL(cpu.HL() - 1)
+        cpu.LDR("A", mmu.read(cpu.HL()))
+        let newHL = cpu.HL() + 1
+        cpu.setHL(newHL)
         cpu.clock.cycles += 4
     },
     0x3b: () => {
@@ -822,6 +824,7 @@ export const lookup = {
         cpu.PC++
         let byte = mmu.read(cpu.PC)
         cpu.LDR("A", mmu.read(0xFF00 + byte))
+        console.error(`OP 0xF0 Address ${(0xFF00 + byte).toString(16)}: ${mmu.read(0xFF44)}`)
 
     },
     0xf1: () => {
