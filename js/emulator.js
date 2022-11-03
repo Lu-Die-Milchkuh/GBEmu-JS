@@ -52,7 +52,7 @@ export async function run() {
 
 
                 if (opcode === 0xCB) {
-                    cpu.PC++;
+                    cpu.PC = (cpu.PC + 1) % 0x10000;
                     opcode = mmu.read(cpu.PC)
                     console.warn(`Prefix CB Instruction: ${opcode.toString(16)}`)
                     prefix_lookup[opcode]()

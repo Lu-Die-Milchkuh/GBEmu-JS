@@ -27,7 +27,7 @@ mmu.read = function(address) {
         data = this.rom[address]
     } else if (address >= 0x8000 && address <= 0x9FFF) {    // VRAM
         if(!gpu.vblank) {
-            data = this.vram[address - 0x8000]
+            data = gpu.vram[address - 0x8000]
         } else {
             console.warn(`Tried to read from VRAM at ${address.toString(16)} during VBLANK!`)
             data = 0xFF

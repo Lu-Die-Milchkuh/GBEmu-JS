@@ -71,7 +71,7 @@ gpu.update = function(cycles) {
     //console.log(`LCDC Bit 7: ${(LCDC & (1 << 7)).toString(16)} ${LCDC}`)
     if (!(LCDC & (1 << 7))) return
 
-    console.warn("LCDC Enabled: Updating GPU")
+    //console.warn("LCDC Enabled: Updating GPU")
 
     let request = false
     this.clock.frame_cycles += cycles
