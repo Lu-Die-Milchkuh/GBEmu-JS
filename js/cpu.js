@@ -52,19 +52,19 @@ const Interrupts = {
 
 // Some Register can be paired together
 cpu.AF = () => {
-    return (cpu.F << 8) | cpu.A
+    return (cpu.A << 8) | cpu.F
 }
 
 cpu.BC = () => {
-    return (cpu.C << 8) | cpu.D
+    return (cpu.B << 8) | cpu.C
 }
 
 cpu.DE = () => {
-    return (cpu.E << 8) | cpu.D
+    return (cpu.D << 8) | cpu.E
 }
 
 cpu.HL = () => {
-    return (cpu.L << 8) | cpu.H
+    return (cpu.H << 8) | cpu.L
 }
 
 cpu.setAF = (data) => {
@@ -99,12 +99,12 @@ cpu.setSP = (data) => {
 }*/
 
 // Convert Little Endian Data to Big Endian
-cpu.toBigEndian = (data) => {
+/*cpu.toBigEndian = (data) => {
     let highByte = data & 0x00FF
     let lowByte = data & 0xFF
 
     return highByte << 8 | lowByte >> 8
-}
+}*/
 
 // At Startup the Game Boy expects certain Registers and Memory Location to contain the following data
 cpu.reset = () => {
