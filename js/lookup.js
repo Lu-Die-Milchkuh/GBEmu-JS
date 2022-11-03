@@ -94,7 +94,8 @@ export const lookup = {
     0x17: () => {
     },
     0x18: () => {
-        cpu.JR(mmu.read(cpu.PC + 1))
+        cpu.PC++
+        cpu.JR(mmu.read(cpu.PC))
     },
     0x19: () => {
     },
@@ -216,7 +217,7 @@ export const lookup = {
     },
     0x3a: () => {
         cpu.LDR("A", mmu.read(cpu.HL()))
-        let newHL = cpu.toBigEndian(cpu.HL()) + 1
+        let newHL = cpu.HL() + 1
         cpu.setHL(newHL)
         cpu.clock.cycles += 4
     },
@@ -691,6 +692,8 @@ export const lookup = {
         let lowByte = mmu.read(cpu.PC)
         cpu.PC++
         let highByte = mmu.read(cpu.PC)
+        let address = highByte << 8 | lowByte
+        console.error(`Address ${address.toString(16)}`)
         cpu.CALL(highByte << 8 | lowByte)
     },
     0xce: () => {
@@ -811,8 +814,7 @@ export const lookup = {
         let lowByte = mmu.read(cpu.PC)
         cpu.PC++
         let highByte = mmu.read(cpu.PC)
-        cpu.LDM(cpu.A, lowByte << 8 | highByte);
-        cpu.PC++
+        cpu.LDM(cpu.A, highByte << 8 | lowByte)
     },
     0xeb: () => {
         console.error("Illegal Opcode!")

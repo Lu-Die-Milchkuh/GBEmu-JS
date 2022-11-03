@@ -451,7 +451,14 @@ cpu.JPC = (address, condition) => {
 
 // Relative Jump -> PC = PC + offset
 cpu.JR = (offset) => {
-    cpu.PC = (cpu.PC + offset) % 0xFFFF
+    cpu.PC++
+    if(offset & 0x80) {
+        cpu.PC = (cpu.PC + (offset - 256)) % 0x10000
+    } else {
+        cpu.PC = (cpu.PC + offset) % 0x10000
+    }
+
+
     cpu.clock.cycles += 12
 }
 
@@ -462,10 +469,10 @@ cpu.JRC = (offset, condition) => {
         if (offset & 0x80) {
             //console.log(`Negative ${offset - 256} (${offset})`)
             cpu.PC++
-            cpu.PC = (cpu.PC + (offset - 256)) % 0xFFFF   // Converting to signed integer
+            cpu.PC = (cpu.PC + (offset - 256)) % 0x10000   // Converting to signed integer
         } else {
             cpu.PC++
-            cpu.PC = (cpu.PC + offset) % 0xFFFF
+            cpu.PC = (cpu.PC + offset) % 0x10000
         }
         cpu.clock.cycles += 12
     } else {
@@ -512,7 +519,7 @@ cpu.RET = () => {
     let highByte = mmu.read(cpu.SP)
     cpu.SP++
     let lowByte = mmu.read(cpu.SP)
-    cpu.PC = (lowByte << 8 | highByte)
+    cpu.PC = (highByte << 8 | lowByte)
     cpu.clock.cycles += 16
 }
 
@@ -520,10 +527,10 @@ cpu.RET = () => {
 cpu.RETC = (condition) => {
     if (condition) {
         cpu.SP++
-        let lowByte = mmu.read(cpu.SP)
-        cpu.SP++
         let highByte = mmu.read(cpu.SP)
-        cpu.PC = (lowByte << 8 | highByte)
+        cpu.SP++
+        let lowByte = mmu.read(cpu.SP)
+        cpu.PC = (highByte << 8 | lowByte)
         cpu.clock.cycles += 20
     } else {
         cpu.PC++
