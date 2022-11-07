@@ -33,7 +33,7 @@ export let cpu = {
     },
 
     // Interrupt Master Enable Register
-    IME: true,
+    IME: false,
     // Interrupt Enable
     IE: 0,
 
@@ -76,10 +76,10 @@ cpu.HL = () => {
 cpu.setAF = (data) => {
     cpu.A = (data & 0xFF00) >> 8
     cpu.F = data & 0x00FF
-    cpu.flags.C = (cpu.F & (1<<4)) === (1<<4)
-    cpu.flags.N = (cpu.F & (1<<6)) === (1<<6)
-    cpu.flags.H = (cpu.F & (1<<5)) === (1<<5)
-    cpu.flags.Z = (cpu.F & (1<<7)) === (1<<7)
+    cpu.flags.C = (cpu.F & (1 << 4)) === (1 << 4)
+    cpu.flags.N = (cpu.F & (1 << 6)) === (1 << 6)
+    cpu.flags.H = (cpu.F & (1 << 5)) === (1 << 5)
+    cpu.flags.Z = (cpu.F & (1 << 7)) === (1 << 7)
 }
 
 cpu.setBC = (data) => {
@@ -128,6 +128,7 @@ cpu.reset = () => {
     mmu.write(0x00, 0xFF05)   // TIMA
     mmu.write(0x00, 0xFF06)   // TMA
     mmu.write(0x00, 0xFF07)   // TAC
+    mmu.write(0xe1, 0xFF0F)   // IF
     mmu.write(0x80, 0xFF10)
     mmu.write(0xBF, 0xFF11)
     mmu.write(0xF3, 0xFF12)
@@ -160,35 +161,37 @@ cpu.reset = () => {
 
 cpu.interruptRoutine = {
     0: () => {
-        this.RST(0x40) //  VBlank
+        cpu.RST(0x40) //  VBlank
     },
     1: () => {
-        this.RST(0x48) // LCD Stat
+        cpu.RST(0x48) // LCD Stat
     },
     2: () => {
-        this.RST(0x50) // Timer
+        cpu.RST(0x50) // Timer
     },
     3: () => {
-        this.RST(0x58) // Serial
+        cpu.RST(0x58) // Serial
     },
     4: () => {
-        this.RST(0x60) // Joypad
+        cpu.RST(0x60) // Joypad
     }
 }
 
 cpu.checkInterrupt = () => {
     if (!cpu.IME) return
-
+    //mmu.write(0xFF,0xFFFF)
     let int = mmu.read(0xFF0F)
-    console.log(`${int} ${cpu.IE}`)
+
+    //console.log(`${int} ${cpu.IE}`)
+
     for (let i = 0; i < 5; i++) {
-        if (int & (1 << i) && cpu.IE & (1 << i) ) {    // 1 -> Interrupt Enabled
+        if (int & (1 << i) && cpu.IE & (1 << i)) {    // 1 -> Interrupt Enabled
             console.error(`Interrupt ${i}`)
-            cpu.IME = false
-            cpu.clock.cycles += 4
-            int &= (0xFF - (1<<i))
-            mmu.write(int,0xFF0F)
+            int &= (0xFF - (1 << i))
+            mmu.write(int, 0xFF0F)
             cpu.interruptRoutine[i]()
+            cpu.clock.cycles += 4
+            cpu.IME = false
             break
         }
     }
@@ -222,7 +225,7 @@ cpu.INCM8 = () => {
     let data = mmu.read(address)
 
     data = ((data + 1) >>> 0) % 256
-    cpu.flags.HC = (data & 0x4)
+    cpu.flags.HC = (data & 0x4 !== 0)
     cpu.flags.Z = (data === 0)
     cpu.flags.N = false
     mmu.write(data, address)
@@ -467,7 +470,7 @@ cpu.JPC = (address, condition) => {
 // Relative Jump -> PC = PC + offset
 cpu.JR = (offset) => {
     cpu.PC = (cpu.PC + 1) % 0x10000
-    if(offset & 0x80) {
+    if (offset & 0x80) {
         cpu.PC = (cpu.PC + (offset - 256)) % 0x10000
     } else {
         cpu.PC = (cpu.PC + offset) % 0x10000
@@ -501,7 +504,8 @@ cpu.JRC = (offset, condition) => {
 cpu.CALL = (address) => {
     cpu.PC = (cpu.PC + 1) % 0x10000
     let highByte = (cpu.PC & 0xFF00) >> 8
-    let lowByte = (cpu.PC & 0x00FF) ; console.warn(`Low Byte: ${lowByte.toString(16)}, High Byte: ${highByte.toString(16)}`)
+    let lowByte = (cpu.PC & 0x00FF);
+    console.warn(`Low Byte: ${lowByte.toString(16)}, High Byte: ${highByte.toString(16)}`)
     cpu.SP = (cpu.SP - 1) % 0x10000
     mmu.write(highByte, cpu.SP)
     cpu.SP = (cpu.SP - 1) % 0x10000
@@ -558,11 +562,12 @@ cpu.RETC = (condition) => {
 
 // Return from subroutine and enable Interrupts
 cpu.RETI = () => {
-    cpu.SP++
+
     let lowByte = mmu.read(cpu.SP)
-    cpu.SP++
+    cpu.SP = (cpu.SP + 1) % 0x10000
     let highByte = mmu.read(cpu.SP)
-    cpu.PC = (lowByte << 8 | highByte)
+    cpu.SP = (cpu.SP + 1) % 0x10000
+    cpu.PC = (highByte << 8 | lowByte)
     cpu.IME = true
     cpu.clock.cycles += 16
 }
@@ -577,6 +582,7 @@ cpu.RST = (address) => {
     mmu.write(lowByte, cpu.SP)
     cpu.PC = address
     cpu.clock.cycles += 16
+    cpu.IME = false
 }
 
 /*
@@ -843,7 +849,7 @@ cpu.DECR16 = (reg16) => {
     cpu.clock.cycles += 8
 }
 
-cpu.ADDR16 = (dest_reg16,src_reg16) => {
+cpu.ADDR16 = (dest_reg16, src_reg16) => {
     let temp = cpu[dest_reg16]() + cpu[src_reg16]
     cpu.flags.C = temp > 0xFFFF
     cpu.flags.N = false
