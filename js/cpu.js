@@ -52,6 +52,12 @@ const Interrupts = {
 
 // Some Register can be paired together
 cpu.AF = () => {
+    let F = (cpu.flags.C ? 1 : 0) << 4
+    F |= (cpu.flags.N ? 1 : 0) << 6
+    F |= (cpu.flags.H ? 1 : 0) << 5
+    F |= (cpu.flags.Z ? 1 : 0) << 7
+
+    cpu.F = F
     return (cpu.A << 8) | cpu.F
 }
 
@@ -70,6 +76,10 @@ cpu.HL = () => {
 cpu.setAF = (data) => {
     cpu.A = (data & 0xFF00) >> 8
     cpu.F = data & 0x00FF
+    cpu.flags.C = (cpu.F & (1<<4)) === (1<<4)
+    cpu.flags.N = (cpu.F & (1<<6)) === (1<<6)
+    cpu.flags.H = (cpu.F & (1<<5)) === (1<<5)
+    cpu.flags.Z = (cpu.F & (1<<7)) === (1<<7)
 }
 
 cpu.setBC = (data) => {
@@ -489,13 +499,12 @@ cpu.JRC = (offset, condition) => {
 
 // Call Subroutine, original PC will be stored in Stack
 cpu.CALL = (address) => {
-    //console.warn(`PC is ${cpu.PC.toString(16)}`)
     cpu.PC = (cpu.PC + 1) % 0x10000
     let highByte = (cpu.PC & 0xFF00) >> 8
-    let lowByte = (cpu.PC & 0x00FF) //; console.warn(`Low Byte: ${lowByte}, High Byte: ${highByte}`)
-    cpu.SP--
+    let lowByte = (cpu.PC & 0x00FF) ; console.warn(`Low Byte: ${lowByte.toString(16)}, High Byte: ${highByte.toString(16)}`)
+    cpu.SP = (cpu.SP - 1) % 0x10000
     mmu.write(highByte, cpu.SP)
-    cpu.SP--
+    cpu.SP = (cpu.SP - 1) % 0x10000
     mmu.write(lowByte, cpu.SP)
     cpu.PC = address
     cpu.clock.cycles += 24
@@ -504,6 +513,7 @@ cpu.CALL = (address) => {
 // Conditional Call to Subroutine
 cpu.CALLC = (address, condition) => {
     if (condition) {
+        cpu.PC = (cpu.PC + 1) % 0x10000
         let highByte = (cpu.PC & 0xFF00) >> 8
         let lowByte = cpu.PC & 0x00FF
         cpu.SP--
@@ -522,9 +532,9 @@ cpu.CALLC = (address, condition) => {
 cpu.RET = () => {
 
     let lowByte = mmu.read(cpu.SP)
-    cpu.SP++
+    cpu.SP = (cpu.SP + 1) % 0x10000
     let highByte = mmu.read(cpu.SP)
-    cpu.SP++
+    cpu.SP = (cpu.SP + 1) % 0x10000
     cpu.PC = (highByte << 8 | lowByte)
     cpu.clock.cycles += 16
 }
@@ -742,7 +752,7 @@ cpu.RRCM = () => {
 // Rotate Right
 cpu.RRR = (reg8) => {
     let temp = cpu[reg8] & 0x1
-    cpu[reg8] = cpu[reg8] >> 1 | temp << 7
+    cpu[reg8] = (cpu[reg8] >> 1) | (temp << 7)
     cpu.flags.Z = cpu[reg8] === 0
     cpu.PC = (cpu.PC + 1) % 0x10000
     cpu.clock.cycles += 8
@@ -751,7 +761,7 @@ cpu.RRR = (reg8) => {
 cpu.RRM = () => {
     let byte = mmu.read(cpu.HL())
     let temp = byte & 0x1
-    byte = byte >> 1 | temp << 7
+    byte = (byte >> 1) | (temp << 7)
     mmu.write(byte, cpu.HL())
     cpu.PC = (cpu.PC + 1) % 0x10000
     cpu.clock.cycles += 16
@@ -760,7 +770,7 @@ cpu.RRM = () => {
 // Rotate Left
 cpu.RLR = (reg8) => {
     let temp = cpu[reg8] & 0x80
-    cpu[reg8] = cpu[reg8] << 1 | temp >> 7
+    cpu[reg8] = (cpu[reg8] << 1) | (temp >> 7)
     cpu.flags.Z = cpu[reg8] === 0
     cpu.PC = (cpu.PC + 1) % 0x10000
     cpu.clock.cycles += 8
@@ -769,7 +779,7 @@ cpu.RLR = (reg8) => {
 cpu.RLM = () => {
     let byte = mmu.read(cpu.HL())
     let temp = byte & 0x80
-    byte = byte << 1 | temp >> 7
+    byte = (byte << 1) | (temp >> 7)
     cpu.flags.Z = byte === 0
     mmu.write(byte, cpu.HL())
     cpu.PC = (cpu.PC + 1) % 0x10000
@@ -783,11 +793,11 @@ cpu.RLM = () => {
 
 // Push Register to Stack
 cpu.PUSH = (reg16) => {
-    let highByte = cpu[reg16]() & 0xFF00 >> 8
-    let lowByte = cpu[reg16]() & 0x00FF
-    cpu.SP--
+    let highByte = (reg16 & 0xFF00) >> 8
+    let lowByte = reg16 & 0x00FF
+    cpu.SP = (cpu.SP - 1) % 0x10000
     mmu.write(highByte, cpu.SP)
-    cpu.SP--
+    cpu.SP = (cpu.SP - 1) % 0x10000
     mmu.write(lowByte, cpu.SP)
 
     cpu.PC = (cpu.PC + 1) % 0x10000
@@ -798,10 +808,10 @@ cpu.PUSH = (reg16) => {
 cpu.POP = (reg16) => {
 
     let lowByte = mmu.read(cpu.SP)
-    cpu.SP++
+    cpu.SP = (cpu.SP + 1) % 0x10000
     let highByte = mmu.read(cpu.SP)
-    cpu.SP++
-    cpu[`set${reg16}`](lowByte << 8 | highByte)
+    cpu.SP = (cpu.SP + 1) % 0x10000
+    cpu[`set${reg16}`](highByte << 8 | lowByte)
     cpu.PC = (cpu.PC + 1) % 0x10000
     cpu.clock.cycles += 12
 }
@@ -819,7 +829,7 @@ cpu.LDM16 = (address, data) => {
 }
 
 cpu.INCR16 = (reg16) => {
-    let temp = (cpu[`${reg16}`] + 1) % 0x10000
+    let temp = (cpu[`${reg16}`]() + 1) % 0x10000
     cpu[`set${reg16}`](temp)
     cpu.PC = (cpu.PC + 1) % 0x10000
     cpu.clock.cycles += 8
