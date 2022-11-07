@@ -259,6 +259,9 @@ cpu.DECM8 = () => {
 cpu.XORR = (reg8) => {
     cpu.A ^= cpu[reg8]
     cpu.flags.Z = (cpu.A === 0)
+    cpu.flags.C = false
+    cpu.flags.N = false
+    cpu.flags.HC = false
     cpu.PC = (cpu.PC + 1) % 0x10000
     cpu.clock.cycles += 4
 }
@@ -267,6 +270,9 @@ cpu.XORR = (reg8) => {
 cpu.XORM = (data) => {
     cpu.A ^= data
     cpu.flags.Z = (cpu.A === 0)
+    cpu.flags.C = false
+    cpu.flags.N = false
+    cpu.flags.HC = false
     cpu.PC = (cpu.PC + 1) % 0x10000
     cpu.clock.cycles += 8
 }
@@ -275,6 +281,9 @@ cpu.XORM = (data) => {
 cpu.ORR = (reg8) => {
     cpu.A |= cpu[reg8]
     cpu.flags.Z = (cpu.A === 0)
+    cpu.flags.C = false
+    cpu.flags.N = false
+    cpu.flags.HC = false
     cpu.PC = (cpu.PC + 1) % 0x10000
     cpu.clock.cycles += 4
 }
@@ -283,6 +292,9 @@ cpu.ORR = (reg8) => {
 cpu.ORM = (data) => {
     cpu.A |= data
     cpu.flags.Z = (cpu.A === 0)
+    cpu.flags.C = false
+    cpu.flags.N = false
+    cpu.flags.HC = false
     cpu.PC = (cpu.PC + 1) % 0x10000
     cpu.clock.cycles += 8
 }
@@ -291,14 +303,20 @@ cpu.ORM = (data) => {
 cpu.ANDR = (reg8) => {
     cpu.A &= cpu.A
     cpu.flags.Z = (cpu.A === 0)
+    cpu.flags.C = false
+    cpu.flags.N = false
+    cpu.flags.HC = true
     cpu.PC = (cpu.PC + 1) % 0x10000
     cpu.clock.cycles += 4
 }
 
 // Bitwise AND A with mmu
 cpu.ANDM = (data) => {
-    cpu.A &= data;
+    cpu.A &= data
     cpu.flags.Z = (cpu.A === 0)
+    cpu.flags.C = false
+    cpu.flags.N = false
+    cpu.flags.HC = true
     cpu.PC = (cpu.PC + 1) % 0x10000
     cpu.clock.cycles += 8
 }
@@ -504,8 +522,10 @@ cpu.JRC = (offset, condition) => {
 cpu.CALL = (address) => {
     cpu.PC = (cpu.PC + 1) % 0x10000
     let highByte = (cpu.PC & 0xFF00) >> 8
-    let lowByte = (cpu.PC & 0x00FF);
+    let lowByte = (cpu.PC & 0x00FF)
+
     console.warn(`Low Byte: ${lowByte.toString(16)}, High Byte: ${highByte.toString(16)}`)
+
     cpu.SP = (cpu.SP - 1) % 0x10000
     mmu.write(highByte, cpu.SP)
     cpu.SP = (cpu.SP - 1) % 0x10000
@@ -520,9 +540,10 @@ cpu.CALLC = (address, condition) => {
         cpu.PC = (cpu.PC + 1) % 0x10000
         let highByte = (cpu.PC & 0xFF00) >> 8
         let lowByte = cpu.PC & 0x00FF
-        cpu.SP--
+
+        cpu.SP = (cpu.SP - 1) % 0x10000
         mmu.write(highByte, cpu.SP)
-        cpu.SP--
+        cpu.SP = (cpu.SP - 1) % 0x10000
         mmu.write(lowByte, cpu.SP)
         cpu.PC = address
         cpu.clock.cycles += 24
@@ -843,14 +864,14 @@ cpu.INCR16 = (reg16) => {
 
 // Decrement a 16-Bit Register
 cpu.DECR16 = (reg16) => {
-    let temp = (cpu[`${reg16}`] + 1) % 0x10000
+    let temp = (cpu[`${reg16}`]() - 1) % 0x10000
     cpu[`set${reg16}`](temp)
     cpu.PC = (cpu.PC + 1) % 0x10000
     cpu.clock.cycles += 8
 }
 
 cpu.ADDR16 = (dest_reg16, src_reg16) => {
-    let temp = cpu[dest_reg16]() + cpu[src_reg16]
+    let temp = cpu[dest_reg16]() + cpu[src_reg16]()
     cpu.flags.C = temp > 0xFFFF
     cpu.flags.N = false
     cpu.flags.H = temp & 0x80
