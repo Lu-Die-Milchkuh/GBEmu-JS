@@ -366,7 +366,7 @@ export const lookup = {
         cpu.LDR("L", cpu.B)
     },
     0x69: () => {
-        LDR("L", cpu.C)
+        cpu.LDR("L", cpu.C)
     },
     0x6a: () => {
         cpu.LDR("L", cpu.D)

@@ -33,7 +33,7 @@ export let cpu = {
     },
 
     // Interrupt Master Enable Register
-    IME: false,
+    IME: true,
     // Interrupt Enable
     IE: 0,
 
@@ -180,15 +180,15 @@ cpu.checkInterrupt = () => {
     if (!cpu.IME) return
 
     let int = mmu.read(0xFF0F)
-
+    console.log(`${int} ${cpu.IE}`)
     for (let i = 0; i < 5; i++) {
         if (int & (1 << i) && cpu.IE & (1 << i) ) {    // 1 -> Interrupt Enabled
             console.error(`Interrupt ${i}`)
-            cpu.interruptRoutine[i]()
             cpu.IME = false
             cpu.clock.cycles += 4
             int &= (0xFF - (1<<i))
-            mmu.write(int,0xFF0F )
+            mmu.write(int,0xFF0F)
+            cpu.interruptRoutine[i]()
             break
         }
     }
@@ -569,7 +569,7 @@ cpu.RETI = () => {
 
 // Jump to 8 Byte Address
 cpu.RST = (address) => {
-    let highByte = cpu.PC & 0xFF00 >> 8
+    let highByte = (cpu.PC & 0xFF00) >> 8
     let lowByte = cpu.PC & 0x00FF
     cpu.SP--
     mmu.write(highByte, cpu.SP)

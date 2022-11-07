@@ -52,7 +52,7 @@ mmu.read = function(address) {
 
 mmu.write = function(data, address) {
     console.warn(`CPU -> Writing ${data.toString(16)} to ${address.toString(16)}`)
-    if (address >= 0x014F && address <= 0x7FFF) {   // ROM
+    if (address >= 0 && address <= 0x7FFF) {   // ROM 0x014F
         console.warn(`Tried to write ${data.toString(16)} into ROM at address ${address.toString(16)}`)
     } else if (address >= 0x8000 && address <= 0x9FFF) {    // VRAM
         if(!gpu.vblank) {

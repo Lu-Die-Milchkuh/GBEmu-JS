@@ -2,10 +2,6 @@ h1 {
     background: aquamarine;
 }
 
-body {
-    display: grid;
-}
-
 /*
     Main Game Overlay + Drawing Canvas
 */

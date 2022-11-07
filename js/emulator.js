@@ -44,7 +44,7 @@ export async function run() {
         while (cpu.clock.cycles <= max_cycles * ratio && !paused && running) {
 
             let temp_cycles = cpu.clock.cycles
-            cpu.checkInterrupt()
+
             if(!cpu.isHalt) {
                 // Opcodes are the Bytes that tell the cpu which instruction it should execute
                 let opcode = mmu.read(cpu.PC)
@@ -62,12 +62,19 @@ export async function run() {
             } else {
                 cpu.clock.cycles += 4
             }
+            if(mmu.read(0xFF02) === 0x81) {
+                console.log("Serial")
+                serial.push(mmu.read(0xFF01))
+                mmu.write(0,0xFF02)
+            }
             temp_cycles = cpu.clock.cycles - temp_cycles // Elapsed Cycles
-
+            cpu.checkInterrupt()
             gpu.update(temp_cycles)
             timer.cycles(temp_cycles)
         }
         await new Promise(resolve => setTimeout(resolve, 100))
+        console.log(serial)
     }
 
 }
+let serial = []
