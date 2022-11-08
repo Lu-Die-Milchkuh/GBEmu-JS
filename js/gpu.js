@@ -2,6 +2,8 @@
     WebBoy - A GameBoy Emulator written in Javascript
     Copyright (C) 2022  Lucas Zebrowsky aka Lu-Die-Milchkuh
 
+    Find me on Github: https://github.com/Lu-Die-Milchkuh
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -67,7 +69,7 @@ export let gpu = {
 }
 
 
-gpu.reset = function() {
+gpu.reset = function () {
     this.clock.frame_cycles = 0
     this.clock.scanline_cycles = 0
     this.vram.fill(0x0)
@@ -78,12 +80,12 @@ gpu.reset = function() {
         this.tile_cache.push(tile)
     }
 
-    for(let i = 0; i < 160*144; i++) {
+    for (let i = 0; i < 160 * 144; i++) {
         this.frame_buffer[i] = [255, 255, 255]
     }
 }
 
-gpu.update = function(cycles) {
+gpu.update = function (cycles) {
 
     let LCDC = mmu.io_reg[0xFF40 - 0xFF00] //gpu.read(0xFF40)
     //console.log(`LCDC Bit 7: ${(LCDC & (1 << 7)).toString(16)} ${LCDC}`)
@@ -160,7 +162,7 @@ gpu.line_compare = function () {
     this.write(temp_stat, STAT)
 }
 
-gpu.setMode = function(mode)  {
+gpu.setMode = function (mode) {
     this.mode = mode
     let newSTAT = this.read(STAT)
     newSTAT &= 0xFC
@@ -169,7 +171,7 @@ gpu.setMode = function(mode)  {
 
 }
 
-gpu.update_scanline = function() {
+gpu.update_scanline = function () {
     let LCDC = this.read(0xFF40)
 
     if (LCDC & 0x1) {    // 0b0000 0001
@@ -187,7 +189,7 @@ gpu.update_scanline = function() {
         this.drawFlag = true
     }
 
-    if(this.drawFlag) {
+    if (this.drawFlag) {
         screen.update()
         this.drawFlag = false
     }
@@ -195,7 +197,7 @@ gpu.update_scanline = function() {
 }
 
 
-gpu.draw_background = function() {
+gpu.draw_background = function () {
 
     /* Tile Data: 0x8000 - 0x97FF (Contains actual Tile Data)
             Block 0 -> 0x8000 - 0x87FF
@@ -280,11 +282,11 @@ gpu.draw_window = function () {
     let palette = mmu.read(BGP)
     let LCDC = mmu.read(0xFF40)
 
-    if(y < window_y) return
+    if (y < window_y) return
 
 
-    let tile_map_location = (LCDC & (1<<6)) ? 0x9C00 : 0x9800
-    let tile_data_location = (LCDC & (1<<4)) ? 0x8000: 0x9000
+    let tile_map_location = (LCDC & (1 << 6)) ? 0x9C00 : 0x9800
+    let tile_data_location = (LCDC & (1 << 4)) ? 0x8000 : 0x9000
 
     let pixel_y = y % 8
     let buffer_start = y * screen.width
@@ -292,7 +294,7 @@ gpu.draw_window = function () {
     let row = (y - window_y) / 8
 }
 
-gpu.draw_sprites = function() {
+gpu.draw_sprites = function () {
 }
 
 
@@ -326,7 +328,7 @@ gpu.colorize = (shade, palette) => {
     return colors[real]
 }
 
-gpu.read = function(address) {
+gpu.read = function (address) {
     let data = 0
     if (address >= 0x8000 && address <= 0x9FFF) { // VRAM
         data = this.vram[address - 0x8000]
@@ -336,7 +338,7 @@ gpu.read = function(address) {
     return data
 }
 
-gpu.write = function(data, address) {
+gpu.write = function (data, address) {
     console.warn(`GPU -> Writing ${data.toString(16)} to ${address.toString(16)}`)
 
     if (address >= 0x8000 && address <= 0x97FF) {
@@ -347,7 +349,7 @@ gpu.write = function(data, address) {
     }
 }
 
-gpu.refresh_tile = function(id) {
+gpu.refresh_tile = function (id) {
     let offset = 0x8000 + (id * 16)
 
     let tile = new Array(64)
@@ -370,11 +372,11 @@ gpu.refresh_tile = function(id) {
     this.tile_cache[id].pixels = tile
 }
 
-gpu.address_to_tile_id = function(address) {
+gpu.address_to_tile_id = function (address) {
     return (address - 0x8000) / 16
 }
 
-gpu.read_raw = function(address) {
+gpu.read_raw = function (address) {
     return this.vram[address - 0x8000]
 }
 
