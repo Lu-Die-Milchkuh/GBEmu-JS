@@ -245,7 +245,7 @@ cpu.INCM8 = () => {
     let data = mmu.read(address)
 
     data = ((data + 1) >>> 0) % 256
-    cpu.flags.HC = (data & 0x4 !== 0)
+    cpu.flags.HC = (data & 0x4)
     cpu.flags.Z = (data === 0)
     cpu.flags.N = false
     mmu.write(data, address)
@@ -519,20 +519,21 @@ cpu.JR = (offset) => {
 }
 
 cpu.JRC = (offset, condition) => {
-
+    cpu.PC = (cpu.PC + 1) % 0x10000
     if (condition) {
+        //console.log(`Relative Jump Current PC ${cpu.PC.toString(16)} Offset ${offset.toString(16)} Offset N ${(offset- 0xFF).toString(16) }`)
         // Unsigned Byte!
         if (offset & 0x80) {
             //console.log(`Negative ${offset - 256} (${offset})`)
-            cpu.PC = (cpu.PC + 1) % 0x10000
+            //cpu.PC = (cpu.PC + 1) % 0x10000
             cpu.PC = (cpu.PC + (offset - 256)) % 0x10000   // Converting to signed integer
         } else {
-            cpu.PC = (cpu.PC + 1) % 0x10000
+            //cpu.PC = (cpu.PC + 1) % 0x10000
             cpu.PC = (cpu.PC + offset) % 0x10000
         }
         cpu.clock.cycles += 12
     } else {
-        cpu.PC = (cpu.PC + 1) % 0x10000
+        //cpu.PC = (cpu.PC + 1) % 0x10000
         cpu.clock.cycles += 8
     }
 
@@ -575,7 +576,7 @@ cpu.CALLC = (address, condition) => {
 
 // Return from Subroutine
 cpu.RET = () => {
-
+    console.log(`RET SP -> ${cpu.SP.toString(16)}`)
     let lowByte = mmu.read(cpu.SP)
     cpu.SP = (cpu.SP + 1) % 0x10000
     let highByte = mmu.read(cpu.SP)
@@ -716,6 +717,7 @@ cpu.DI = () => {
 // TODO: Needs to be implemented correctly!
 cpu.STOP = () => {
     cpu.clock.cycles += 4
+    //cpu.PC = (cpu.PC + 2) % 0x10000
     cpu.isStop = true
 }
 
@@ -751,6 +753,16 @@ cpu.SWAPM = () => {
     cpu.clock.cycles += 16
 }
 
+// Right Logical Shift
+cpu.SRLR = (reg8) => {
+    cpu.flags.HC = false
+    cpu.flags.N = false
+    cpu.flags.C = !!(cpu[`${reg8}`] % 0x1)
+    cpu[`${reg8}`] = cpu[`${reg8}`] >> 1
+    cpu.flags.Z = cpu[`${reg8}`] === 0
+    cpu.PC = (cpu.PC + 1) % 0x10000
+    cpu.clock.cycles += 8
+}
 
 cpu.RRA = () => {
     cpu.flags.C = !!(cpu.A & 0x1)

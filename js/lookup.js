@@ -51,7 +51,8 @@ export const lookup = {
     },
     0x06: () => {
         cpu.PC = (cpu.PC + 1) % 0x10000
-        cpu.LDR("B", mmu.read(cpu.PC));
+        let byte = mmu.read(cpu.PC)
+        cpu.LDR("B", byte)
         cpu.clock.cycles += 4
     },
     0x07: () => {
@@ -62,7 +63,8 @@ export const lookup = {
         cpu.ADDR16("HL","BC")
     },
     0x0a: () => {
-        cpu.LDR("A", mmu.read(cpu.BC()))
+        let byte = mmu.read(cpu.BC())
+        cpu.LDR("A", byte)
         cpu.clock.cycles += 4
     },
     0x0b: () => {
@@ -181,6 +183,7 @@ export const lookup = {
         cpu.JRC(offset, cpu.flags.Z === true)
     },
     0x29: () => {
+        cpu.ADDR16("HL","HL")
     },
     0x2a: () => {
         cpu.LDR("A", mmu.read(cpu.HL()))
@@ -226,6 +229,7 @@ export const lookup = {
     0x34: () => {
     },
     0x35: () => {
+        cpu.DECR16("HL")
     },
     0x36: () => {
         cpu.PC = (cpu.PC + 1) % 0x10000
@@ -257,7 +261,8 @@ export const lookup = {
     },
     0x3e: () => {
         cpu.PC = (cpu.PC + 1) % 0x10000
-        cpu.LDR("A", mmu.read(cpu.PC));
+        let byte = mmu.read(cpu.PC)
+        cpu.LDR("A", byte)
     },
     0x3f: () => {
         cpu.CCF()
@@ -407,27 +412,27 @@ export const lookup = {
         cpu.LDR("L", cpu.A)
     },
     0x70: () => {
-        cpu.LDM(cpu.B, mmu.read(cpu.HL()))
+        cpu.LDM(cpu.B, cpu.HL())
     },
     0x71: () => {
-        cpu.LDM(cpu.C, mmu.read(cpu.HL()))
+        cpu.LDM(cpu.C, cpu.HL())
     },
     0x72: () => {
-        cpu.LDM(cpu.D, mmu.read(cpu.HL()))
+        cpu.LDM(cpu.D, cpu.HL())
     },
     0x73: () => {
-        cpu.LDM(cpu.E, mmu.read(cpu.HL()))
+        cpu.LDM(cpu.E, cpu.HL())
     },
     0x74: () => {
-        cpu.LDM(cpu.H, mmu.read(cpu.HL()))
+        cpu.LDM(cpu.H, cpu.HL())
     },
     0x75: () => {
-        cpu.LDM(cpu.L, mmu.read(cpu.HL()))
+        cpu.LDM(cpu.L, cpu.HL())
     },
     0x76: () => {
     },
     0x77: () => {
-        cpu.LDM(cpu.A, mmu.read(cpu.HL()))
+        cpu.LDM(cpu.A, cpu.HL())
     },
     0x78: () => {
         cpu.LDR("A", cpu.B)
@@ -1077,6 +1082,7 @@ export const prefix_lookup = {
         cpu.SWAP("A")
     },
     0x38: () => {
+        cpu.SRLR("B")
     },
     0x39: () => {
     },

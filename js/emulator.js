@@ -65,7 +65,7 @@ export async function run() {
 
             let temp_cycles = cpu.clock.cycles
 
-            if(!cpu.isHalt) {
+            if(!cpu.isHalt && !cpu.isStop) {
                 // Opcodes are the Bytes that tell the cpu which instruction it should execute
                 let opcode = mmu.read(cpu.PC)
                 console.log(`Executing: ${opcode.toString(16)} @ ${cpu.PC.toString(16)}`)
@@ -83,7 +83,7 @@ export async function run() {
                 cpu.clock.cycles += 4
             }
             if(mmu.read(0xFF02) === 0x81) {
-                console.log("Serial")
+                console.warn("Serial")
                 serial.push(mmu.read(0xFF01))
                 mmu.write(0,0xFF02)
             }
@@ -93,7 +93,11 @@ export async function run() {
             timer.cycles(temp_cycles)
         }
         await new Promise(resolve => setTimeout(resolve, 100))
-        console.log(serial)
+        let foo = ""
+        for(let i = 0; i < serial.length;i++) {
+            foo += String.fromCharCode(serial[i])
+        }
+        console.warn(`From Serial: ${foo}`)
     }
 
 }
