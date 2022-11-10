@@ -557,8 +557,8 @@ cpu.CALL = (address) => {
 
 // Conditional Call to Subroutine
 cpu.CALLC = (address, condition) => {
+    cpu.PC = (cpu.PC + 1) % 0x10000
     if (condition) {
-        cpu.PC = (cpu.PC + 1) % 0x10000
         let highByte = (cpu.PC & 0xFF00) >> 8
         let lowByte = cpu.PC & 0x00FF
 
@@ -569,7 +569,6 @@ cpu.CALLC = (address, condition) => {
         cpu.PC = address
         cpu.clock.cycles += 24
     } else {
-        cpu.PC = (cpu.PC + 1) % 0x10000
         cpu.clock.cycles += 12
     }
 }
@@ -782,6 +781,18 @@ cpu.RLCR = (reg8) => {
     cpu.PC = (cpu.PC + 1) % 0x10000
     cpu.clock.cycles += 8
 
+}
+
+cpu.RLCA = () => {
+    cpu.flags.HC = false
+    cpu.flags.Z = false
+    cpu.flags.N = false
+
+    let bit7 = cpu.A >> 7
+    cpu.flags.C = bit7 === 1
+    cpu.A = cpu.A << 1
+    cpu.PC = (cpu.PC + 1) % 0x10000
+    cpu.clock.cycles += 4
 }
 
 cpu.RLCM = () => {

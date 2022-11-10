@@ -76,11 +76,13 @@ mmu.write = function(data, address) {
         console.warn(`Tried to write ${data.toString(16)} into ROM at address ${address.toString(16)}`)
         //mmu.rom[address] = data
     } else if (address >= 0x8000 && address <= 0x9FFF) {    // VRAM
-        if(!gpu.vblank) {
+        if (!gpu.vblank) {
             gpu.vram[address - 0x8000] = data
         } else {
             console.warn(`Tried to write ${data.toString(16)} to VRAM at ${address.toString(16)} during VBLANK!`)
         }
+    } else if (address >= 0xA000 && address <= 0xBFFF) {     // External RAM
+        this.extram[address - 0xA000] = data
 
     } else if (address >= 0xC000 && address <= 0xDFFF) {    // Work RAM
         this.wram[address - 0xC000] = data
