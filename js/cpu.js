@@ -93,6 +93,12 @@ cpu.HL = () => {
     return (cpu.H << 8) | cpu.L
 }
 
+// useless but breaks code if removed
+// Bad Design Choice of me :-)
+cpu.getSP = () => {
+    return cpu.SP
+}
+
 cpu.setAF = (data) => {
     cpu.A = (data & 0xFF00) >> 8
     cpu.F = data & 0x00FF
@@ -399,7 +405,7 @@ cpu.SBCM = (data) => {
 cpu.ADDR = (reg8) => {
     cpu.flags.N = false
     cpu.flags.C = ((cpu.A + cpu[reg8]) > 0xFF)
-    cpu.flags.HC = ((cpu.A & 0xF) + (cpu[reg8] & 0xF))  > 0xF
+    cpu.flags.HC = ((cpu.A & 0xF) + (cpu[reg8] & 0xF)) > 0xF
 
     cpu.A = ((cpu.A + cpu[reg8]) >>> 0) % 256
     cpu.flags.Z = (cpu.A === 0)
@@ -411,7 +417,7 @@ cpu.ADDR = (reg8) => {
 cpu.ADDM = (data) => {
     cpu.flags.N = false
     cpu.flags.C = ((cpu.A + data) > 255)
-    cpu.flags.HC = ((cpu.A & 0xF) + (data & 0xF))  > 0xF //((cpu.A + data) & 0x4)
+    cpu.flags.HC = ((cpu.A & 0xF) + (data & 0xF)) > 0xF //((cpu.A + data) & 0x4)
 
     cpu.A = ((cpu.A + data) >>> 0) % 256
     cpu.flags.Z = (cpu.A === 0)
@@ -627,6 +633,7 @@ cpu.RST = (address) => {
     cpu.PC = address
     cpu.clock.cycles += 16
     cpu.IME = false
+    //console.error(`RST ${address.toString(16)}`)
 }
 
 /*
@@ -665,8 +672,12 @@ cpu.RESM = (n) => {
 
 // Check if a Bit at given index is set
 cpu.BIT = (index, data) => {
-    cpu.Z = (data & (1 << index));
-    cpu.PC = (cpu.PC + 1) % 0x10000
+
+    cpu.flags.Z = (data & (1 << index)) !== 0
+    cpu.flags.HC = true
+    cpu.flags.N = false
+
+    cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 8
 }
 
@@ -766,33 +777,142 @@ cpu.SRLR = (reg8) => {
     cpu.clock.cycles += 8
 }
 
-cpu.RRA = () => {
-    cpu.flags.C = !!(cpu.A & 0x1)
-    cpu.A = cpu.A >> 1
-    cpu.flags.Z = false
-    cpu.flags.H = false
-    cpu.flags.N = false
-    cpu.PC = (cpu.PC + 1) % 0x10000
-    cpu.clock.cycles += 4
-}
 
 // Rotate Left through Carry
 cpu.RLCR = (reg8) => {
-    cpu.flags.C = !!(cpu[reg8] & 0x80)
+    let bit7 = cpu[reg8] >> 7
+
     cpu[reg8] = cpu[reg8] << 1
+
+    cpu.flags.C = bit7 === 1
+    cpu.flags.HC = false
     cpu.flags.Z = cpu[reg8] === 0
-    cpu.PC = (cpu.PC + 1) % 0x10000
+    cpu.flags.N = false
+
+    cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 8
 
 }
 
-cpu.RLA = () => {
-    cpu.flags.Z = false
-    cpu.flags.N = false
-    cpu.flags.HC = false
-
+cpu.RLCA = () => {
     let bit7 = cpu.A >> 7
 
+    cpu.A = cpu.A << 1
+
+    cpu.flags.C = bit7 === 1
+    cpu.flags.HC = false
+    cpu.flags.Z = false
+    cpu.flags.N = false
+
+    cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
+    cpu.clock.cycles += 4
+}
+
+cpu.RLCM = () => {
+    let byte = mmu.read(cpu.HL())
+    let bit7 = byte >> 7
+
+    byte = byte << 1
+
+    cpu.flags.C = bit7 === 1
+    cpu.flags.Z = byte === 0
+    cpu.flags.HC = false
+    cpu.flags.N = false
+
+    cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
+    cpu.clock.cycles += 16
+}
+
+// Rotate Right
+cpu.RRCR = (reg8) => {
+    let bit1 = cpu[reg8] & 0x1
+
+    cpu[reg8] = cpu[reg8] >> 1
+
+    cpu.flags.C = bit1 === 1
+    cpu.flags.Z = cpu[reg8] === 0
+    cpu.flags.HC = false
+    cpu.flags.N = false
+
+    cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
+    cpu.clock.cycles += 8
+}
+
+cpu.RRCM = () => {
+    let byte = mmu.read(cpu.HL())
+    let bit1 = byte & 0x1
+
+    byte = byte >> 1
+
+    cpu.flags.C = bit1 === 1
+    cpu.flags.Z = byte === 0
+    cpu.flags.HC = false
+    cpu.flags.N = false
+
+
+    mmu.write(byte, cpu.HL())
+    cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
+    cpu.clock.cycles += 16
+}
+
+
+// Rotate Right through carry
+cpu.RRR = (reg8) => {
+    let bit1 = cpu[reg8] & 0x1
+    let carry = cpu.flags.C ? 1 : 0
+
+    cpu[reg8] = (cpu[reg8] >> 1) | (carry << 7)
+
+    cpu.flags.C = bit1 === 1
+    cpu.flags.Z = cpu[reg8] === 0
+    cpu.flags.HC = false
+    cpu.flags.N = false
+
+    cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
+    cpu.clock.cycles += 8
+}
+
+cpu.RRM = () => {
+    let byte = mmu.read(cpu.HL())
+    let bit1 = byte & 0x1
+    let carry = cpu.flags.C ? 1 : 0
+
+    byte = (byte >> 1) | (carry << 7)
+
+    cpu.flags.C = bit1 === 1
+    cpu.flags.Z = byte === 0
+    cpu.flags.HC = false
+    cpu.flags.N = false
+
+    mmu.write(byte, cpu.HL())
+    cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
+    cpu.clock.cycles += 16
+}
+
+cpu.RRA = () => {
+    let bit1 = cpu.A & 0x1
+    let carry = cpu.C ? 1 : 0
+
+    cpu.A = (cpu.A >> 1) | (carry << 7)
+
+    cpu.flags.C = bit1 === 1
+    cpu.flags.Z = cpu.A === 0
+    cpu.flags.HC = false
+    cpu.flags.N = false
+
+    cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
+    cpu.clock.cycles += 4
+}
+
+cpu.RLA = () => {
+    let bit7 = cpu.A >> 7
+    let carry = cpu.C ? 1 : 0
+
+    cpu.A = (cpu.A << 1) | carry
+
+    cpu.flags.Z = cpu.A === 0
+    cpu.flags.N = false
+    cpu.flags.HC = false
     cpu.flags.C = bit7 === 1
 
     cpu.A = cpu.A << 1
@@ -801,77 +921,36 @@ cpu.RLA = () => {
 
 }
 
+// Rotate Left through carry
+cpu.RLR = (reg8) => {
+    let bit7 = cpu[reg8] >> 7
+    let carry = cpu.flags.C ? 1 : 0
 
-cpu.RLCA = () => {
+    cpu[reg8] = cpu[reg8] << 1 | carry
+
+    cpu.flags.C = bit7 === 1
+    cpu.flags.Z = cpu[reg8] === 0
     cpu.flags.HC = false
-    cpu.flags.Z = false
     cpu.flags.N = false
 
-    let bit7 = cpu.A >> 7
-    cpu.flags.C = bit7 === 1
-    cpu.A = cpu.A << 1
-    cpu.PC = (cpu.PC + 1) % 0x10000
-    cpu.clock.cycles += 4
-}
-
-cpu.RLCM = () => {
-    cpu.clock.cycles += 16
-}
-
-// Rotate Right through Carry
-cpu.RRCR = (reg8) => {
-    cpu.flags.C = !!(cpu[reg8] & 0x1)
-    cpu[reg8] = cpu[reg8] >> 1
-    cpu.flags.Z = cpu[reg8] === 0
-    cpu.PC = (cpu.PC + 1) % 0x10000
-    cpu.clock.cycles += 8
-}
-
-cpu.RRCM = () => {
-    let byte = mmu.read(cpu.HL())
-    cpu.flags.C = !!(byte & 0x1)
-    byte = byte >> 1
-    cpu.flags.Z = byte === 0
-    mmu.write(byte, cpu.HL())
-    cpu.PC = (cpu.PC + 1) % 0x10000
-    cpu.clock.cycles += 16
-}
-
-
-// Rotate Right
-cpu.RRR = (reg8) => {
-    let temp = cpu[reg8] & 0x1
-    cpu[reg8] = (cpu[reg8] >> 1) | (temp << 7)
-    cpu.flags.Z = cpu[reg8] === 0
-    cpu.PC = (cpu.PC + 1) % 0x10000
-    cpu.clock.cycles += 8
-}
-
-cpu.RRM = () => {
-    let byte = mmu.read(cpu.HL())
-    let temp = byte & 0x1
-    byte = (byte >> 1) | (temp << 7)
-    mmu.write(byte, cpu.HL())
-    cpu.PC = (cpu.PC + 1) % 0x10000
-    cpu.clock.cycles += 16
-}
-
-// Rotate Left
-cpu.RLR = (reg8) => {
-    let temp = cpu[reg8] & 0x80
-    cpu[reg8] = (cpu[reg8] << 1) | (temp >> 7)
-    cpu.flags.Z = cpu[reg8] === 0
-    cpu.PC = (cpu.PC + 1) % 0x10000
+    cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 8
 }
 
 cpu.RLM = () => {
     let byte = mmu.read(cpu.HL())
-    let temp = byte & 0x80
-    byte = (byte << 1) | (temp >> 7)
+    let bit7 = byte >> 7
+    let carry = cpu.flags.C ? 1 : 0
+
+    byte = byte << 1 | carry
+
+    cpu.flags.C = bit7 === 1
     cpu.flags.Z = byte === 0
+    cpu.flags.HC = false
+    cpu.flags.N = false
+
     mmu.write(byte, cpu.HL())
-    cpu.PC = (cpu.PC + 1) % 0x10000
+    cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 16
 }
 
@@ -899,7 +978,7 @@ cpu.POP = (reg16) => {
     let lowByte = mmu.read(cpu.SP)
     cpu.SP = ((cpu.SP + 1) >>> 0) % 0x10000
     let highByte = mmu.read(cpu.SP)
-    cpu.SP = ((cpu.SP + 1) >>> 0 ) % 0x10000
+    cpu.SP = ((cpu.SP + 1) >>> 0) % 0x10000
     cpu[`set${reg16}`](highByte << 8 | lowByte)
     cpu.PC = (cpu.PC + 1) % 0x10000
     cpu.clock.cycles += 12
@@ -919,7 +998,7 @@ cpu.LDM16 = (address, data) => {
 
 cpu.INCR16 = (reg16) => {
     //console.log(`${reg16} BEFORE INC ${cpu[reg16]().toString(16)}`)
-    let temp = ((cpu[`${reg16}`]() + 1) >>> 0) % 0x10000
+    let temp = ((cpu[reg16]() + 1) >>> 0) % 0x10000
     cpu[`set${reg16}`](temp)
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 8
@@ -928,8 +1007,15 @@ cpu.INCR16 = (reg16) => {
 
 // Decrement a 16-Bit Register
 cpu.DECR16 = (reg16) => {
-    let temp = ((cpu[`${reg16}`]() - 1) >>> 0) % 0x10000
+    let temp = ((cpu[reg16]() - 1) >>> 0) % 0x10000
     cpu[`set${reg16}`](temp)
+    cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
+    cpu.clock.cycles += 8
+}
+
+cpu.DEC_SP = () => {
+    let temp = ((cpu.SP - 1) >>> 0) % 0x10000
+    cpu.SP = temp
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 8
 }
