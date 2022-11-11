@@ -207,6 +207,7 @@ cpu.checkInterrupt = () => {
     for (let i = 0; i < 5; i++) {
         if (int & (1 << i) && cpu.IE & (1 << i)) {    // 1 -> Interrupt Enabled
             console.error(`Interrupt ${i}`)
+            cpu.isHalt = false
             int &= (0xFF - (1 << i))
             mmu.write(int, 0xFF0F)
             cpu.interruptRoutine[i]()
@@ -231,8 +232,8 @@ cpu.requestInterrupt = (int) => {
 
 // Increment a 8-Bit Register
 cpu.INCR8 = (reg8) => {
-    cpu[reg8] = (cpu[reg8] + 1) % 256 // Needs to stay in range of an 8-Bit Integer
-    cpu.flags.HC = (cpu[reg8] & 0x4)
+    cpu[reg8] = ((cpu[reg8] + 1) >>> 0) % 256 // Needs to stay in range of an 8-Bit Integer
+    cpu.flags.HC = (cpu[reg8] & 0x4) === 0x4
     cpu.flags.Z = (cpu[reg8] === 0)
     cpu.flags.N = false
     cpu.PC = (cpu.PC + 1) % 0x10000
@@ -245,7 +246,7 @@ cpu.INCM8 = () => {
     let data = mmu.read(address)
 
     data = ((data + 1) >>> 0) % 256
-    cpu.flags.HC = (data & 0x4)
+    cpu.flags.HC = (data & 0x4) === 0x4
     cpu.flags.Z = (data === 0)
     cpu.flags.N = false
     mmu.write(data, address)
@@ -256,7 +257,7 @@ cpu.INCM8 = () => {
 // Decrement a 8-Bit Register
 cpu.DECR8 = (reg8) => {
     cpu[reg8] = ((cpu[reg8] - 1) >>> 0) % 256 // Needs to stay in range of an 8-Bit Integer
-    cpu.flags.HC = (cpu[reg8] & 0x4)
+    cpu.flags.HC = (cpu[reg8] & 0x4) === 0x4
     cpu.flags.Z = cpu[reg8] === 0
     cpu.PC = (cpu.PC + 1) % 0x10000
     cpu.clock.cycles += 4
@@ -267,7 +268,7 @@ cpu.DECM8 = () => {
     let address = cpu.HL();
     let data = mmu.read(address)
     data = ((data - 1) >>> 0) % 256
-    cpu.flags.HC = (data & 0x4)
+    cpu.flags.HC = (data & 0x4) === 0x4
     cpu.flags.Z = (data === 0)
 
     mmu.write(data, address)
@@ -337,7 +338,7 @@ cpu.ANDM = (data) => {
     cpu.flags.C = false
     cpu.flags.N = false
     cpu.flags.HC = true
-    cpu.PC = (cpu.PC + 1) % 0x10000
+    cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 8
 }
 
@@ -783,6 +784,22 @@ cpu.RLCR = (reg8) => {
 
 }
 
+cpu.RLA = () => {
+    cpu.flags.Z = false
+    cpu.flags.N = false
+    cpu.flags.HC = false
+
+    let bit7 = cpu.A >> 7
+
+    cpu.flags.C = bit7 === 1
+
+    cpu.A = cpu.A << 1
+    cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
+    cpu.clock.cycles += 4
+
+}
+
+
 cpu.RLCA = () => {
     cpu.flags.HC = false
     cpu.flags.Z = false
@@ -865,9 +882,9 @@ cpu.RLM = () => {
 cpu.PUSH = (reg16) => {
     let highByte = (reg16 & 0xFF00) >> 8
     let lowByte = reg16 & 0x00FF
-    cpu.SP = (cpu.SP - 1) % 0x10000
+    cpu.SP = ((cpu.SP - 1) >>> 0) % 0x10000
     mmu.write(highByte, cpu.SP)
-    cpu.SP = (cpu.SP - 1) % 0x10000
+    cpu.SP = ((cpu.SP - 1) >>> 0) % 0x10000
     mmu.write(lowByte, cpu.SP)
 
     cpu.PC = (cpu.PC + 1) % 0x10000
@@ -878,9 +895,9 @@ cpu.PUSH = (reg16) => {
 cpu.POP = (reg16) => {
 
     let lowByte = mmu.read(cpu.SP)
-    cpu.SP = (cpu.SP + 1) % 0x10000
+    cpu.SP = ((cpu.SP + 1) >>> 0) % 0x10000
     let highByte = mmu.read(cpu.SP)
-    cpu.SP = (cpu.SP + 1) % 0x10000
+    cpu.SP = ((cpu.SP + 1) >>> 0 ) % 0x10000
     cpu[`set${reg16}`](highByte << 8 | lowByte)
     cpu.PC = (cpu.PC + 1) % 0x10000
     cpu.clock.cycles += 12
@@ -888,26 +905,28 @@ cpu.POP = (reg16) => {
 
 cpu.LDR16 = (reg16, data) => {
     cpu[`set${reg16}`](data)
-    cpu.PC = (cpu.PC + 1) % 0x10000
+    cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 12
 }
 
 cpu.LDM16 = (address, data) => {
     mmu.write(data, address)
-    cpu.PC = (cpu.PC + 1) % 0x10000
+    cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 8
 }
 
 cpu.INCR16 = (reg16) => {
-    let temp = (cpu[`${reg16}`]() + 1) % 0x10000
+    console.log(`${reg16} BEFORE INC ${cpu[reg16]().toString(16)}`)
+    let temp = ((cpu[`${reg16}`]() + 1) >>> 0) % 0x10000
     cpu[`set${reg16}`](temp)
     cpu.PC = (cpu.PC + 1) % 0x10000
     cpu.clock.cycles += 8
+    console.log(`${reg16} AFTER INC ${cpu[reg16]().toString(16)}`)
 }
 
 // Decrement a 16-Bit Register
 cpu.DECR16 = (reg16) => {
-    let temp = (cpu[`${reg16}`]() - 1) % 0x10000
+    let temp = ((cpu[`${reg16}`]() - 1) >>> 0) % 0x10000
     cpu[`set${reg16}`](temp)
     cpu.PC = (cpu.PC + 1) % 0x10000
     cpu.clock.cycles += 8
