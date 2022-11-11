@@ -72,8 +72,8 @@ export const lookup = {
 
         mmu.write(lowSP,address)
         address++
-        mmu.write(highSP,address )
-        cpu.PC = (cpu.PC + 1) % 0x10000
+        mmu.write(highSP,address)
+        cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         cpu.clock.cycles += 20
     },
     0x09: () => {
@@ -91,13 +91,10 @@ export const lookup = {
         cpu.INCR8("C")
     },
     0x0d: () => {
-        //console.log(`C contains ${cpu.C}`)
         cpu.DECR8("C")
-        //console.log(`${mmu.read(0x219)} ${mmu.read(0x21A)} ${mmu.read(0x21B)}`)
-        //console.log(cpu.flags.Z)
     },
     0x0e: () => {
-        cpu.PC = (cpu.PC + 1) % 0x10000
+        cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let byte = mmu.read(cpu.PC)
         cpu.LDR("C", byte)
         cpu.clock.cycles += 4
@@ -109,9 +106,9 @@ export const lookup = {
     },
     0x11: () => {
         // Memory -> Little Endian, the Least Sig Byte comes first
-        cpu.PC = (cpu.PC + 1) % 0x10000
+        cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let lowByte = mmu.read(cpu.PC)
-        cpu.PC = (cpu.PC + 1) % 0x10000
+        cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let highByte = mmu.read(cpu.PC)
         cpu.LDR16("DE", highByte << 8 | lowByte)
     },
@@ -136,7 +133,7 @@ export const lookup = {
         cpu.RLA()
     },
     0x18: () => {
-        cpu.PC = (cpu.PC + 1) % 0x10000
+        cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         cpu.JR(mmu.read(cpu.PC))
     },
     0x19: () => {
@@ -249,11 +246,21 @@ export const lookup = {
     0x33: () => {
     },
     0x34: () => {
-        cpu.INCR16("HL")
+        // INC (HL) -> Inc byte at address stored in HL
+        let byte = mmu.read(cpu.HL())
+        byte = ((byte + 1) >>> 0) % 256
+        mmu.write(byte,cpu.HL())
         cpu.clock.cycles += 4
+        cpu.PC = ((cpu.PC + 1) >>> 0 ) % 0x10000
     },
     0x35: () => {
-        cpu.DECR16("HL")
+
+        // DEC (HL) -> DEC byte at address stored in HL
+        let byte = mmu.read(cpu.HL())
+        byte = ((byte - 1) >>> 0) % 256
+        mmu.write(byte,cpu.HL())
+        cpu.clock.cycles += 4
+        cpu.PC = ((cpu.PC + 1) >>> 0 ) % 0x10000
     },
     0x36: () => {
         cpu.PC = ((cpu.PC + 1) >>> 0 ) % 0x10000
@@ -699,25 +706,25 @@ export const lookup = {
     },
     0xc2: () => {
         // Memory -> Little Endian, the Least Sig Byte comes first
-        cpu.PC = (cpu.PC + 1) % 0x10000
+        cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let lowByte = mmu.read(cpu.PC)
-        cpu.PC = (cpu.PC + 1) % 0x10000
+        cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let highByte = mmu.read(cpu.PC)
         cpu.JPC(highByte << 8 | lowByte, cpu.flags.Z === false)
     },
     0xc3: () => {
         // Memory -> Little Endian, the Least Sig Byte comes first
-        cpu.PC = (cpu.PC + 1) % 0x10000
+        cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let lowByte = mmu.read(cpu.PC)
-        cpu.PC = (cpu.PC + 1) % 0x10000
+        cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let highByte = mmu.read(cpu.PC)
         cpu.JP(highByte << 8 | lowByte)
     },
     0xc4: () => {
         // Memory -> Little Endian, the Least Sig Byte comes first
-        cpu.PC = (cpu.PC + 1) % 0x10000
+        cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let lowByte = mmu.read(cpu.PC)
-        cpu.PC = (cpu.PC + 1) % 0x10000
+        cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let highByte = mmu.read(cpu.PC)
         cpu.CALLC(highByte << 8 | lowByte, cpu.flags.Z === false)
     },
@@ -739,9 +746,9 @@ export const lookup = {
     },
     0xca: () => {
         // Memory -> Little Endian, the Least Sig Byte comes first
-        cpu.PC = (cpu.PC + 1) % 0x10000
+        cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let lowByte = mmu.read(cpu.PC)
-        cpu.PC = (cpu.PC + 1) % 0x10000
+        cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let highByte = mmu.read(cpu.PC)
         cpu.JPC(highByte << 8 | lowByte, cpu.flags.Z === true)
     },
@@ -750,9 +757,9 @@ export const lookup = {
     },
     0xcc: () => {
         // Memory -> Little Endian, the Least Sig Byte comes first
-        cpu.PC = (cpu.PC + 1) % 0x10000
+        cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let lowByte = mmu.read(cpu.PC)
-        cpu.PC = (cpu.PC + 1) % 0x10000
+        cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let highByte = mmu.read(cpu.PC)
         cpu.CALLC(highByte << 8 | lowByte, cpu.flags.Z === true)
     },
@@ -781,9 +788,9 @@ export const lookup = {
     },
     0xd2: () => {
         // Memory -> Little Endian, the Least Sig Byte comes first
-        cpu.PC = (cpu.PC + 1) % 0x10000
+        cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let lowByte = mmu.read(cpu.PC)
-        cpu.PC = (cpu.PC + 1) % 0x10000
+        cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let highByte = mmu.read(cpu.PC)
         cpu.JPC(highByte << 8 | lowByte, cpu.flags.C === false)
     },
@@ -792,9 +799,9 @@ export const lookup = {
     },
     0xd4: () => {
         // Memory -> Little Endian, the Least Sig Byte comes first
-        cpu.PC = (cpu.PC + 1) % 0x10000
+        cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let lowByte = mmu.read(cpu.PC)
-        cpu.PC = (cpu.PC + 1) % 0x10000
+        cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let highByte = mmu.read(cpu.PC)
         cpu.CALLC(highByte << 8 | lowByte, cpu.flags.C === false)
     },
@@ -802,7 +809,7 @@ export const lookup = {
         cpu.PUSH(cpu.DE())
     },
     0xd6: () => {
-        cpu.PC = (cpu.PC + 1) % 0x10000
+        cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let data = mmu.read(cpu.PC)
         cpu.SUBM(data)
     },
@@ -816,9 +823,9 @@ export const lookup = {
         cpu.RETI()
     },
     0xda: () => {
-        cpu.PC = (cpu.PC + 1) % 0x10000
+        cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let lowByte = mmu.read(cpu.PC)
-        cpu.PC = (cpu.PC + 1) % 0x10000
+        cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let highByte = mmu.read(cpu.PC)
         cpu.JPC(lowByte << 8 | highByte, cpu.flags.C === true)
     },
@@ -826,9 +833,9 @@ export const lookup = {
         console.error("Illegal Opcode!")
     },
     0xdc: () => {
-        cpu.PC = (cpu.PC + 1) % 0x10000
+        cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let lowByte = mmu.read(cpu.PC)
-        cpu.PC = (cpu.PC + 1) % 0x10000
+        cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let highByte = mmu.read(cpu.PC)
         cpu.CALLC(lowByte << 8 | highByte, cpu.flags.C === true)
     },
@@ -836,7 +843,9 @@ export const lookup = {
         console.error("Illegal Opcode!")
     },
     0xde: () => {
-        cpu.SBCM(mmu.read(cpu.PC + 1));
+        cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
+        let data = mmu.read(cpu.PC)
+        cpu.SBCM(data)
         cpu.PC = (cpu.PC + 1) % 0x10000
     },
     0xdf: () => {
@@ -939,7 +948,7 @@ export const lookup = {
     0xf8: () => {
         // Note byte is a signed integer!
         // LD HL, SP + byte
-        cpu.PC = (cpu.PC + 1) % 0x10000
+        cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let byte = mmu.read(cpu.PC)
         let SP = cpu.SP
 
@@ -951,14 +960,15 @@ export const lookup = {
 
         cpu.flags.Z = false
         cpu.flags.N = false
-        cpu.flags.HC = (SP & 0b00001000) === 0b00001000
-        cpu.flags.C = SP > cpu.HL()
+        cpu.flags.HC = (SP & 0xF) < (cpu.SP & 0xF)
+        cpu.flags.C = (SP & 0xFF) < (cpu.SP & 0xFF)
         cpu.LDR16("HL",SP)
-        cpu.PC = (cpu.PC + 1) % 0x10000
+        cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     },
     0xf9: () => {
-        let HL = cpu.HL()
-        cpu.setSP(HL)
+        //let HL = cpu.HL()
+        //cpu.setSP(HL)
+        cpu.SP = cpu.HL()
         cpu.clock.cycles += 8
         cpu.PC = (cpu.PC + 1) % 0x10000
     },
@@ -984,7 +994,7 @@ export const lookup = {
         console.error("Illegal Opcode!")
     },
     0xfe: () => {
-        cpu.PC = (cpu.PC + 1) % 0x10000
+        cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let byte = mmu.read(cpu.PC)
         cpu.CPM(byte)
     },
