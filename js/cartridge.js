@@ -20,11 +20,19 @@
 
 "use strict"
 
-import {mmu} from "./mmu.js";
+import {mmu} from "./mmu.js"
+//import
 
 let cartridge = {
     rom: [],     // Array to Store ROM Content
-    extram: new Array(0x1FFF)   // External RAM
+    extram: new Array(0x1FFF),   // External RAM
+    mbc: 0
+}
+
+const mbc_lookup = []
+
+cartridge.read = function() {
+
 }
 
 
@@ -45,6 +53,7 @@ export function read_rom_info() {
 
     info.title = String.fromCharCode.apply(null, info.title)
     info.type = mmu.read(0x147)
+    cartridge.mbc = info.type
     info["rom size"] = 32768 << mmu.read(0x148)
     info["ram size"] = ram_size_lookup[mmu.read(0x149)]
 

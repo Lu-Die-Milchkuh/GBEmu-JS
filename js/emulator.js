@@ -52,7 +52,7 @@ export async function run() {
     mmu.reset()
     gpu.reset()
     cpu.reset()
-
+    let counter = 0;
 
     while (running) {
         while (paused) {
@@ -68,8 +68,9 @@ export async function run() {
             if(!cpu.isHalt && !cpu.isStop) {
                 // Opcodes are the Bytes that tell the cpu which instruction it should execute
                 let opcode = mmu.read(cpu.PC)
-                console.log(`Executing: ${opcode.toString(16)} @ ${cpu.PC.toString(16)}`)
 
+                console.log(`Executing: ${opcode.toString(16)} @ ${cpu.PC.toString(16)} Counter: ${counter}`)
+                counter++
 
                 if (opcode === 0xCB) {
                     cpu.PC = (cpu.PC + 1) % 0x10000;

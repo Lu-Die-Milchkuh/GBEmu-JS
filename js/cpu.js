@@ -239,7 +239,7 @@ cpu.requestInterrupt = (int) => {
 // Increment a 8-Bit Register
 cpu.INCR8 = (reg8) => {
     cpu[reg8] = ((cpu[reg8] + 1) >>> 0) % 256 // Needs to stay in range of an 8-Bit Integer
-    cpu.flags.HC = (cpu[reg8] & 0xF) === 0xF
+    cpu.flags.HC = (cpu[reg8] & 0xF) + 1 > 0xF
     cpu.flags.Z = (cpu[reg8] === 0)
     cpu.flags.N = false
     cpu.PC = (cpu.PC + 1) % 0x10000
@@ -252,7 +252,7 @@ cpu.INCM8 = () => {
     let data = mmu.read(address)
 
     data = ((data + 1) >>> 0) % 256
-    cpu.flags.HC = (data & 0xF) === 0xF
+    cpu.flags.HC = (data & 0xF) + 1 > 0xF
     cpu.flags.Z = (data === 0)
     cpu.flags.N = false
     mmu.write(data, address)
@@ -263,19 +263,21 @@ cpu.INCM8 = () => {
 // Decrement a 8-Bit Register
 cpu.DECR8 = (reg8) => {
     cpu[reg8] = ((cpu[reg8] - 1) >>> 0) % 256 // Needs to stay in range of an 8-Bit Integer
-    cpu.flags.HC = (cpu[reg8] & 0xF) === 0xF
-    cpu.flags.Z = cpu[reg8] === 0
+
+    cpu.flags.HC = (cpu[reg8] & 0xF) +1  > 0xF
+    cpu.flags.Z = (cpu[reg8] === 0)
     cpu.flags.N = true
+
     cpu.PC = (cpu.PC + 1) % 0x10000
     cpu.clock.cycles += 4
 }
 
 // Decrement Data at the mmu address stored in HL
 cpu.DECM8 = () => {
-    let address = cpu.HL();
+    let address = cpu.HL()
     let data = mmu.read(address)
     data = ((data - 1) >>> 0) % 256
-    cpu.flags.HC = (data & 0xF) === 0xF
+    cpu.flags.HC = (data & 0xF) + 1 > 0xF
     cpu.flags.Z = (data === 0)
     cpu.flags.N = true
 
@@ -286,29 +288,33 @@ cpu.DECM8 = () => {
 
 // Bitwise XOR  A with register
 cpu.XORR = (reg8) => {
-    cpu.A ^= cpu[reg8]
+    cpu.A = ((cpu.A ^ cpu[reg8]) >>> 0 ) % 256
+
     cpu.flags.Z = (cpu.A === 0)
     cpu.flags.C = false
     cpu.flags.N = false
     cpu.flags.HC = false
+
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 4
 }
 
 // Bitwise XOR A with mmu
 cpu.XORM = (data) => {
-    cpu.A ^= data
+    cpu.A = ((cpu.A ^ data) >>> 0 ) % 256
+
     cpu.flags.Z = (cpu.A === 0)
     cpu.flags.C = false
     cpu.flags.N = false
     cpu.flags.HC = false
+
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 8
 }
 
 // Bitwise OR A with register
 cpu.ORR = (reg8) => {
-    cpu.A |= cpu[reg8]
+    cpu.A = ((cpu.A |cpu[reg8]) >>> 0) % 256
     cpu.flags.Z = (cpu.A === 0)
     cpu.flags.C = false
     cpu.flags.N = false
@@ -319,7 +325,7 @@ cpu.ORR = (reg8) => {
 
 // Bitwise OR A with mmu
 cpu.ORM = (data) => {
-    cpu.A |= data
+    cpu.A = ((cpu.A | data) >>> 0) % 256
     cpu.flags.Z = (cpu.A === 0)
     cpu.flags.C = false
     cpu.flags.N = false
@@ -353,7 +359,7 @@ cpu.ANDM = (data) => {
 // Subtract register from A
 cpu.SUBR = (reg8) => {
     cpu.flags.N = true
-    cpu.flags.C = (cpu.A < cpu[reg8])
+    cpu.flags.C = (cpu.A - cpu[reg8]) < 0
     cpu.flags.HC = ((cpu.A & 0xF) - (cpu[reg8] & 0xF)) < 0
 
     cpu.A = ((cpu.A - cpu[reg8]) >>> 0) % 256
@@ -365,7 +371,7 @@ cpu.SUBR = (reg8) => {
 // Subtract mmu from A
 cpu.SUBM = (data) => {
     cpu.flags.N = true
-    cpu.flags.C = (cpu.A < data)
+    cpu.flags.C = ((cpu.A - data) < 0)
     cpu.flags.HC = ((cpu.A & 0xF) - (data & 0xF)) < 0
 
     cpu.A = ((cpu.A - data) >>> 0) % 256
@@ -378,7 +384,7 @@ cpu.SUBM = (data) => {
 cpu.SBCR = (reg8) => {
     let carry = cpu.C ? 1 : 0
     cpu.flags.N = true
-    cpu.flags.C = (cpu.A < (cpu[reg8] + carry))
+    cpu.flags.C = ((cpu.A - cpu[reg8] - carry) < 0)
     cpu.flags.HC = ((cpu.A & 0xF) - (cpu[reg8] & 0xF) - carry) < 0
 
     cpu.A = ((cpu.A - cpu[reg8] - carry) >>> 0) % 256
@@ -392,7 +398,7 @@ cpu.SBCM = (data) => {
     let carry = cpu.flags.C ? 1 : 0
 
     cpu.flags.N = true
-    cpu.flags.C = (cpu.A < (data + carry))
+    cpu.flags.C = (cpu.A - data - carry) < 0
     cpu.flags.HC = ((cpu.A & 0xF) - (data & 0xF) - carry) < 0//((cpu.A - data - carry) & 0x4)
 
     cpu.A = ((cpu.A - data - carry) >>> 0) % 256
@@ -421,7 +427,7 @@ cpu.ADDM = (data) => {
 
     cpu.A = ((cpu.A + data) >>> 0) % 256
     cpu.flags.Z = (cpu.A === 0)
-    cpu.PC = (cpu.PC + 1) % 0x10000
+    cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 8
 }
 
@@ -434,7 +440,7 @@ cpu.ADDCR = (reg8) => {
 
     cpu.A = ((cpu.A + cpu[reg8]) >>> 0) % 256
     cpu.flags.Z = (cpu.A === 0)
-    cpu.PC = (cpu.PC + 1) % 0x10000
+    cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 4
 }
 
@@ -451,28 +457,32 @@ cpu.ADDCM = (data) => {
     cpu.clock.cycles += 8
 }
 
-// Compare A to register, no changes besides flags
+// Compare A to register
 cpu.CPR = (reg8) => {
-    let temp = cpu.A - cpu[reg8]
+    let temp = ((cpu.A - cpu[reg8]) >>> 0) % 256
+
     cpu.flags.N = true
-    cpu.flags.C = (cpu.A < cpu[reg8])
+    cpu.flags.C = (cpu.A - cpu[reg8]) < 0
     cpu.flags.HC = ((cpu.A & 0xF) - (cpu[reg8] & 0xF)) < 0
     cpu.flags.Z = (temp === 0)
-    cpu.PC = (cpu.PC + 1) % 0x10000
+
+    cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 4
 }
 
-// Compare A to mmu, no changes besides flags
+// Compare A to mmu
 cpu.CPM = (data) => {
 
-    let temp = cpu.A - data
+    let temp = ((cpu.A - data) >>> 0) % 256
 
     cpu.flags.N = true
-    cpu.flags.C = (cpu.A < data)
+    cpu.flags.C = (cpu.A - data) < 0
     cpu.flags.HC = ((cpu.A & 0xF) - (data & 0xF)) < 0
     cpu.flags.Z = (temp === 0)
-    cpu.PC = (cpu.PC + 1) % 0x10000
+
+    cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 8
+
 }
 
 /*
@@ -489,7 +499,7 @@ cpu.LDR = (reg8, data) => {
 // Load mmu or register content into mmu at address
 cpu.LDM = (data, address) => {
     mmu.write(data, address)
-    cpu.PC = (cpu.PC + 1) % 0x10000
+    cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 8
 }
 
@@ -517,13 +527,12 @@ cpu.JPC = (address, condition) => {
 // Relative Jump -> PC = PC + offset
 cpu.JR = (offset) => {
     cpu.PC = (cpu.PC + 1) % 0x10000
-    if (offset & 0x80) {
-        cpu.PC = (cpu.PC + (offset - 256)) % 0x10000
-    } else {
-        cpu.PC = (cpu.PC + offset) % 0x10000
+
+    if (offset > 127) {
+        offset = offset - 256
+        //cpu.PC = (cpu.PC + offset) % 0x10000
     }
-
-
+    cpu.PC = (cpu.PC + offset) % 0x10000
     cpu.clock.cycles += 12
 }
 
@@ -532,14 +541,15 @@ cpu.JRC = (offset, condition) => {
     if (condition) {
         //console.log(`Relative Jump Current PC ${cpu.PC.toString(16)} Offset ${offset.toString(16)} Offset N ${(offset- 0xFF).toString(16) }`)
         // Unsigned Byte!
-        if (offset & 0x80) {
+        if (offset > 127) {
             //console.log(`Negative ${offset - 256} (${offset})`)
             //cpu.PC = (cpu.PC + 1) % 0x10000
-            cpu.PC = (cpu.PC + (offset - 256)) % 0x10000   // Converting to signed integer
-        } else {
-            //cpu.PC = (cpu.PC + 1) % 0x10000
-            cpu.PC = (cpu.PC + offset) % 0x10000
+            //cpu.PC = (cpu.PC + (offset - 256)) % 0x10000   // Converting to signed integer
+            offset = offset - 256
         }
+            //cpu.PC = (cpu.PC + 1) % 0x10000
+        cpu.PC = (cpu.PC + offset) % 0x10000
+
         cpu.clock.cycles += 12
     } else {
         //cpu.PC = (cpu.PC + 1) % 0x10000
@@ -624,6 +634,7 @@ cpu.RETI = () => {
 
 // Jump to 8 Byte Address
 cpu.RST = (address) => {
+    cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     let highByte = (cpu.PC & 0xFF00) >> 8
     let lowByte = cpu.PC & 0x00FF
     cpu.SP--

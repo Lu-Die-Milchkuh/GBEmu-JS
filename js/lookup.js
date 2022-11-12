@@ -134,7 +134,8 @@ export const lookup = {
     },
     0x18: () => {
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
-        cpu.JR(mmu.read(cpu.PC))
+        let offset = mmu.read(cpu.PC)
+        cpu.JR(offset)
     },
     0x19: () => {
     },
@@ -162,7 +163,7 @@ export const lookup = {
     0x20: () => {
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let offset = mmu.read(cpu.PC)
-        //console.log(`Condition ${cpu.flags.Z === false}, ${cpu.flags.Z},Offset: ${offset}`)
+        console.log(`Condition ${cpu.flags.Z === false}, ${cpu.flags.Z},Offset: ${offset}`)
         cpu.JRC(offset, cpu.flags.Z === false)
     },
     0x21: () => {
@@ -228,7 +229,7 @@ export const lookup = {
     0x30: () => {
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let offset = mmu.read(cpu.PC)
-        cpu.JRC(offset, cpu.flags.Z === false)
+        cpu.JRC(offset, cpu.flags.C === false)
     },
     0x31: () => {
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
@@ -647,7 +648,8 @@ export const lookup = {
         cpu.XORR("L")
     },
     0xae: () => {
-        cpu.XORM(mmu.read(cpu.HL()))
+        let byte = mmu.read(cpu.HL())
+        cpu.XORM(byte)
     },
     0xaf: () => {
         cpu.XORR("A")
@@ -773,7 +775,7 @@ export const lookup = {
         let lowByte = mmu.read(cpu.PC)
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let highByte = mmu.read(cpu.PC)
-        let address = highByte << 8 | lowByte
+        //let address = highByte << 8 | lowByte
         //console.error(`Address ${address.toString(16)}`)
         cpu.CALL(highByte << 8 | lowByte)
     },
@@ -816,6 +818,7 @@ export const lookup = {
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let data = mmu.read(cpu.PC)
         cpu.SUBM(data)
+        console.log(`D6 Inst: ${cpu.flags.C}`)
     },
     0xd7: () => {
         cpu.RST(0x10)
@@ -831,7 +834,7 @@ export const lookup = {
         let lowByte = mmu.read(cpu.PC)
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let highByte = mmu.read(cpu.PC)
-        cpu.JPC(lowByte << 8 | highByte, cpu.flags.C === true)
+        cpu.JPC(highByte << 8 | lowByte, cpu.flags.C === true)
     },
     0xdb: () => {
         console.error("Illegal Opcode!")
@@ -841,7 +844,7 @@ export const lookup = {
         let lowByte = mmu.read(cpu.PC)
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let highByte = mmu.read(cpu.PC)
-        cpu.CALLC(lowByte << 8 | highByte, cpu.flags.C === true)
+        cpu.CALLC(highByte << 8 | lowByte, cpu.flags.C === true)
     },
     0xdd: () => {
         console.error("Illegal Opcode!")
@@ -922,7 +925,7 @@ export const lookup = {
         let byte = mmu.read(cpu.PC)
         let offset = 0xFF00 | byte
         cpu.LDR("A", mmu.read(offset))
-        //console.error(`OP 0xF0 Address ${(0xFF00 + byte).toString(16)}: ${mmu.read(0xFF44)}`)
+        console.error(`OP 0xF0 Address ${offset.toString(16)}: ${mmu.read((offset))}`)
         cpu.clock.cycles += 8
 
     },
