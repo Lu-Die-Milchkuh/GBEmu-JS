@@ -78,8 +78,9 @@ timer.updateDivTimer = (cycles) => {
 
     if (timer.divider_counter >= 256) {
         let newDiv = mmu.read(DIV)
-        newDiv = (newDiv + 1) & 256
-        mmu.write(newDiv,DIV)
+        newDiv = ((newDiv + 1) >>> 0) & 256
+        mmu.io_reg[4] = newDiv
+        //mmu.write(newDiv,DIV)
         timer.divider_counter = 0
     }
 }

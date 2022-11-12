@@ -73,16 +73,17 @@ export async function run() {
                 counter++
 
                 if (opcode === 0xCB) {
-                    cpu.PC = (cpu.PC + 1) % 0x10000;
+                    cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
                     opcode = mmu.read(cpu.PC)
                     console.warn(`Prefix CB Instruction: ${opcode.toString(16)}`)
+                    cpu.clock.cycles += 4
                     prefix_lookup[opcode]()
                 } else {
                     lookup[opcode]()
                 }
             } else {
                 cpu.clock.cycles += 4
-            }
+            }; cpu.update_F();printCPUState()
             if(mmu.read(0xFF02) === 0x81) {
                 console.warn("Serial")
                 serial.push(mmu.read(0xFF01))
@@ -118,7 +119,12 @@ function printCPUState() {
     console.log(`F -> ${cpu.F.toString(16)}`)
     console.log(`SP -> ${cpu.SP.toString(16)}`)
     console.log(`PC -> ${cpu.PC.toString(16)}`)
-    console.log(`Flags -> ${cpu.flags}`)
+    console.log("Flags ->}")
+    console.log(`Z: ${cpu.flags.Z}`)
+    console.log(`N: ${cpu.flags.N}`)
+    console.log(`HC: ${cpu.flags.HC}`)
+    console.log(`C: ${cpu.flags.C}`)
+
 
 
 }

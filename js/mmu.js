@@ -87,7 +87,11 @@ mmu.write = function(data, address) {
     } else if (address >= 0xC000 && address <= 0xDFFF) {    // Work RAM
         this.wram[address - 0xC000] = data
     } else if (address >= 0xFF00 && address <= 0xFF7F) {     // IO Register
-        this.io_reg[address - 0xFF00] = data
+        if(address !== 0xFF04) {
+            this.io_reg[address - 0xFF00] = data
+        } else {    // If the CPU write to DIV, it will be reset
+            this.io_reg[0xFF04 - 0xFF00] = 0
+        }
     } else if (address >= 0xFF80 && address <= 0xFFFE) {    // High RAM
         this.hram[address - 0xFF80] = data
     } else {

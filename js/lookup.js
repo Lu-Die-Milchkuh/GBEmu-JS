@@ -44,7 +44,6 @@ export const lookup = {
     },
     0x04: () => {
         cpu.INCR8("B")
-
     },
     0x05: () => {
         cpu.DECR8("B")
@@ -126,7 +125,8 @@ export const lookup = {
     },
     0x16: () => {
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
-        cpu.LDR("D", mmu.read(cpu.PC))
+        let byte = mmu.read(cpu.PC)
+        cpu.LDR("D", byte)
         cpu.clock.cycles += 4
     },
     0x17: () => {
@@ -138,9 +138,11 @@ export const lookup = {
         cpu.JR(offset)
     },
     0x19: () => {
+        cpu.ADDR16("HL","DE")
     },
     0x1a: () => {
-        cpu.LDR("A", mmu.read(cpu.DE()))
+        let byte = mmu.read(cpu.DE())
+        cpu.LDR("A", byte)
         cpu.clock.cycles += 4
     },
     0x1b: () => {
@@ -154,7 +156,8 @@ export const lookup = {
     },
     0x1e: () => {
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
-        cpu.LDR("E", mmu.read(cpu.PC))
+        let byte = mmu.read(cpu.PC)
+        cpu.LDR("E", byte)
 
     },
     0x1f: () => {
@@ -163,7 +166,7 @@ export const lookup = {
     0x20: () => {
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let offset = mmu.read(cpu.PC)
-        console.log(`Condition ${cpu.flags.Z === false}, ${cpu.flags.Z},Offset: ${offset}`)
+        //console.log(`Condition ${cpu.flags.Z === false}, ${cpu.flags.Z},Offset: ${offset}`)
         cpu.JRC(offset, cpu.flags.Z === false)
     },
     0x21: () => {
@@ -221,7 +224,8 @@ export const lookup = {
     },
     0x2e: () => {
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
-        cpu.LDR("L", mmu.read(cpu.PC))
+        let byte = mmu.read(cpu.PC)
+        cpu.LDR("L", byte)
     },
     0x2f: () => {
         cpu.CPL()
@@ -245,12 +249,20 @@ export const lookup = {
         cpu.setHL(newHL)
     },
     0x33: () => {
+        cpu.INCR_SP()
     },
     0x34: () => {
         // INC (HL) -> Inc byte at address stored in HL
         let byte = mmu.read(cpu.HL())
+
+        cpu.flags.N = false
+        cpu.flags.HC = ((byte & 0xF) + 1) > 0xF
+
         byte = ((byte + 1) >>> 0) % 256
         mmu.write(byte, cpu.HL())
+
+        cpu.flags.Z = (byte === 0)
+
         cpu.clock.cycles += 4
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     },
@@ -258,14 +270,21 @@ export const lookup = {
 
         // DEC (HL) -> DEC byte at address stored in HL
         let byte = mmu.read(cpu.HL())
+
+        cpu.flags.N = true
+        cpu.flags.HC = ((byte & 0xF) - 1) < 0
+
         byte = ((byte - 1) >>> 0) % 256
         mmu.write(byte, cpu.HL())
+
+        cpu.flags.Z = (byte === 0)
         cpu.clock.cycles += 4
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     },
     0x36: () => {
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
-        cpu.LDM(mmu.read(cpu.PC), cpu.HL())
+        let byte = mmu.read(cpu.PC)
+        cpu.LDM(byte, cpu.HL())
         cpu.clock.cycles += 4
     },
     0x37: () => {
@@ -277,6 +296,7 @@ export const lookup = {
         cpu.JRC(offset, cpu.flags.C === true)
     },
     0x39: () => {
+        // TODO -> ADD HL,SP
     },
     0x3a: () => {
         cpu.LDR("A", mmu.read(cpu.HL()))
@@ -285,7 +305,6 @@ export const lookup = {
         cpu.clock.cycles += 4
     },
     0x3b: () => {
-        //cpu.DECR16("getSP")
         cpu.DEC_SP()
     },
     0x3c: () => {
@@ -756,6 +775,7 @@ export const lookup = {
         let lowByte = mmu.read(cpu.PC)
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let highByte = mmu.read(cpu.PC)
+
         cpu.JPC(highByte << 8 | lowByte, cpu.flags.Z === true)
     },
     0xcb: () => {
@@ -767,6 +787,7 @@ export const lookup = {
         let lowByte = mmu.read(cpu.PC)
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let highByte = mmu.read(cpu.PC)
+
         cpu.CALLC(highByte << 8 | lowByte, cpu.flags.Z === true)
     },
     0xcd: () => {
@@ -775,13 +796,14 @@ export const lookup = {
         let lowByte = mmu.read(cpu.PC)
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let highByte = mmu.read(cpu.PC)
-        //let address = highByte << 8 | lowByte
-        //console.error(`Address ${address.toString(16)}`)
+
         cpu.CALL(highByte << 8 | lowByte)
     },
     0xce: () => {
-        cpu.ADDCM(mmu.read(cpu.PC + 1));
-        cpu.PC = (cpu.PC + 1) % 0x10000
+        cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
+        let byte = mmu.read(cpu.PC)
+
+        cpu.ADDCM(byte)
     },
     0xcf: () => {
         cpu.RST(0x08)
@@ -798,6 +820,7 @@ export const lookup = {
         let lowByte = mmu.read(cpu.PC)
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let highByte = mmu.read(cpu.PC)
+
         cpu.JPC(highByte << 8 | lowByte, cpu.flags.C === false)
     },
     0xd3: () => {
@@ -809,6 +832,7 @@ export const lookup = {
         let lowByte = mmu.read(cpu.PC)
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let highByte = mmu.read(cpu.PC)
+
         cpu.CALLC(highByte << 8 | lowByte, cpu.flags.C === false)
     },
     0xd5: () => {
@@ -818,7 +842,7 @@ export const lookup = {
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let data = mmu.read(cpu.PC)
         cpu.SUBM(data)
-        console.log(`D6 Inst: ${cpu.flags.C}`)
+        //console.log(`D6 Inst: ${cpu.flags.C}`)
     },
     0xd7: () => {
         cpu.RST(0x10)
@@ -834,6 +858,7 @@ export const lookup = {
         let lowByte = mmu.read(cpu.PC)
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let highByte = mmu.read(cpu.PC)
+
         cpu.JPC(highByte << 8 | lowByte, cpu.flags.C === true)
     },
     0xdb: () => {
@@ -844,6 +869,7 @@ export const lookup = {
         let lowByte = mmu.read(cpu.PC)
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let highByte = mmu.read(cpu.PC)
+
         cpu.CALLC(highByte << 8 | lowByte, cpu.flags.C === true)
     },
     0xdd: () => {
@@ -853,7 +879,7 @@ export const lookup = {
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let data = mmu.read(cpu.PC)
         cpu.SBCM(data)
-        cpu.PC = (cpu.PC + 1) % 0x10000
+        //cpu.PC = (cpu.PC + 1) % 0x10000
     },
     0xdf: () => {
         cpu.RST(0x18)
@@ -883,7 +909,7 @@ export const lookup = {
     },
     0xe6: () => {
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
-        cpu.ANDM(mmu.read(cpu.PC));
+        cpu.ANDM(mmu.read(cpu.PC))
 
     },
     0xe7: () => {
@@ -900,6 +926,7 @@ export const lookup = {
         let lowByte = mmu.read(cpu.PC)
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let highByte = mmu.read(cpu.PC)
+
         cpu.LDM(cpu.A, highByte << 8 | lowByte)
         cpu.clock.cycles += 8
     },
@@ -915,7 +942,7 @@ export const lookup = {
     0xee: () => {
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let data = mmu.read(cpu.PC)
-        cpu.XORM(mmu.read(cpu.PC + 1))
+        cpu.XORM(data)
     },
     0xef: () => {
         cpu.RST(0x28)
@@ -925,12 +952,13 @@ export const lookup = {
         let byte = mmu.read(cpu.PC)
         let offset = 0xFF00 | byte
         cpu.LDR("A", mmu.read(offset))
-        console.error(`OP 0xF0 Address ${offset.toString(16)}: ${mmu.read((offset))}`)
+        //console.error(`OP 0xF0 Address ${offset.toString(16)}: ${mmu.read((offset))}`)
         cpu.clock.cycles += 8
 
     },
     0xf1: () => {
         cpu.POP("AF")
+        cpu.update_F()
     },
     0xf2: () => {
         let offset = 0xFF00 | cpu.C
@@ -944,11 +972,14 @@ export const lookup = {
         console.error("Illegal Opcode!")
     },
     0xf5: () => {
+        cpu.update_F()
         cpu.PUSH(cpu.AF())
     },
     0xf6: () => {
-        cpu.ORM(mmu.read(cpu.PC + 1));
-        cpu.PC = (cpu.PC + 1) % 0x10000
+        cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
+        let byte = mmu.read(cpu.PC)
+        cpu.ORM(byte)
+
     },
     0xf7: () => {
         cpu.RST(0x30)
@@ -960,25 +991,24 @@ export const lookup = {
         let byte = mmu.read(cpu.PC)
         let SP = cpu.SP
 
-        if (byte & 0x80) {
-            SP = SP + (byte - 256)
-        } else {
-            SP += byte
+        if (byte > 127) {
+            byte =  byte - 256
         }
+
+        SP += byte
 
         cpu.flags.Z = false
         cpu.flags.N = false
         cpu.flags.HC = (SP & 0xF) < (cpu.SP & 0xF)
         cpu.flags.C = (SP & 0xFF) < (cpu.SP & 0xFF)
         cpu.LDR16("HL", SP)
-        cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
+        //cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     },
     0xf9: () => {
-        //let HL = cpu.HL()
-        //cpu.setSP(HL)
+
         cpu.SP = cpu.HL()
         cpu.clock.cycles += 8
-        cpu.PC = (cpu.PC + 1) % 0x10000
+        cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     },
     0xfa: () => {
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
