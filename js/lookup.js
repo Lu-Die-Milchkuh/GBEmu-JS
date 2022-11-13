@@ -198,6 +198,7 @@ export const lookup = {
         cpu.clock.cycles += 4
     },
     0x27: () => {
+        cpu.DAA()
     },
     0x28: () => {
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000

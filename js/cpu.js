@@ -749,6 +749,24 @@ cpu.HALT = () => {
     cpu.isHalt = true
 }
 
+cpu.DAA = () => {
+    let A = cpu.A
+    let adjust = cpu.flags.C ? 0x60 : 0
+
+    if(!cpu.flags.N) {
+        if((A & 0x0F) > 0x09) {
+            A = ((A + adjust) >>> 0) % 256
+        }
+    } else {
+        A = ((A - adjust) >>> 0) % 256
+    }
+
+    cpu.flags.C = (adjust >= 0x60)
+    cpu.flags.HC = false
+    cpu.flags.Z = A === 0
+    cpu.A = A
+    cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
+}
 
 /*
     Rotate and Shift Commands
