@@ -52,6 +52,17 @@ class TileEntry {
     pixels = new Array(64)
 }
 
+class SpriteEntry {
+    y_pos = 0
+    x_pos = 0
+    tile_id = 0
+    behind_background = false
+    x_flip = false
+    y_flip = false
+    use_palette_one = false
+
+}
+
 export let gpu = {
     vram: new Array(0x2000),
     oam: new Array(0x9F),   // Object Attribute
@@ -63,6 +74,7 @@ export let gpu = {
     line: 0,
     vblank: false,
     tile_cache: [],
+    sprite_table: [],
     frame_buffer: [], //new Array(160 * 144),
     drawFlag: false
     //bg_buffer: new Array(256 * 256),
@@ -78,6 +90,11 @@ gpu.reset = function () {
     for (let i = 0; i < 384; i++) {
         let tile = new TileEntry()
         this.tile_cache.push(tile)
+    }
+
+    for(let i = 0; i < 40; i++) {
+        let sprite = new SpriteEntry()
+        this.sprite_table.push(sprite)
     }
 
     for (let i = 0; i < 160 * 144; i++) {
@@ -173,6 +190,8 @@ gpu.setMode = function (mode) {
 
 gpu.update_scanline = function () {
     let LCDC = this.read(0xFF40)
+
+    let bg_priority = new Array(160)
 
     if (LCDC & 0x1) {    // 0b0000 0001
         this.draw_background()
@@ -295,6 +314,87 @@ gpu.draw_window = function () {
 }
 
 gpu.draw_sprites = function () {
+    let scanline_y = mmu.read(LY)
+    let LCDC = mmu.read(0xFF40)
+
+
+    let tall_sprite_mode = LCDC & (1 << 2)
+    let sprite_y_max = 0
+
+    if(tall_sprite_mode) {
+        sprite_y_max = 15
+    } else {
+        sprite_y_max = 7
+    }
+
+    for(let i = 0; i < this.sprite_table.length;i++) {
+
+        let sprite = this.sprite_table[i]
+        if(scanline_y >= sprite.y_pos && scanline_y <= sprite.y_pos + sprite_y_max
+            && sprite.x_pos + 8 >= 0 && sprite.x_pos < 16)
+        {
+            let sprite_x = sprite.x_pos
+            let sprite_y = sprite.y_pos
+
+            let pixel_y = ((scanline_y - 1) >>> 0) % 8
+            let lookup_y = sprite.x_flip ? (pixel_y - 7) * -1 : pixel_y
+
+            let tile_id = 0
+
+            if(tall_sprite_mode) {
+                if((scanline_y - sprite_y) < 8) {
+                    if(sprite.y_flip) {
+                        tile_id = sprite.tile_id || 1
+                    } else {
+                        tile_id = sprite.tile_id & 0xFE
+                    }
+                } else {
+                    if(sprite.y_flip) {
+                        tile_id = sprite.tile_id & 0xFE
+                    } else {
+                        tile_id = sprite.tile_id || 1
+                    }
+                }
+            } else {
+                tile_id = sprite.tile_id
+            }
+
+            if(this.tile_cache[tile_id].dirty) {
+                this.refresh_tile(tile_id)
+            }
+
+            let tile = this.tile_cache[tile_id]
+
+            // TODO -> Palette
+            let palette = sprite.use_palette_one ? mmu.io_reg[0xFF49 - 0xFF00] : mmu.io_reg[0xFF48 - 0xFF00]
+
+
+            for(let pixel_x = 0; i < 8;pixel_x++) {
+                let adjust_x = (sprite_x + pixel_x) % 256
+
+                let lookup_x = sprite.x_flip ? (pixel_x -7) * -1 : pixel_x
+
+                let pixel = tile.pixels[(lookup_y * 8) + lookup_x]
+
+                if(pixel === 0) continue
+
+                // TODO Fix this
+                /*if(sprite.behind_background) {
+                    if()
+                }*/
+
+                let color = this.colorize(pixel,palette)
+                let offset_x = adjust_x
+                let offset_y = scanline_y * 160
+                let offset = offset_x + offset_y
+                this.frame_buffer[offset] = color
+
+            }
+
+        }
+    }
+
+
 }
 
 
@@ -313,13 +413,13 @@ gpu.colorize = (shade, palette) => {
             real = palette & 3
             break
         case 1:
-            real = palette & (3 << 2) >> 2
+            real = (palette & (3 << 2)) >> 2
             break
         case 2:
-            real = palette & (3 << 4) >> 4
+            real = (palette & (3 << 4)) >> 4
             break
         case 3:
-            real = palette & (3 << 6) >> 6
+            real = (palette & (3 << 6)) >> 6
             break
         default:
             console.error("Invalid Palette Shade!")

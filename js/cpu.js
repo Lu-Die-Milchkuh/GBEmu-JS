@@ -103,10 +103,10 @@ cpu.setAF = (data) => {
     cpu.A = (data & 0xFF00) >> 8
     cpu.F = data & 0x00FF
     cpu.F = cpu.F & 0xF0
-    cpu.flags.C = (cpu.F & (1 << 4)) === (1 << 4)
-    cpu.flags.N = (cpu.F & (1 << 6)) === (1 << 6)
-    cpu.flags.HC = (cpu.F & (1 << 5)) === (1 << 5)
-    cpu.flags.Z = (cpu.F & (1 << 7)) === (1 << 7)
+    cpu.flags.C = (cpu.F & (1 << 4)) ? true: false
+    cpu.flags.N = (cpu.F & (1 << 6)) ? true: false
+    cpu.flags.HC = (cpu.F & (1 << 5)) ? true: false
+    cpu.flags.Z = (cpu.F & (1 << 7)) ? true: false
 }
 
 cpu.setBC = (data) => {
@@ -134,6 +134,7 @@ cpu.update_F = () => {
     F |= (cpu.flags.HC ? 1 : 0) << 5
     F |= (cpu.flags.Z ? 1 : 0) << 7
     F = F & 0xF0
+    cpu.F = F
 }
 
 cpu.update_Flags = () => {
@@ -153,6 +154,7 @@ cpu.reset = () => {
     cpu.setHL(0x014D)
     cpu.SP = 0xFFFE
     cpu.PC = 0x0100
+    cpu.update_Flags()
     mmu.write(0x00, 0xFF05)   // TIMA
     mmu.write(0x00, 0xFF06)   // TMA
     mmu.write(0x00, 0xFF07)   // TAC
@@ -241,6 +243,7 @@ cpu.requestInterrupt = (int) => {
 // Increment a 8-Bit Register
 cpu.INCR8 = (reg8) => {
     cpu.flags.HC = ((cpu[reg8] & 0x0F) + 1) > 0x0F
+    //cpu.flags.C = (cpu[reg8] + 1) > 0xFF    // Doc. says this is not affected but some Emulators do it anyway
 
     cpu[reg8] = ((cpu[reg8] + 1) >>> 0) % 256 // Needs to stay in range of an 8-Bit Integer
 
@@ -255,7 +258,8 @@ cpu.INCM8 = () => {
     let address = cpu.HL()
     let data = mmu.read(address)
 
-    cpu.flags.HC = ((data & 0xF) + 1) > 0xF
+    cpu.flags.HC = ((data & 0x0F) + 1) > 0x0F
+    //cpu.flags.C = (cpu[reg8] + 1) > 0xFF    // Doc. says this is not affected but some Emulators do it anyway
 
     data = ((data + 1) >>> 0) % 256
 

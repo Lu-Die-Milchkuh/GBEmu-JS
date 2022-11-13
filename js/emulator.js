@@ -70,7 +70,7 @@ export async function run() {
             let temp_cycles = cpu.clock.cycles
 
             cpu.checkInterrupt()
-
+            cpu.update_F()
             if(!cpu.isHalt && !cpu.isStop) {
                 // Opcodes are the Bytes that tell the cpu which instruction it should execute
                 let opcode = mmu.read(cpu.PC)
@@ -100,7 +100,7 @@ export async function run() {
             temp_cycles = cpu.clock.cycles - temp_cycles // Elapsed Cycles
 
             gpu.update(temp_cycles)
-            timer.cycles(temp_cycles)
+            timer.cycles(temp_cycles)//;printCPUState()
         }
 
         /*let end = Date.now() - start
@@ -118,25 +118,25 @@ export async function run() {
         console.warn(`From Serial: ${foo}`)
         printCPUState()
         //gpu.tile_cache.forEach((e) => {console.log(e)})
-
+        screen.update()
     }
-
+    //console.log(gpu.frame_buffer)
 }
 let serial = []
 
 function printCPUState() {
     console.warn(`CPU State`)
     console.log(`A -> ${cpu.A.toString(16)}`)
+    console.log(`F -> ${cpu.F.toString(16)}`)
     console.log(`B -> ${cpu.B.toString(16)}`)
     console.log(`C -> ${cpu.C.toString(16)}`)
     console.log(`D -> ${cpu.D.toString(16)}`)
     console.log(`E -> ${cpu.E.toString(16)}`)
     console.log(`H -> ${cpu.H.toString(16)}`)
     console.log(`L -> ${cpu.L.toString(16)}`)
-    console.log(`F -> ${cpu.F.toString(16)}`)
     console.log(`SP -> ${cpu.SP.toString(16)}`)
     console.log(`PC -> ${cpu.PC.toString(16)}`)
-    console.log("Flags ->}")
+    console.log("Flags ->")
     console.log(`Z: ${cpu.flags.Z}`)
     console.log(`N: ${cpu.flags.N}`)
     console.log(`HC: ${cpu.flags.HC}`)
