@@ -102,6 +102,7 @@ cpu.getSP = () => {
 cpu.setAF = (data) => {
     cpu.A = (data & 0xFF00) >> 8
     cpu.F = data & 0x00FF
+    cpu.F = cpu.F & 0xF0
     cpu.flags.C = (cpu.F & (1 << 4)) === (1 << 4)
     cpu.flags.N = (cpu.F & (1 << 6)) === (1 << 6)
     cpu.flags.HC = (cpu.F & (1 << 5)) === (1 << 5)
@@ -133,6 +134,14 @@ cpu.update_F = () => {
     F |= (cpu.flags.HC ? 1 : 0) << 5
     F |= (cpu.flags.Z ? 1 : 0) << 7
     F = F & 0xF0
+}
+
+cpu.update_Flags = () => {
+    cpu.F = cpu.F & 0xF0
+    cpu.flags.C = (cpu.F & (1<<4)) ? true: false
+    cpu.flags.N = (cpu.F & (1<<6)) ? true: false
+    cpu.flags.Z = (cpu.F & (1<<7)) ? true: false
+    cpu.flags.H = (cpu.F & (1<<5)) ? true: false
 }
 
 // At Startup the Game Boy expects certain Registers and Memory Location to contain the following data
@@ -231,8 +240,10 @@ cpu.requestInterrupt = (int) => {
 
 // Increment a 8-Bit Register
 cpu.INCR8 = (reg8) => {
+    cpu.flags.HC = ((cpu[reg8] & 0x0F) + 1) > 0x0F
+
     cpu[reg8] = ((cpu[reg8] + 1) >>> 0) % 256 // Needs to stay in range of an 8-Bit Integer
-    cpu.flags.HC = ((cpu[reg8] & 0xF) + 1) > 0xF
+
     cpu.flags.Z = (cpu[reg8] === 0)
     cpu.flags.N = false
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
@@ -244,8 +255,10 @@ cpu.INCM8 = () => {
     let address = cpu.HL()
     let data = mmu.read(address)
 
-    data = ((data + 1) >>> 0) % 256
     cpu.flags.HC = ((data & 0xF) + 1) > 0xF
+
+    data = ((data + 1) >>> 0) % 256
+
     cpu.flags.Z = (data === 0)
     cpu.flags.N = false
     mmu.write(data, address)
@@ -255,9 +268,11 @@ cpu.INCM8 = () => {
 
 // Decrement a 8-Bit Register
 cpu.DECR8 = (reg8) => {
+    cpu.flags.HC = ((cpu[reg8] & 0x0F) + 1)  > 0x0F
+
     cpu[reg8] = ((cpu[reg8] - 1) >>> 0) % 256 // Needs to stay in range of an 8-Bit Integer
 
-    cpu.flags.HC = ((cpu[reg8] & 0xF) + 1)  > 0xF
+
     cpu.flags.Z = (cpu[reg8] === 0)
     cpu.flags.N = true
 
@@ -269,8 +284,11 @@ cpu.DECR8 = (reg8) => {
 cpu.DECM8 = () => {
     let address = cpu.HL()
     let data = mmu.read(address)
+
+    cpu.flags.HC = ((data & 0x0F) + 1) > 0x0F
+
     data = ((data - 1) >>> 0) % 256
-    cpu.flags.HC = ((data & 0xF) + 1) > 0xF
+
     cpu.flags.Z = (data === 0)
     cpu.flags.N = true
 
@@ -353,7 +371,7 @@ cpu.ANDM = (data) => {
 cpu.SUBR = (reg8) => {
     cpu.flags.N = true
     cpu.flags.C = (cpu.A - cpu[reg8]) < 0
-    cpu.flags.HC = ((cpu.A & 0xF) - (cpu[reg8] & 0xF)) < 0
+    cpu.flags.HC = ((cpu.A & 0x0F) - (cpu[reg8] & 0x0F)) < 0
 
     cpu.A = ((cpu.A - cpu[reg8]) >>> 0) % 256
     cpu.flags.Z = (cpu.A === 0)
@@ -365,7 +383,7 @@ cpu.SUBR = (reg8) => {
 cpu.SUBM = (data) => {
     cpu.flags.N = true
     cpu.flags.C = ((cpu.A - data) < 0)
-    cpu.flags.HC = ((cpu.A & 0xF) - (data & 0xF)) < 0
+    cpu.flags.HC = ((cpu.A & 0x0F) - (data & 0x0F)) < 0
 
     cpu.A = ((cpu.A - data) >>> 0) % 256
     cpu.flags.Z = (cpu.A === 0)
@@ -378,7 +396,7 @@ cpu.SBCR = (reg8) => {
     let carry = cpu.C ? 1 : 0
     cpu.flags.N = true
     cpu.flags.C = ((cpu.A - cpu[reg8] - carry) < 0)
-    cpu.flags.HC = ((cpu.A & 0xF) - (cpu[reg8] & 0xF) - carry) < 0
+    cpu.flags.HC = ((cpu.A & 0x0F) - (cpu[reg8] & 0x0F) - carry) < 0
 
     cpu.A = ((cpu.A - cpu[reg8] - carry) >>> 0) % 256
     cpu.flags.Z = (cpu.A === 0)
@@ -392,7 +410,7 @@ cpu.SBCM = (data) => {
 
     cpu.flags.N = true
     cpu.flags.C = (cpu.A - data - carry) < 0
-    cpu.flags.HC = ((cpu.A & 0xF) - (data & 0xF) - carry) < 0//((cpu.A - data - carry) & 0x4)
+    cpu.flags.HC = ((cpu.A & 0x0F) - (data & 0x0F) - carry) < 0//((cpu.A - data - carry) & 0x4)
 
     cpu.A = ((cpu.A - data - carry) >>> 0) % 256
     cpu.flags.Z = (cpu.A === 0)
@@ -404,7 +422,7 @@ cpu.SBCM = (data) => {
 cpu.ADDR = (reg8) => {
     cpu.flags.N = false
     cpu.flags.C = ((cpu.A + cpu[reg8]) > 0xFF)
-    cpu.flags.HC = ((cpu.A & 0xF) + (cpu[reg8] & 0xF)) > 0xF
+    cpu.flags.HC = ((cpu.A & 0x0F) + (cpu[reg8] & 0x0F)) > 0x0F
 
     cpu.A = ((cpu.A + cpu[reg8]) >>> 0) % 256
     cpu.flags.Z = (cpu.A === 0)
@@ -416,7 +434,7 @@ cpu.ADDR = (reg8) => {
 cpu.ADDM = (data) => {
     cpu.flags.N = false
     cpu.flags.C = ((cpu.A + data) > 255)
-    cpu.flags.HC = ((cpu.A & 0xF) + (data & 0xF)) > 0xF //((cpu.A + data) & 0x4)
+    cpu.flags.HC = ((cpu.A & 0x0F) + (data & 0x0F)) > 0x0F //((cpu.A + data) & 0x4)
 
     cpu.A = ((cpu.A + data) >>> 0) % 256
     cpu.flags.Z = (cpu.A === 0)
@@ -429,7 +447,7 @@ cpu.ADDCR = (reg8) => {
     let carry = cpu.flags.C ? 1 : 0
     cpu.flags.N = false
     cpu.flags.C = ((cpu.A + cpu[reg8] + carry) > 255)
-    cpu.flags.HC = ((cpu.A & 0xF) + (cpu[reg8] & 0xF) + carry) > 0xF
+    cpu.flags.HC = ((cpu.A & 0x0F) + (cpu[reg8] & 0x0F) + carry) > 0x0F
 
     cpu.A = ((cpu.A + cpu[reg8]) >>> 0) % 256
     cpu.flags.Z = (cpu.A === 0)
@@ -442,7 +460,7 @@ cpu.ADDCM = (data) => {
     let carry = cpu.flags.C ? 1 : 0
     cpu.flags.N = false
     cpu.flags.C = ((cpu.A + data + carry) > 255)
-    cpu.flags.HC = ((cpu.A & 0xF) + (data & 0xF) + carry) > 0xF
+    cpu.flags.HC = ((cpu.A & 0x0F) + (data & 0x0F) + carry) > 0x0F
 
     cpu.A = ((cpu.A + data + carry) >>> 0) % 256
     cpu.flags.Z = (cpu.A === 0)
@@ -456,7 +474,7 @@ cpu.CPR = (reg8) => {
 
     cpu.flags.N = true
     cpu.flags.C = (cpu.A - cpu[reg8]) < 0
-    cpu.flags.HC = ((cpu.A & 0xF) - (cpu[reg8] & 0xF)) < 0
+    cpu.flags.HC = ((cpu.A & 0x0F) - (cpu[reg8] & 0x0F)) < 0
     cpu.flags.Z = (temp === 0)
 
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
@@ -470,7 +488,7 @@ cpu.CPM = (data) => {
 
     cpu.flags.N = true
     cpu.flags.C = (cpu.A - data) < 0
-    cpu.flags.HC = ((cpu.A & 0xF) - (data & 0xF)) < 0
+    cpu.flags.HC = ((cpu.A & 0x0F) - (data & 0x0F)) < 0
     cpu.flags.Z = (temp === 0)
 
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
@@ -696,7 +714,7 @@ cpu.NOP = () => {
 }
 
 cpu.CPL = () => {
-    cpu.A = ~cpu.A
+    cpu.A = cpu.A ^ 0xFF
     cpu.flags.N = true
     cpu.flags.HC = true
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
@@ -923,8 +941,8 @@ cpu.RRA = () => {
 
     cpu.A = (cpu.A >> 1) | (carry << 7)
 
-    cpu.flags.C = bit1 === 1
-    cpu.flags.Z = cpu.A === 0
+    cpu.flags.C = (bit1 === 1)
+    cpu.flags.Z = (cpu.A === 0)
     cpu.flags.HC = false
     cpu.flags.N = false
 
@@ -938,10 +956,10 @@ cpu.RLA = () => {
 
     cpu.A = (cpu.A << 1) | carry
 
-    cpu.flags.Z = cpu.A === 0
+    cpu.flags.Z = (cpu.A === 0)
     cpu.flags.N = false
     cpu.flags.HC = false
-    cpu.flags.C = bit7 === 1
+    cpu.flags.C = (bit7 === 1)
 
     cpu.A = cpu.A << 1
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
@@ -1019,7 +1037,7 @@ cpu.LDR16 = (reg16, data) => {
     cpu.clock.cycles += 12
 }
 
-cpu.LDM16 = (address, data) => {
+cpu.LDM16 = (data, address) => {
     mmu.write(data, address)
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 8

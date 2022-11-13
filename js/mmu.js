@@ -37,7 +37,6 @@ mmu.reset = function() {
     this.extram.fill(0x0)
     this.io_reg.fill(0x0)
 
-
 }
 
 mmu.read = function(address) {
@@ -59,7 +58,12 @@ mmu.read = function(address) {
         data = this.wram[address - 0xC000]
     } else if (address >= 0xE000 && address <= 0xFDFF) {    // Echo RAM
         data = this.wram[(address - 0x2000) & 0x2000]
-    } else if (address >= 0xFF00 && address <= 0xFF7F) {     // IO Register
+    } else if(address >= 0xFE00 && address <= 0xFE9F) {
+        data = gpu.oam[address - 0xFE00]
+    } else if(address >= 0xFEA0 && address <= 0xFEFF) {
+        // unused memory region
+    }
+    else if (address >= 0xFF00 && address <= 0xFF7F) {     // IO Register
         data = this.io_reg[address - 0xFF00]
     } else if (address >= 0xFF80 && address <= 0xFFFE) {    // High RAM
         data = this.hram[address - 0xFF80]
@@ -86,7 +90,17 @@ mmu.write = function(data, address) {
 
     } else if (address >= 0xC000 && address <= 0xDFFF) {    // Work RAM
         this.wram[address - 0xC000] = data
-    } else if (address >= 0xFF00 && address <= 0xFF7F) {     // IO Register
+
+    } else if(address >= 0xE000 && address <= 0xFDFF) { // Echo RAM
+        this.wram[address - 0xE000] = data
+    }
+    else if(address >= 0xFE00 && address <= 0xFE9F) {
+        gpu.oam[address - 0xFE00] = data
+    }
+    else if(address >= 0xFEA0 && address <= 0xFEFF) {
+        // unused memory region
+    }
+    else if (address >= 0xFF00 && address <= 0xFF7F) {     // IO Register
         if(address !== 0xFF04) {
             this.io_reg[address - 0xFF00] = data
         } else {    // If the CPU write to DIV, it will be reset
