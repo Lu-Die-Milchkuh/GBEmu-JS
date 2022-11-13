@@ -47,12 +47,13 @@ export let setPaused = (cond) => {
 
 export async function run() {
     const max_cycles = 69905 // 4194304 HZ / 60 HZ
+    const frame_time = 16.6 // ms
 
     screen.init()
     mmu.reset()
     gpu.reset()
     cpu.reset()
-    let counter = 0;
+    let counter = 0
 
     while (running) {
         while (paused) {
@@ -60,11 +61,14 @@ export async function run() {
             //console.log("Sleeping...")
             await new Promise(resolve => setTimeout(resolve, 10))
         }
-        cpu.clock.cycles = 0;
+
+        cpu.clock.cycles = 0
+        //let start = Date.now()
+
         while (cpu.clock.cycles <= max_cycles * ratio && !paused && running) {
 
             let temp_cycles = cpu.clock.cycles
-
+            cpu.checkInterrupt()
             if(!cpu.isHalt && !cpu.isStop) {
                 // Opcodes are the Bytes that tell the cpu which instruction it should execute
                 let opcode = mmu.read(cpu.PC)
@@ -81,19 +85,34 @@ export async function run() {
                 } else {
                     lookup[opcode]()
                 }
+
             } else {
                 cpu.clock.cycles += 4
-            }; cpu.update_F();printCPUState()
+            }
+            cpu.update_F()
+            //printCPUState()
+
             if(mmu.read(0xFF02) === 0x81) {
                 console.warn("Serial")
                 serial.push(mmu.read(0xFF01))
                 mmu.write(0,0xFF02)
             }
+
             temp_cycles = cpu.clock.cycles - temp_cycles // Elapsed Cycles
-            cpu.checkInterrupt()
+            //cpu.checkInterrupt()
             gpu.update(temp_cycles)
             timer.cycles(temp_cycles)
+
         }
+
+        /*let end = Date.now() - start
+        if (!(end > frame_time)) {
+            console.log(`End: ${end}`)
+            let remaining = frame_time - end
+            await new Promise(resolve => setTimeout(resolve,remaining))
+        }*/
+
+
         await new Promise(resolve => setTimeout(resolve, 100))
         let foo = ""
         for(let i = 0; i < serial.length;i++) {
