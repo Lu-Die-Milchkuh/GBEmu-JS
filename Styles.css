@@ -9,7 +9,10 @@ h1 {
     animation: textShadow 1.6s infinite;
     position: absolute;
     top: 50%;
-    font-size: 50px;
+    font-size: 60px;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 h1::after {
@@ -116,6 +119,12 @@ body {
 }
 
 #gameboy-img {
+    -moz-user-select: none;
+    -webkit-user-drag: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    pointer-events: none;
+    user-select: none;
     position: relative;
     justify-content: center;
     border: 5px solid black;
@@ -127,9 +136,10 @@ body {
     width: 320px;
     height: 288px;
     display: flex;
-    top: 90px;
+    top: 96px;
     z-index: 1;
     background-color: black;
+    /*background: #66b934; use this later -> #66b934*/
 }
 
 /*
@@ -173,6 +183,10 @@ button:hover {
 button:active {
     background-color: #cccccc;
 }
+
+/*
+    File Input
+*/
 
 input[type="file"] {
     display: none;
