@@ -76,7 +76,9 @@ h1::after {
     100% {text-shadow: 2.6208764473832513px 0 1px rgba(0,30,255,0.5), -2.6208764473832513px 0 1px rgba(255,0,80,0.3), 0 0 3px;}
 }
 
-
+/*
+    Scrolling Header Background
+*/
 .container {
     overflow: hidden;
     position: relative;
@@ -95,7 +97,7 @@ h1::after {
         transform: translate3d(0, 0, 0);
     }
     100% {
-        transform: translate3d(-1692px, 0, 0); /* The image width */
+        transform: translate3d(-1500px, 0, 0);
     }
 }
 
