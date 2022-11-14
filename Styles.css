@@ -1,5 +1,10 @@
 h1 {
-    background: aquamarine;
+    background: #7C7C7C;
+    text-align: center;
+}
+
+body {
+    background: wheat;
 }
 
 /*
@@ -7,17 +12,25 @@ h1 {
 */
 #game-overlay {
     border: 5px solid black;
-    display: inline-block;
-    /*position: center;*/
+    display: flex;
+    justify-content: center;
+    position: relative;
+}
+
+#gameboy-img {
+    position: relative;
+    justify-content: center;
+    border: 5px solid black;
 }
 
 #game-screen {
     position: absolute;
+    justify-content: center;
     width: 320px;
     height: 288px;
-    top: 183px;
-    left: 190px;
-    z-index: 20;
+    display: flex;
+    top: 90px;
+    z-index: 1;
     background-color: black;
 }
 
@@ -36,3 +49,90 @@ h1 {
 #control-block > * {
     width: 33%;
 }
+
+button {
+    background-color: #7C7C7C;
+    border-bottom: 6px inset rgba(0,0,0,.5);
+    border-left: 6px inset rgba(0,0,0,.5);
+    border-right: 6px inset rgba(255,255,255,.5);
+    border-top: 6px inset rgba(255,255,255,.5);
+    box-sizing: border-box;
+    color: white;
+
+    display: inline-block;
+    font-size: 1rem;
+    margin: 1rem;
+    padding: .5rem;
+    text-transform: uppercase;
+    cursor: crosshair;
+}
+
+button:hover {
+    transition: 0.7s;
+    background-color: green;
+}
+
+button:active {
+    background-color: #cccccc;
+}
+
+input[type="file"] {
+    display: none;
+    cursor: pointer;
+}
+
+label[for="file-input"] {
+    justify-content: center;
+    text-align: center;
+    display: inline-block;
+    text-transform: uppercase;
+
+    background: #7C7C7C;
+    border-bottom: 6px inset rgba(0,0,0,.5);
+    border-left: 6px inset rgba(0,0,0,.5);
+    border-right: 6px inset rgba(255,255,255,.5);
+    border-top: 6px inset rgba(255,255,255,.5);
+    box-sizing: border-box;
+    color: white;
+
+    font-size: 1rem;
+    margin: 1rem;
+    padding: .5rem;
+    cursor: pointer;
+}
+
+label[for="file-input"]:hover {
+    cursor: pointer;
+    transition: 0.7s;
+    background: green;
+}
+
+/*
+    Speed Control Block
+*/
+form[id="speed-control"] {
+    display: grid;
+    border-style: solid;
+    background-color: #7C7C7C;
+    color: white
+}
+
+input[id="#speed-slider"] {
+
+}
+
+label[for="speed-slider"] {
+    text-transform: uppercase;
+    text-align: center;
+}
+
+output {
+    text-align: center;
+}
+
+footer {
+    background-color: #7C7C7C;
+    font-size: 20px;
+    text-align: right;
+}
+

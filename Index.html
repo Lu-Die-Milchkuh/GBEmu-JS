@@ -25,12 +25,16 @@
     <noscript>Javascript not enabled! Please enable it or switch to a newer Browser</noscript>
 
     <div id="game-overlay">
-        <img src="media/gb-cover.jpg" alt="GameBoy Overlay">
+        <img id="gameboy-img" src="media/gb-cover.jpg" alt="GameBoy Overlay">
         <canvas id="game-screen">Your Browser does not support the Canvas</canvas>
     </div>
 
     <div id="control-block">
-        <input id="file-input" type="file" accept=".gb,.gbc">
+
+        <label for="file-input">Select your ROM!
+            <input id="file-input" type="file" accept=".gb,.gbc">
+        </label>
+
         <button id="reset-button">Reset</button>
         <button id="stop-button">Stop</button>
         <button id="pause-button">Pause</button>
@@ -43,6 +47,10 @@
 
     </div>
 
+    <footer>
+        Code can be found on
+        <a href="https://github.com/Lu-Die-Milchkuh/GBEmu-JS">Github</a>
+    </footer>
 
 </main>
 </body>

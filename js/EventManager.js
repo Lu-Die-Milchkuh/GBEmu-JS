@@ -49,7 +49,7 @@ document.querySelector("#file-input").addEventListener("change", (event) => {
 // Speed Slider
 document.querySelector("#speed-slider").addEventListener("input", () => {
     let value = document.querySelector("#speed-slider").value
-    document.querySelector("#speed-out").value = `${value}%`
+    document.querySelector("#speed-out").value = `Current Emulation Speed: ${value}%`
     setPaused(true)
     setRatio(value)
     setPaused(false)
@@ -74,7 +74,9 @@ document.querySelector("#reset-button").addEventListener("click", () => {
 
 // Pause Button
 document.querySelector("#pause-button").addEventListener("click", () => {
+    let button = document.querySelector("#pause-button")
     setPaused(!paused)
-    document.querySelector("#pause-button").textContent = paused ? "Resume" : "Pause"
+    button.textContent = paused ? "Resume" : "Pause"
+    //button.style.backgroundColor = paused ? "Red" : "#7C7C7C"
     console.log(`Emulation Paused: ${paused}`)
 })
