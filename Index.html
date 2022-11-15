@@ -21,7 +21,7 @@
 </head>
 <body>
 
-<div class="container">
+<div class="header-container">
     <div class="sliding-background"></div>
     <h1>WebBoy</h1>
 </div>
@@ -31,7 +31,7 @@
     <noscript>Javascript not enabled! Please enable it or switch to a newer Browser</noscript>
 
     <div id="game-overlay">
-        <img id="gameboy-img" src="media/gb-cover.jpg" alt="GameBoy Overlay">
+        <img id="gameboy-img" src="media/gb-cover.jpg" alt="GameBoy Overlay" draggable="false">
         <canvas id="game-screen">Your Browser does not support the Canvas</canvas>
     </div>
 
@@ -55,9 +55,15 @@
 
 
 </main>
-    <footer>
-        Code can be found on
-        <a href="https://github.com/Lu-Die-Milchkuh/GBEmu-JS">Github</a>
-    </footer>
+
+    <div class="footer-container">
+        <div class="pacman"></div>
+        <footer >
+                This Website is licensed under GPL v3. You can find its source code on
+                <a href="https://github.com/Lu-Die-Milchkuh/GBEmu-JS">Github</a>
+        </footer>
+    </div>
+
+
 </body>
 </html>
