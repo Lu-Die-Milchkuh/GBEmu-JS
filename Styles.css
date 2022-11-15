@@ -83,6 +83,7 @@ h1::after {
     Scrolling Header Background
 */
 .header-container {
+    width: 100%;
     overflow: hidden;
     position: relative;
     text-align: center;
@@ -91,7 +92,7 @@ h1::after {
 .sliding-background {
     background: url("./media/header-background.png") repeat-x;
     height: 400px;
-    width: 2460px;
+    width: 300%;
     animation: slide 60s linear infinite;
 }
 
