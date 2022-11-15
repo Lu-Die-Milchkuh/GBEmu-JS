@@ -91,7 +91,7 @@ h1::after {
 .sliding-background {
     background: url("./media/header-background.png") repeat-x;
     height: 400px;
-    width: 5076px;
+    width: 2460px;
     animation: slide 60s linear infinite;
 }
 
@@ -100,7 +100,7 @@ h1::after {
         transform: translate3d(0, 0, 0);
     }
     100% {
-        transform: translate3d(-1500px, 0, 0);
+        transform: translate3d(-410px, 0, 0);
     }
 }
 
