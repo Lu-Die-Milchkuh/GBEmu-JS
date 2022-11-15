@@ -431,7 +431,12 @@ gpu.colorize = (shade, palette) => {
 gpu.read = function (address) {
     let data = 0
     if (address >= 0x8000 && address <= 0x9FFF) { // VRAM
-        data = this.vram[address - 0x8000]
+        if(this.mode === 3) {
+            data = 0xFF
+        } else {
+            data = this.vram[address - 0x8000]
+        }
+
     } else if (address >= 0xFE00 && address <= 0xFE9F) {
         data = this.oam[address - 0xFE00]
     }
@@ -443,9 +448,51 @@ gpu.write = function (data, address) {
 
     if (address >= 0x8000 && address <= 0x97FF) {
         if (this.mode === 3) return
-        this.vram[address - 0x8000] = data
-    } else if (address >= 0xFF00 && address <= 0xFF7F) {
+
+        let index = address - 0x8000
+        this.vram[index] = data
+        if(address <= 0x97FF) {
+            let tile_id = (index / 16) >>> 0
+            //console.log(tile_id)
+            this.tile_cache[tile_id].dirty = true
+        }
+
+    }
+    else if(address >= 0xFE00 && address <= 0xFE9F) {
+        if(this.mode === 2 || this.mode === 3 ) {
+            return
+        }
+        this.oam[address - 0xFE00] = data
+        this.update_sprite(data,address)
+    }
+    else if (address >= 0xFF00 && address <= 0xFF7F) {
         mmu.io_reg[address - 0xFF00] = data
+    }
+}
+
+gpu.update_sprite = function(data,address) {
+    let sprite_id = ((address - 0xFE00) / 4) >>> 0
+    let sprite = this.sprite_table[sprite_id]
+    let data_type = address % 4
+
+    switch (data_type) {
+        case 0:
+            sprite.y_pos = data - 16
+            break
+        case 1:
+            sprite.x_pos = data - 8
+            break
+        case 2:
+            sprite.tile_id = data
+            break
+        case 3:
+            sprite.background = (data & (1 << 7))  > 0
+            sprite.y_flip = (data & (1<<6)) > 0
+            sprite.x_flip = (data & (1<<5)) > 0
+            sprite.use_palette_one = (data & (1<<4)) > 0
+            break
+        default:
+            console.error(`Error in gpu.update_sprite -> data_type ${data_type}`)
     }
 }
 

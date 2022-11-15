@@ -22,6 +22,7 @@
 
 import {gpu} from "./gpu.js"
 import {cpu} from "./cpu.js"
+import {oam} from "./dma.js"
 
 export let mmu = {
     wram: new Array(0x2000), // 8192 Bytes of Work RAM
@@ -46,7 +47,7 @@ mmu.read = function(address) {
         data = this.rom[address]
     } else if (address >= 0x8000 && address <= 0x9FFF) {    // VRAM
         if(!gpu.vblank) {
-            data = gpu.vram[address - 0x8000]
+            data = gpu.read(address)//gpu.vram[address - 0x8000]
         } else {
             console.warn(`Tried to read from VRAM at ${address.toString(16)} during VBLANK!`)
             data = 0xFF
@@ -59,7 +60,7 @@ mmu.read = function(address) {
     } else if (address >= 0xE000 && address <= 0xFDFF) {    // Echo RAM
         data = this.wram[(address - 0x2000) & 0x2000]
     } else if(address >= 0xFE00 && address <= 0xFE9F) {
-        data = gpu.oam[address - 0xFE00]
+        data = gpu.read(address)//oam[address - 0xFE00]
     } else if(address >= 0xFEA0 && address <= 0xFEFF) {
         // unused memory region
     }
@@ -82,6 +83,7 @@ mmu.write = function(data, address) {
     } else if (address >= 0x8000 && address <= 0x9FFF) {    // VRAM
         if (!gpu.vblank) {
             gpu.vram[address - 0x8000] = data
+            gpu.write(data,address)
         } else {
             console.warn(`Tried to write ${data.toString(16)} to VRAM at ${address.toString(16)} during VBLANK!`)
         }
@@ -95,14 +97,19 @@ mmu.write = function(data, address) {
         this.wram[address - 0xE000] = data
     }
     else if(address >= 0xFE00 && address <= 0xFE9F) {
-        gpu.oam[address - 0xFE00] = data
+        gpu.write(data,address)
+        //gpu.oam[address - 0xFE00] = data
     }
     else if(address >= 0xFEA0 && address <= 0xFEFF) {
         // unused memory region
     }
     else if (address >= 0xFF00 && address <= 0xFF7F) {     // IO Register
         if(address !== 0xFF04) {
-            this.io_reg[address - 0xFF00] = data
+            if(address === 0xFF46) {
+                oam.request(data)
+            } else {
+                this.io_reg[address - 0xFF00] = data
+            }
         } else {    // If the CPU write to DIV, it will be reset
             this.io_reg[0xFF04 - 0xFF00] = 0
         }

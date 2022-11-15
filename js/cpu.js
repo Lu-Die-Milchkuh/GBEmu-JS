@@ -53,7 +53,7 @@ export let cpu = {
     },
 
     // Interrupt Master Enable Register
-    IME: false,
+    IME: true,
     // Interrupt Enable
     IE: 0,
 
@@ -93,20 +93,14 @@ cpu.HL = () => {
     return (cpu.H << 8) | cpu.L
 }
 
-// useless but breaks code if removed
-// Bad Design Choice of me :-)
-cpu.getSP = () => {
-    return cpu.SP
-}
-
 cpu.setAF = (data) => {
     cpu.A = (data & 0xFF00) >> 8
     cpu.F = data & 0x00FF
     cpu.F = cpu.F & 0xF0
-    cpu.flags.C = (cpu.F & (1 << 4)) ? true: false
-    cpu.flags.N = (cpu.F & (1 << 6)) ? true: false
-    cpu.flags.HC = (cpu.F & (1 << 5)) ? true: false
-    cpu.flags.Z = (cpu.F & (1 << 7)) ? true: false
+    cpu.flags.C = !!(cpu.F & (1 << 4))
+    cpu.flags.N = !!(cpu.F & (1 << 6))
+    cpu.flags.HC = !!(cpu.F & (1 << 5))
+    cpu.flags.Z = !!(cpu.F & (1 << 7))
 }
 
 cpu.setBC = (data) => {
@@ -128,33 +122,33 @@ cpu.setSP = (data) => {
     cpu.SP = data
 }
 
-cpu.update_F = () => {
-    let F = (cpu.flags.C ? 1 : 0) << 4
-    F |= (cpu.flags.N ? 1 : 0) << 6
-    F |= (cpu.flags.HC ? 1 : 0) << 5
-    F |= (cpu.flags.Z ? 1 : 0) << 7
+cpu.update_F = function () {
+    let F = (this.flags.C ? 1 : 0) << 4
+    F |= (this.flags.N ? 1 : 0) << 6
+    F |= (this.flags.HC ? 1 : 0) << 5
+    F |= (this.flags.Z ? 1 : 0) << 7
     F = F & 0xF0
-    cpu.F = F
+    this.F = F
 }
 
-cpu.update_Flags = () => {
-    cpu.F = cpu.F & 0xF0
-    cpu.flags.C = (cpu.F & (1<<4)) ? true: false
-    cpu.flags.N = (cpu.F & (1<<6)) ? true: false
-    cpu.flags.Z = (cpu.F & (1<<7)) ? true: false
-    cpu.flags.H = (cpu.F & (1<<5)) ? true: false
+cpu.update_Flags = function() {
+    this.F &= 0xF0
+    this.flags.C = !!(this.F & (1 << 4))
+    this.flags.N = !!(this.F & (1 << 6))
+    this.flags.Z = !!(this.F & (1 << 7))
+    this.flags.H = !!(this.F & (1 << 5))
 }
 
 // At Startup the Game Boy expects certain Registers and Memory Location to contain the following data
-cpu.reset = () => {
+cpu.reset = function() {
     mmu.reset()
-    cpu.setAF(0x01B0)
-    cpu.setBC(0x0013)
-    cpu.setDE(0x00D8)
-    cpu.setHL(0x014D)
-    cpu.SP = 0xFFFE
-    cpu.PC = 0x0100
-    cpu.update_Flags()
+    this.setAF(0x01B0)
+    this.setBC(0x0013)
+    this.setDE(0x00D8)
+    this.setHL(0x014D)
+    this.SP = 0xFFFE
+    this.PC = 0x0100
+    this.update_Flags()
     mmu.write(0x00, 0xFF05)   // TIMA
     mmu.write(0x00, 0xFF06)   // TMA
     mmu.write(0x00, 0xFF07)   // TAC
@@ -166,7 +160,7 @@ cpu.reset = () => {
     mmu.write(0x3F, 0xFF16)
     mmu.write(0x00, 0xFF17)
     mmu.write(0xBF, 0xFF19)
-    mmu.write(0x7F, 0xFF1A)
+    mmu.write(0x7A, 0xFF1A)
     mmu.write(0xFF, 0xFF1B)
     mmu.write(0x9F, 0xFF1C)
     mmu.write(0xBF, 0xFF1E)
@@ -185,7 +179,7 @@ cpu.reset = () => {
     mmu.write(0xFF, 0xFF48)   // OBP0
     mmu.write(0xFF, 0xFF49)   // OBP1
     mmu.write(0x00, 0xFF4A)   // WY
-    mmu.write(0xFC, 0xFF4B)   // WX
+    mmu.write(0x00, 0xFF4B)   // WX
     mmu.write(0x00, 0xFFFF)   // IE
 }
 
@@ -228,12 +222,12 @@ cpu.checkInterrupt = () => {
     }
 }
 
-cpu.requestInterrupt = (int) => {
+cpu.requestInterrupt = function(int) {
     // Interrupt Register is stored at 0xFF0F
     let byte = mmu.read(0xFF0F)
     byte |= (1 << int)
     mmu.write(byte, 0xFF0F)
-    cpu.isHalt = false
+    this.isHalt = false
 }
 
 /*
@@ -241,8 +235,8 @@ cpu.requestInterrupt = (int) => {
  */
 
 // Increment a 8-Bit Register
-cpu.INCR8 = (reg8) => {
-    cpu.flags.HC = ((cpu[reg8] & 0x0F) + 1) > 0x0F
+cpu.INCR8 = function(reg8) {
+    cpu.flags.HC = (((cpu[reg8] & 0xF) + 1) > 0xF)
     //cpu.flags.C = (cpu[reg8] + 1) > 0xFF    // Doc. says this is not affected but some Emulators do it anyway
 
     cpu[reg8] = ((cpu[reg8] + 1) >>> 0) % 256 // Needs to stay in range of an 8-Bit Integer
@@ -438,7 +432,7 @@ cpu.ADDR = (reg8) => {
 cpu.ADDM = (data) => {
     cpu.flags.N = false
     cpu.flags.C = ((cpu.A + data) > 255)
-    cpu.flags.HC = ((cpu.A & 0x0F) + (data & 0x0F)) > 0x0F //((cpu.A + data) & 0x4)
+    cpu.flags.HC = ((cpu.A & 0x0F) + (data & 0x0F)) > 0x0F
 
     cpu.A = ((cpu.A + data) >>> 0) % 256
     cpu.flags.Z = (cpu.A === 0)
@@ -541,11 +535,10 @@ cpu.JPC = (address, condition) => {
 
 // Relative Jump -> PC = PC + offset
 cpu.JR = (offset) => {
-    cpu.PC = (cpu.PC + 1) % 0x10000
+    cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
 
     if (offset > 127) {
         offset = offset - 256
-        //cpu.PC = (cpu.PC + offset) % 0x10000
     }
 
     cpu.PC = ((cpu.PC + offset) >>> 0) % 0x10000
@@ -553,7 +546,7 @@ cpu.JR = (offset) => {
 }
 
 cpu.JRC = (offset, condition) => {
-    cpu.PC = (cpu.PC + 1) % 0x10000
+    cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     if (condition) {
 
         if (offset > 127) {
@@ -690,7 +683,7 @@ cpu.RESR = (reg8, n) => {
 
 cpu.RESM = (n) => {
     let data = mmu.read(cpu.HL())
-    data &= (0 << n)
+    data &= ~(1 << n)
     mmu.write(data, cpu.HL())
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 16
@@ -785,7 +778,7 @@ cpu.DAA = () => {
 
     cpu.flags.C = (adjust >= 0x60)
     cpu.flags.HC = false
-    cpu.flags.Z = A === 0
+    cpu.flags.Z = (A === 0)
     cpu.A = A
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
 }
@@ -802,6 +795,11 @@ cpu.SWAP = (reg8) => {
     cpu[reg8] = (highNibble >> 4) | (lowNibble << 4)
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 8
+
+    cpu.flags.Z = (cpu[reg8] === 0)
+    cpu.flags.N = false
+    cpu.flags.HC = false
+    cpu.flags.C = false
 }
 
 // Swap nibbles at memory location
@@ -814,6 +812,11 @@ cpu.SWAPM = () => {
     mmu.write(byte, cpu.HL())
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 16
+
+    cpu.flags.Z = (byte === 0)
+    cpu.flags.N = false
+    cpu.flags.HC = false
+    cpu.flags.C = false
 }
 
 // Right Logical Shift
@@ -834,7 +837,7 @@ cpu.RLCR = (reg8) => {
 
     cpu[reg8] = cpu[reg8] << 1
 
-    cpu.flags.C = bit7 === 1
+    cpu.flags.C = (bit7 === 1)
     cpu.flags.HC = false
     cpu.flags.Z = cpu[reg8] === 0
     cpu.flags.N = false
@@ -849,7 +852,7 @@ cpu.RLCA = () => {
 
     cpu.A = cpu.A << 1
 
-    cpu.flags.C = bit7 === 1
+    cpu.flags.C = (bit7 === 1)
     cpu.flags.HC = false
     cpu.flags.Z = false
     cpu.flags.N = false
@@ -879,8 +882,8 @@ cpu.RRCR = (reg8) => {
 
     cpu[reg8] = cpu[reg8] >> 1
 
-    cpu.flags.C = bit1 === 1
-    cpu.flags.Z = cpu[reg8] === 0
+    cpu.flags.C = (bit1 === 1)
+    cpu.flags.Z = (cpu[reg8] === 0)
     cpu.flags.HC = false
     cpu.flags.N = false
 
@@ -894,8 +897,8 @@ cpu.RRCM = () => {
 
     byte = byte >> 1
 
-    cpu.flags.C = bit1 === 1
-    cpu.flags.Z = byte === 0
+    cpu.flags.C = (bit1 === 1)
+    cpu.flags.Z = (byte === 0)
     cpu.flags.HC = false
     cpu.flags.N = false
 
@@ -913,8 +916,8 @@ cpu.RRR = (reg8) => {
 
     cpu[reg8] = (cpu[reg8] >> 1) | (carry << 7)
 
-    cpu.flags.C = bit1 === 1
-    cpu.flags.Z = cpu[reg8] === 0
+    cpu.flags.C = (bit1 === 1)
+    cpu.flags.Z = (cpu[reg8] === 0)
     cpu.flags.HC = false
     cpu.flags.N = false
 
@@ -929,8 +932,8 @@ cpu.RRM = () => {
 
     byte = (byte >> 1) | (carry << 7)
 
-    cpu.flags.C = bit1 === 1
-    cpu.flags.Z = byte === 0
+    cpu.flags.C = (bit1 === 1)
+    cpu.flags.Z = (byte === 0)
     cpu.flags.HC = false
     cpu.flags.N = false
 
@@ -978,8 +981,8 @@ cpu.RLR = (reg8) => {
 
     cpu[reg8] = cpu[reg8] << 1 | carry
 
-    cpu.flags.C = bit7 === 1
-    cpu.flags.Z = cpu[reg8] === 0
+    cpu.flags.C = (bit7 === 1)
+    cpu.flags.Z = (cpu[reg8] === 0)
     cpu.flags.HC = false
     cpu.flags.N = false
 
@@ -994,8 +997,8 @@ cpu.RLM = () => {
 
     byte = byte << 1 | carry
 
-    cpu.flags.C = bit7 === 1
-    cpu.flags.Z = byte === 0
+    cpu.flags.C = (bit7 === 1)
+    cpu.flags.Z = (byte === 0)
     cpu.flags.HC = false
     cpu.flags.N = false
 
@@ -1013,6 +1016,7 @@ cpu.RLM = () => {
 cpu.PUSH = (reg16) => {
     let highByte = (reg16 & 0xFF00) >> 8
     let lowByte = reg16 & 0x00FF
+
     cpu.SP = ((cpu.SP - 1) >>> 0) % 0x10000
     mmu.write(highByte, cpu.SP)
     cpu.SP = ((cpu.SP - 1) >>> 0) % 0x10000
@@ -1072,8 +1076,7 @@ cpu.DECR16 = (reg16) => {
 }
 
 cpu.DEC_SP = () => {
-    let temp = ((cpu.SP - 1) >>> 0) % 0x10000
-    cpu.SP = temp
+    cpu.SP = ((cpu.SP - 1) >>> 0) % 0x10000
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 8
 }
@@ -1084,7 +1087,7 @@ cpu.ADDR16 = (dest_reg16, src_reg16) => {
     cpu.flags.C = temp > 0xFFFF
     cpu.flags.N = false
     cpu.flags.HC = ((cpu[dest_reg16]() & 0xFF) + (cpu[src_reg16]() & 0xFF)) > 0xFF
-    cpu.flags.Z = (temp % 0x10000) === 0
+    //cpu.flags.Z = (temp % 0x10000) === 0
 
     temp = (temp >>> 0) % 0x10000
 

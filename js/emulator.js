@@ -26,6 +26,7 @@ import {lookup, prefix_lookup} from "./lookup.js"
 import {timer} from "./timer.js"
 import {gpu} from "./gpu.js"
 import {screen} from "./screen.js"
+import {oam} from "./dma.js"
 
 let ratio = 1
 export let running = true
@@ -101,6 +102,7 @@ export async function run() {
 
             gpu.update(temp_cycles)
             timer.cycles(temp_cycles)//;printCPUState()
+            oam.update(temp_cycles)
         }
 
         /*let end = Date.now() - start
