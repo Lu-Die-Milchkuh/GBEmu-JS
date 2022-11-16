@@ -20,10 +20,8 @@
 
 "use strict"
 
-import {mmu} from "./mmu.js"
 import {mbc0} from "./mbc/mbc0.js"
 import {mbc1} from "./mbc/mbc1.js"
-//import
 
 export let cartridge = {
     rom: [],     // Array to Store ROM Content

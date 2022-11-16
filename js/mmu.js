@@ -27,16 +27,13 @@ import {cartridge} from "./cartridge.js"
 
 export let mmu = {
     wram: new Array(0x2000), // 8192 Bytes of Work RAM
-    rom: [], // Array to store ROM content in
     hram: new Array(0x7E), // 126 Bytes of High RAM
-    extram: new Array(0x1FFF),
     io_reg: new Array(0x7F)
 }
 
 mmu.reset = function() {
     this.wram.fill(0x0)
     this.hram.fill(0x0)
-    //this.extram.fill(0x0)
     this.io_reg.fill(0x0)
 
 }
@@ -55,14 +52,13 @@ mmu.read = function(address) {
         }
 
     } else if (address >= 0xA000 && address <= 0xBFFF) {     // External RAM
-        //data = this.extram[address - 0xA000]
         data = cartridge.read(address)
     } else if (address >= 0xC000 && address <= 0xDFFF) {    // Work RAM
         data = this.wram[address - 0xC000]
     } else if (address >= 0xE000 && address <= 0xFDFF) {    // Echo RAM
         data = this.wram[(address - 0x2000) & 0x2000]
     } else if(address >= 0xFE00 && address <= 0xFE9F) {
-        data = gpu.read(address)//oam[address - 0xFE00]
+        data = gpu.read(address)
     } else if(address >= 0xFEA0 && address <= 0xFEFF) {
         // unused memory region
     }
@@ -85,7 +81,7 @@ mmu.write = function(data, address) {
         cartridge.write(data,address)
     } else if (address >= 0x8000 && address <= 0x9FFF) {    // VRAM
         if (!gpu.vblank) {
-            gpu.vram[address - 0x8000] = data
+            //gpu.vram[address - 0x8000] = data
             gpu.write(data,address)
         } else {
             console.warn(`Tried to write ${data.toString(16)} to VRAM at ${address.toString(16)} during VBLANK!`)

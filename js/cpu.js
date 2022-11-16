@@ -289,7 +289,7 @@ cpu.INCM8 = () => {
 
 // Decrement a 8-Bit Register
 cpu.DECR8 = (reg8) => {
-    cpu.flags.HC = ((cpu[reg8] & 0x0F) + 1)  > 0x0F
+    cpu.flags.HC = ((cpu[reg8] & 0x0F) - 1)  < 0
 
     cpu[reg8] = ((cpu[reg8] - 1) >>> 0) % 256 // Needs to stay in range of an 8-Bit Integer
 
@@ -306,7 +306,7 @@ cpu.DECM8 = () => {
     let address = cpu.HL()
     let data = mmu.read(address)
 
-    cpu.flags.HC = ((data & 0x0F) + 1) > 0x0F
+    cpu.flags.HC = ((data & 0x0F) - 1) < 0
 
     data = ((data - 1) >>> 0) % 256
 
@@ -395,6 +395,7 @@ cpu.SUBR = (reg8) => {
     cpu.flags.HC = ((cpu.A & 0x0F) - (cpu[reg8] & 0x0F)) < 0
 
     cpu.A = ((cpu.A - cpu[reg8]) >>> 0) % 256
+
     cpu.flags.Z = (cpu.A === 0)
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 4
@@ -407,6 +408,7 @@ cpu.SUBM = (data) => {
     cpu.flags.HC = ((cpu.A & 0x0F) - (data & 0x0F)) < 0
 
     cpu.A = ((cpu.A - data) >>> 0) % 256
+
     cpu.flags.Z = (cpu.A === 0)
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 8
@@ -420,6 +422,7 @@ cpu.SBCR = (reg8) => {
     cpu.flags.HC = ((cpu.A & 0x0F) - (cpu[reg8] & 0x0F) - carry) < 0
 
     cpu.A = ((cpu.A - cpu[reg8] - carry) >>> 0) % 256
+
     cpu.flags.Z = (cpu.A === 0)
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 4
@@ -434,6 +437,7 @@ cpu.SBCM = (data) => {
     cpu.flags.HC = ((cpu.A & 0x0F) - (data & 0x0F) - carry) < 0//((cpu.A - data - carry) & 0x4)
 
     cpu.A = ((cpu.A - data - carry) >>> 0) % 256
+
     cpu.flags.Z = (cpu.A === 0)
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 8
@@ -594,10 +598,12 @@ cpu.CALL = (address) => {
 
     console.warn(`Low Byte: ${lowByte.toString(16)}, High Byte: ${highByte.toString(16)}`)
 
-    cpu.SP = (cpu.SP - 1) % 0x10000
+    cpu.SP = ((cpu.SP - 1) >>> 0) % 0x10000
     mmu.write(highByte, cpu.SP)
-    cpu.SP = (cpu.SP - 1) % 0x10000
+
+    cpu.SP = ((cpu.SP - 1) >>> 0) % 0x10000
     mmu.write(lowByte, cpu.SP)
+
     cpu.PC = address
     cpu.clock.cycles += 24
 }
@@ -628,7 +634,7 @@ cpu.RET = () => {
     cpu.SP = ((cpu.SP + 1) >>> 0) % 0x10000
     let highByte = mmu.read(cpu.SP)
     cpu.SP = ((cpu.SP + 1) >>> 0) % 0x10000
-    cpu.PC = (highByte << 8 | lowByte)
+    cpu.PC = (highByte << 8) | lowByte
     cpu.clock.cycles += 16
 }
 
@@ -656,7 +662,7 @@ cpu.RETI = () => {
     cpu.SP = ((cpu.SP + 1) >>> 0) % 0x10000
     let highByte = mmu.read(cpu.SP)
     cpu.SP = ((cpu.SP + 1) >>> 0) % 0x10000
-    cpu.PC = (highByte << 8 | lowByte)
+    cpu.PC = (highByte << 8) | lowByte
     cpu.IME = true
     cpu.clock.cycles += 16
 }
@@ -973,7 +979,7 @@ cpu.RRA = () => {
     cpu.A = (cpu.A >> 1) | (carry << 7)
 
     cpu.flags.C = (bit1 === 1)
-    cpu.flags.Z = (cpu.A === 0)
+    cpu.flags.Z = false
     cpu.flags.HC = false
     cpu.flags.N = false
 
@@ -1116,6 +1122,7 @@ cpu.ADDR16 = (dest_reg16, src_reg16) => {
     temp = (temp >>> 0) % 0x10000
 
     cpu[`set${dest_reg16}`](temp)
+    cpu.clock.cycles += 8
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
 }
 
