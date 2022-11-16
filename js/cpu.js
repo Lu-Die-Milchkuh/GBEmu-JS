@@ -77,7 +77,7 @@ cpu.AF = () => {
     F |= (cpu.flags.HC ? 1 : 0) << 5
     F |= (cpu.flags.Z ? 1 : 0) << 7
 
-    cpu.F = F
+    cpu.F = F & 0xF0
     return (cpu.A << 8) | cpu.F
 }
 
@@ -149,20 +149,27 @@ cpu.reset = function() {
     this.SP = 0xFFFE
     this.PC = 0x0100
     this.update_Flags()
+    mmu.write(0xCF,0xFF00)
+    mmu.write(0x00,0xFF01)
+    mmu.write(0x7E,0xFF02)
+    mmu.write(0xAB,0xFF04)
     mmu.write(0x00, 0xFF05)   // TIMA
     mmu.write(0x00, 0xFF06)   // TMA
-    mmu.write(0x00, 0xFF07)   // TAC
+    mmu.write(0xF8, 0xFF07)   // TAC
     mmu.write(0xe1, 0xFF0F)   // IF
     mmu.write(0x80, 0xFF10)
     mmu.write(0xBF, 0xFF11)
     mmu.write(0xF3, 0xFF12)
+    mmu.write(0xFF,0xFF13)
     mmu.write(0xBF, 0xFF14)
     mmu.write(0x3F, 0xFF16)
     mmu.write(0x00, 0xFF17)
+    mmu.write(0xFF,0xFF18)
     mmu.write(0xBF, 0xFF19)
-    mmu.write(0x7A, 0xFF1A)
+    mmu.write(0x7F, 0xFF1A)
     mmu.write(0xFF, 0xFF1B)
     mmu.write(0x9F, 0xFF1C)
+    mmu.write(0xFF, 0xFF1D)
     mmu.write(0xBF, 0xFF1E)
     mmu.write(0xFF, 0xFF20)
     mmu.write(0x00, 0xFF21)
@@ -172,14 +179,30 @@ cpu.reset = function() {
     mmu.write(0xF3, 0xFF25)
     mmu.write(0xF1, 0xFF26)
     mmu.write(0x91, 0xFF40)   // LCDC
+    mmu.write(0x85,0xFF41)
     mmu.write(0x00, 0xFF42)   // SCY
     mmu.write(0x00, 0xFF43)   // SCX
+    mmu.write(0x00,0xFF44)
     mmu.write(0x00, 0xFF45)   // LYC
+    mmu.write(0xFF,0xFF46)
     mmu.write(0xFC, 0xFF47)   // BGP
     mmu.write(0xFF, 0xFF48)   // OBP0
     mmu.write(0xFF, 0xFF49)   // OBP1
     mmu.write(0x00, 0xFF4A)   // WY
     mmu.write(0x00, 0xFF4B)   // WX
+    mmu.write(0xFF,0xFF4D)
+    mmu.write(0xFF,0xFF4F)
+    mmu.write(0xFF,0xFF51)
+    mmu.write(0xFF,0xFF52)
+    mmu.write(0xFF,0xFF53)
+    mmu.write(0xFF,0xFF54)
+    mmu.write(0xFF,0xFF55)
+    mmu.write(0xFF,0xFF56)
+    mmu.write(0xFF,0xFF68)
+    mmu.write(0xFF,0xFF69)
+    mmu.write(0xFF,0xFF6A)
+    mmu.write(0xFF,0xFF6B)
+    mmu.write(0xFF,0xFF70)
     mmu.write(0x00, 0xFFFF)   // IE
 }
 
@@ -821,9 +844,10 @@ cpu.SWAPM = () => {
 
 // Right Logical Shift
 cpu.SRLR = (reg8) => {
+    let bit1 = cpu[reg8] & 1
     cpu.flags.HC = false
     cpu.flags.N = false
-    cpu.flags.C = !!(cpu[reg8] % 0x1)
+    cpu.flags.C = (bit1 === 1)
     cpu[reg8] = cpu[reg8] >> 1
     cpu.flags.Z = cpu[reg8] === 0
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
@@ -1092,5 +1116,19 @@ cpu.ADDR16 = (dest_reg16, src_reg16) => {
     temp = (temp >>> 0) % 0x10000
 
     cpu[`set${dest_reg16}`](temp)
+    cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
+}
+
+cpu.ADD_HL = (data) => {
+    let HL = cpu.HL()
+    let result = ((HL + data) % 0x10000) >>> 0
+
+    let half_carry =  (((HL & 0xFFF) + (data & 0xFFF)) & 0x1000) !== 0
+    cpu.flags.C = HL > 0xFFFF - data
+    cpu.flags.HC = half_carry
+    cpu.flags.N = false
+
+    cpu.setHL(result)
+    cpu.clock.cycles += 8
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
 }

@@ -21,7 +21,7 @@
 "use strict"
 
 import {setPaused, setRunning, setRatio, run, paused} from "./emulator.js"
-import {read_rom_info} from "./cartridge.js"
+import {cartridge, read_rom_info} from "./cartridge.js"
 import {mmu} from "./mmu.js"
 import {cpu} from "./cpu.js"
 
@@ -35,7 +35,7 @@ document.querySelector("#file-input").addEventListener("change", (event) => {
         reader.onload = () => {
             let buffer = reader.result
             let tempArray = new Uint8Array(buffer)
-            mmu.rom = Array.from(tempArray)
+            cartridge.rom = Array.from(tempArray)
             read_rom_info()
             //running = true
             setRunning(true)

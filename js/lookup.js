@@ -301,6 +301,7 @@ export const lookup = {
     },
     0x39: () => {
         // TODO -> ADD HL,SP
+        cpu.ADD_HL(cpu.SP)
     },
     0x3a: () => {
         cpu.LDR("A", mmu.read(cpu.HL()))
@@ -321,6 +322,7 @@ export const lookup = {
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let byte = mmu.read(cpu.PC)
         cpu.LDR("A", byte)
+        //console.log(`0x3e ${byte} ${mmu.read(cpu.PC-2)} PC ${cpu.PC.toString(16)}`)
         cpu.clock.cycles += 4
     },
     0x3f: () => {
@@ -988,7 +990,6 @@ export const lookup = {
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let byte = mmu.read(cpu.PC)
         cpu.ORM(byte)
-
     },
     0xf7: () => {
         cpu.RST(0x30)

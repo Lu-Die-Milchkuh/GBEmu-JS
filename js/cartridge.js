@@ -21,18 +21,27 @@
 "use strict"
 
 import {mmu} from "./mmu.js"
+import {mbc0} from "./mbc/mbc0.js"
+import {mbc1} from "./mbc/mbc1.js"
 //import
 
-let cartridge = {
+export let cartridge = {
     rom: [],     // Array to Store ROM Content
-    extram: new Array(0x1FFF),   // External RAM
+    //extram: new Array(0x1FFF),   // External RAM
     mbc: 0
 }
 
-const mbc_lookup = []
+const mbc_lookup = [
+    mbc0,
+    mbc1
+]
 
-cartridge.read = function() {
+cartridge.read = function (address) {
+    return mbc_lookup[this.mbc].read(address)
+}
 
+cartridge.write = function (data, address) {
+    mbc_lookup[this.mbc].write(data, address)
 }
 
 
@@ -47,15 +56,15 @@ export function read_rom_info() {
     const ram_size_lookup = [0, 2048, 8192, 32768]
 
     for (let i = 0x134; i < 0x143; i++) {
-        let data = mmu.read(i)
+        let data = cartridge.rom[i]
         info.title.push(data)
     }
 
     info.title = String.fromCharCode.apply(null, info.title)
-    info.type = mmu.read(0x147)
+    info.type = cartridge.rom[0x147]
     cartridge.mbc = info.type
-    info["rom size"] = 32768 << mmu.read(0x148)
-    info["ram size"] = ram_size_lookup[mmu.read(0x149)]
+    info["rom size"] = 32768 << cartridge.rom[0x148]
+    info["ram size"] = ram_size_lookup[cartridge.rom[0x149]]
 
     console.table(info)
 }

@@ -194,17 +194,20 @@ gpu.update_scanline = function () {
     let bg_priority = new Array(160)
 
     if (LCDC & 0x1) {    // 0b0000 0001
+        console.log("Draw -> Background")
         this.draw_background()
         this.drawFlag = true
     }
 
     if (LCDC & 0x2) {    // 0b0000 0010
+        console.log("Draw -> Sprites")
         this.draw_sprites()
         this.drawFlag = true
     }
 
     if (LCDC & 0x20) {   // 0b0010 0000
-        this.draw_window()
+        console.log("Draw -> Window")
+        this.draw_window(bg_priority)
         this.drawFlag = true
     }
 
@@ -294,7 +297,7 @@ gpu.draw_background = function () {
     }
 }
 
-gpu.draw_window = function () {
+gpu.draw_window = function (bg_priority) {
     let window_y = mmu.read(WINY)
     let window_x = (mmu.read(WINX) + 7) % 256
     let y = mmu.read(LY)
@@ -311,6 +314,40 @@ gpu.draw_window = function () {
     let buffer_start = y * screen.width
 
     let row = (y - window_y) / 8
+
+    for(let i = 0; i < 160; i++) {
+        let display_x = (i + window_x ) % 256
+        let column  = (i / 8) >>> 0
+        let tile_map_index = (row * 32) + column
+        let offset = tile_map_location + tile_map_index
+        let tile_pattern = this.read_raw(offset)
+
+        let vram_location
+
+        if(LCDC & (1<<4)) {
+            vram_location = (tile_pattern * 16) + tile_data_location
+        } else {
+            let adjusted = ((tile_pattern)) * 16
+            vram_location = (tile_data_location) + adjusted
+        }
+
+        let tile_id = this.address_to_tile_id(vram_location)
+
+        if(this.tile_cache[tile_id].dirty) {
+            this.refresh_tile(tile_id)
+        }
+
+        let pixel_x = i % 8
+        let tile = this.tile_cache[tile_id]
+        let pixel = tile.pixels[(pixel_y * 8) + pixel_x]
+        let color = this.colorize(pixel,palette)
+        let buffer_offset = buffer_start + i
+        if(pixel !== 0) {
+            bg_priority[i] = true
+        }
+
+        this.frame_buffer[buffer_offset] = color
+    }
 }
 
 gpu.draw_sprites = function () {
@@ -444,7 +481,7 @@ gpu.read = function (address) {
 }
 
 gpu.write = function (data, address) {
-    console.warn(`GPU -> Writing ${data.toString(16)} to ${address.toString(16)}`)
+    //console.warn(`GPU -> Writing ${data.toString(16)} to ${address.toString(16)}`)
 
     if (address >= 0x8000 && address <= 0x97FF) {
         if (this.mode === 3) return

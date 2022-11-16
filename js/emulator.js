@@ -78,7 +78,7 @@ export async function run() {
 
                 console.log(`Executing: ${opcode.toString(16)} @ ${cpu.PC.toString(16)} Counter: ${counter}`)
                 counter++
-
+                gg += `Executing: ${opcode.toString(16)} @ ${cpu.PC.toString(16)} Counter: ${counter} <br>`
                 if (opcode === 0xCB) {
                     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
                     opcode = mmu.read(cpu.PC)
@@ -101,7 +101,7 @@ export async function run() {
             temp_cycles = cpu.clock.cycles - temp_cycles // Elapsed Cycles
 
             gpu.update(temp_cycles)
-            timer.cycles(temp_cycles)//;printCPUState()
+            timer.cycles(temp_cycles);printCPUState()
             oam.update(temp_cycles)
         }
 
@@ -123,11 +123,12 @@ export async function run() {
         screen.update()
     }
     //console.log(gpu.frame_buffer)
+    document.querySelector("#test").innerHTML = gg
 }
 let serial = []
-
+let gg = ""
 function printCPUState() {
-    console.warn(`CPU State`)
+    /*console.warn(`CPU State`)
     console.log(`A -> ${cpu.A.toString(16)}`)
     console.log(`F -> ${cpu.F.toString(16)}`)
     console.log(`B -> ${cpu.B.toString(16)}`)
@@ -141,9 +142,22 @@ function printCPUState() {
     console.log("Flags ->")
     console.log(`Z: ${cpu.flags.Z}`)
     console.log(`N: ${cpu.flags.N}`)
-    console.log(`HC: ${cpu.flags.HC}`)
-    console.log(`C: ${cpu.flags.C}`)
-
+    console.log(`N: ${cpu.flags.N}`)
+    console.log(`C: ${cpu.flags.C}`)*/
+    gg += `A -> ${cpu.A.toString(16)} <br>`
+            +`F -> ${cpu.F.toString(16)} <br>`
+            +`B -> ${cpu.B.toString(16)} <br>`
+            + `C -> ${cpu.C.toString(16)} <br>`
+            + `D -> ${cpu.D.toString(16)} <br>`
+            + `E -> ${cpu.E.toString(16)} <br>`
+            +`H -> ${cpu.H.toString(16)}<br>`
+    +`L -> ${cpu.L.toString(16)}<br>`
+    +`SP -> ${cpu.SP.toString(16)}<br>`
+    +"Flags -><br>"
+    +`Z: ${cpu.flags.Z}<br>`
+    +`N: ${cpu.flags.N}<br>`
+    +`hc: ${cpu.flags.HC}<br>`
+    +`C: ${cpu.flags.C}<br>`
 
 
 }
