@@ -78,7 +78,7 @@ export async function run() {
 
                 console.log(`Executing: ${opcode.toString(16)} @ ${cpu.PC.toString(16)} Counter: ${counter}`)
                 counter++
-                gg += `Executing: ${opcode.toString(16)} @ ${cpu.PC.toString(16)} Counter: ${counter} <br>`
+                //gg += `Executing: ${opcode.toString(16)} @ ${cpu.PC.toString(16)} Counter: ${counter} <br>`
                 if (opcode === 0xCB) {
                     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
                     opcode = mmu.read(cpu.PC)
@@ -123,7 +123,7 @@ export async function run() {
         screen.update()
     }
     //console.log(gpu.frame_buffer)
-    document.querySelector("#test").innerHTML = gg
+    //document.querySelector("#test").innerHTML = gg
 }
 let serial = []
 let gg = ""
