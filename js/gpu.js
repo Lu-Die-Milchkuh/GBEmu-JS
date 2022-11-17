@@ -65,7 +65,7 @@ class SpriteEntry {
 
 export let gpu = {
     vram: new Array(0x2000),
-    oam: new Array(0x9F),   // Object Attribute
+    oam: new Array(160),   // Object Attribute
     clock: {
         frame_cycles: 0,
         scanline_cycles: 0
@@ -260,7 +260,7 @@ gpu.draw_background = function (bg_priority) {
 
     let display_y = this.read(LY)
     let y = (display_y + this.read(SCY)) % 256
-    let row = y / 8
+    let row = (y / 8) >>> 0
     let buffer_start = display_y * 160
     let palette = this.read(BGP)  // Background Palette
 
@@ -371,7 +371,7 @@ gpu.draw_sprites = function (bg_priority) {
 
         let sprite = this.sprite_table[i]
         if(scanline_y >= sprite.y_pos && scanline_y <= (sprite.y_pos + sprite_y_max)
-            && (sprite.x_pos + 8) >= 0 && sprite.x_pos < 16)
+            && (sprite.x_pos + 8) >= 0 && sprite.x_pos < 160)
         {
             let sprite_x = sprite.x_pos
             let sprite_y = sprite.y_pos
