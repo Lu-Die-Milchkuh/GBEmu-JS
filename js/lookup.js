@@ -51,7 +51,7 @@ export const lookup = {
     0x06: () => {
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let byte = mmu.read(cpu.PC)
-        cpu.LDR("B", byte)
+        cpu.LDR("B",byte)
         cpu.clock.cycles += 4
     },
     0x07: () => {
@@ -99,6 +99,7 @@ export const lookup = {
         cpu.clock.cycles += 4
     },
     0x0f: () => {
+        cpu.RRCA()
     },
     0x10: () => {
         cpu.STOP()
@@ -751,6 +752,8 @@ export const lookup = {
         let lowByte = mmu.read(cpu.PC)
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let highByte = mmu.read(cpu.PC)
+
+        console.log(`C3: Jumping to ${(highByte << 8 | lowByte).toString(16)}`)
         cpu.JP((highByte << 8) | lowByte)
     },
     0xc4: () => {
@@ -919,13 +922,18 @@ export const lookup = {
     },
     0xe6: () => {
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
-        cpu.ANDM(mmu.read(cpu.PC))
+        let byte = mmu.read(cpu.PC)
+        cpu.ANDM(byte)
 
     },
     0xe7: () => {
         cpu.RST(0x20)
     },
     0xe8: () => {
+        cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
+        let byte = mmu.read(cpu.PC)
+
+        cpu.ADD_SP(byte)
     },
     0xe9: () => {
         let address = cpu.HL()
@@ -1012,7 +1020,7 @@ export const lookup = {
 
         cpu.flags.Z = false
         cpu.flags.N = false
-        cpu.flags.HC = (SP & 0x000F) < (cpu.SP & 0x000F)
+        cpu.flags.HC = (SP & 0xF) < (cpu.SP & 0xF)
         cpu.flags.C = (SP & 0xFF) < (cpu.SP & 0xFF)
         cpu.LDR16("HL", SP)
         //cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000

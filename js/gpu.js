@@ -97,7 +97,7 @@ gpu.reset = function () {
         this.sprite_table.push(sprite)
     }
 
-    for (let i = 0; i < 160 * 144; i++) {
+    for (let i = 0; i < (160 * 144); i++) {
         this.frame_buffer[i] = [255, 255, 255]
     }
 }
@@ -159,7 +159,7 @@ gpu.update = function (cycles) {
 
     if (this.clock.scanline_cycles > HBLANK_PERIOD) {
         let newLY = this.read(LY)
-        newLY = (newLY + 1) % 256
+        newLY = ((newLY + 1) >>> 0 ) % 256
         this.write(newLY, LY)
         this.clock.scanline_cycles = 0
         this.line_compare()
@@ -190,18 +190,19 @@ gpu.setMode = function (mode) {
 
 gpu.update_scanline = function () {
     let LCDC = this.read(0xFF40)
-
+    //this.write(0xFF,0xFF40)
     let bg_priority = new Array(160)
+    //console.log(`GPU -> LCDC ${LCDC.toString(16)}`)
 
     if (LCDC & 0x1) {    // 0b0000 0001
         console.log("Draw -> Background")
-        this.draw_background()
+        this.draw_background(bg_priority)
         this.drawFlag = true
     }
 
     if (LCDC & 0x2) {    // 0b0000 0010
         console.log("Draw -> Sprites")
-        this.draw_sprites()
+        this.draw_sprites(bg_priority)
         this.drawFlag = true
     }
 
@@ -219,7 +220,7 @@ gpu.update_scanline = function () {
 }
 
 
-gpu.draw_background = function () {
+gpu.draw_background = function (bg_priority) {
 
     /* Tile Data: 0x8000 - 0x97FF (Contains actual Tile Data)
             Block 0 -> 0x8000 - 0x87FF
@@ -279,7 +280,7 @@ gpu.draw_background = function () {
         }
 
         let tile_id = this.address_to_tile_id(vram_location)
-
+        //console.log(tile_id)
         if (this.tile_cache[tile_id].dirty) {
             this.refresh_tile(tile_id)
         }
@@ -292,7 +293,7 @@ gpu.draw_background = function () {
         let pixel = tile.pixels[(pixel_y * 8) + pixel_x]
         let color = this.colorize(pixel, palette)
         let offset = buffer_start + i
-        //if(pixel != 0)
+        if(pixel !== 0) bg_priority[i] = true
         this.frame_buffer[offset] = color
     }
 }
@@ -311,7 +312,7 @@ gpu.draw_window = function (bg_priority) {
     let tile_data_location = (LCDC & (1 << 4)) ? 0x8000 : 0x9000
 
     let pixel_y = y % 8
-    let buffer_start = y * screen.width
+    let buffer_start = y * 160//screen.width
 
     let row = (y - window_y) / 8
 
@@ -350,7 +351,7 @@ gpu.draw_window = function (bg_priority) {
     }
 }
 
-gpu.draw_sprites = function () {
+gpu.draw_sprites = function (bg_priority) {
     let scanline_y = mmu.read(LY)
     let LCDC = mmu.read(0xFF40)
 
@@ -416,9 +417,11 @@ gpu.draw_sprites = function () {
                 if(pixel === 0) continue
 
                 // TODO Fix this
-                /*if(sprite.behind_background) {
-                    if()
-                }*/
+                if(sprite.behind_background) {
+                    if(bg_priority[adjust_x]) {
+                        continue
+                    }
+                }
 
                 let color = this.colorize(pixel,palette)
                 let offset_x = adjust_x
@@ -438,25 +441,25 @@ gpu.draw_sprites = function () {
 gpu.colorize = (shade, palette) => {
     let colors = [
         //rr    gg    bb
-        [0x00, 0x00, 0x00], // Black
-        [0x55, 0x55, 0x55], // Grey
-        [0xAA, 0xAA, 0xAA], // Light Grey
         [0xFF, 0xFF, 0xFF], // White
+        [0xAA, 0xAA, 0xAA], // Light Grey
+        [0x55, 0x55, 0x55], // Grey
+        [0x00, 0x00, 0x00], // Black
     ]
 
     let real = 0
     switch (shade) {
         case 0:
-            real = palette & 3
+            real = palette & 0b00000011
             break
         case 1:
-            real = (palette & (3 << 2)) >> 2
+            real = (palette & 0b00001100) >> 2
             break
         case 2:
-            real = (palette & (3 << 4)) >> 4
+            real = (palette & 0b00110000) >> 4
             break
         case 3:
-            real = (palette & (3 << 6)) >> 6
+            real = (palette & 0b11000000) >> 6
             break
         default:
             console.error("Invalid Palette Shade!")
@@ -476,12 +479,15 @@ gpu.read = function (address) {
 
     } else if (address >= 0xFE00 && address <= 0xFE9F) {
         data = this.oam[address - 0xFE00]
+    } else if (address >= 0xFF00 && address <= 0xFF7F) {
+        data = mmu.io_reg[address - 0xFF00]
     }
+
     return data
 }
 
 gpu.write = function (data, address) {
-    //console.warn(`GPU -> Writing ${data.toString(16)} to ${address.toString(16)}`)
+    console.warn(`GPU -> Writing ${data.toString(16)} to ${address.toString(16)}`)
 
     if (address >= 0x8000 && address <= 0x97FF) {
         if (this.mode === 3) return
@@ -503,7 +509,12 @@ gpu.write = function (data, address) {
         this.update_sprite(data,address)
     }
     else if (address >= 0xFF00 && address <= 0xFF7F) {
-        mmu.io_reg[address - 0xFF00] = data
+        if(address === 0xFF40) {
+            this.update_lcdc(data)
+        } else {
+            mmu.io_reg[address - 0xFF00] = data
+        }
+
     }
 }
 
@@ -557,13 +568,26 @@ gpu.refresh_tile = function (id) {
 }
 
 gpu.address_to_tile_id = function (address) {
-    return (address - 0x8000) / 16
+    return ((address - 0x8000) / 16) >>> 0
 }
 
 gpu.read_raw = function (address) {
     return this.vram[address - 0x8000]
 }
 
+gpu.update_lcdc = function (data) {
+    let LCDC = this.read(0xFF40)
+
+    if(!(data & (1<<7)) && LCDC & (1 << 7)) {
+
+        if(this.mode !== 1) {
+
+        }
+        this.write(0,LY)
+        this.mode = 0
+    }
+    this.write(data,0xFF40)
+}
 
 
 

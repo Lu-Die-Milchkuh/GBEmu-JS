@@ -70,13 +70,12 @@ export async function run() {
 
             let temp_cycles = cpu.clock.cycles
 
-            cpu.checkInterrupt()
             cpu.update_F()
-            if(!cpu.isHalt && !cpu.isStop) {
+            if(!cpu.isHalt && !cpu.isStop ) { //&& !gpu.vblank
                 // Opcodes are the Bytes that tell the cpu which instruction it should execute
                 let opcode = mmu.read(cpu.PC)
-
-                console.log(`Executing: ${opcode.toString(16)} @ ${cpu.PC.toString(16)} Counter: ${counter}`)
+                //cpu.clock.cycles += 4
+                //console.log(`Executing: ${opcode.toString(16)} @ ${cpu.PC.toString(16)} Counter: ${counter}`)
                 counter++
                 //gg += `Executing: ${opcode.toString(16)} @ ${cpu.PC.toString(16)} Counter: ${counter} <br>`
                 if (opcode === 0xCB) {
@@ -88,10 +87,12 @@ export async function run() {
                 } else {
                     lookup[opcode]()
                 }
+
+                cpu.update_F()
             } else {
                 cpu.clock.cycles += 4
             }
-            cpu.update_F()
+            //cpu.clock.cycles =  (cpu.clock.cycles / 4) >>> 0
 
             if(mmu.read(0xFF02) === 0x81) {
                 console.warn("Serial")
@@ -99,10 +100,11 @@ export async function run() {
                 mmu.write(0,0xFF02)
             }
             temp_cycles = cpu.clock.cycles - temp_cycles // Elapsed Cycles
-
+            //console.log(`Elapsed Cycles: ${temp_cycles}`)
             gpu.update(temp_cycles)
-            timer.cycles(temp_cycles);printCPUState()
+            timer.cycles(temp_cycles)//;printCPUState()
             oam.update(temp_cycles)
+            cpu.checkInterrupt()
         }
 
         /*let end = Date.now() - start
@@ -118,9 +120,9 @@ export async function run() {
             foo += String.fromCharCode(serial[i])
         }
         console.warn(`From Serial: ${foo}`)
-        printCPUState()
-        //gpu.tile_cache.forEach((e) => {console.log(e)})
-        screen.update()
+        //printCPUState()
+        //gpu.frame_buffer.forEach((e) => {console.log(e)})
+        //screen.update()
     }
     //console.log(gpu.frame_buffer)
     //document.querySelector("#test").innerHTML = gg

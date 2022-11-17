@@ -22,7 +22,7 @@ screen.colors = [
 screen.init = () => {
     screen.canvas = document.querySelector("#game-screen")
     screen.context = screen.canvas.getContext('2d')
-    screen.content = screen.context.createImageData(160,144)
+    screen.content = screen.context.createImageData(320,288)
 
 }
 
@@ -34,12 +34,24 @@ screen.update = () => {
         }
     }*/
 
-    for(let i = 0; i < screen.content.data.length; i+=4) {
-        screen.content.data[i] = gpu.frame_buffer[i % 4][0]    // Red
-        screen.content.data[i+1] = gpu.frame_buffer[i % 4][1]    // Blue
-        screen.content.data[i+2] = gpu.frame_buffer[i % 4][2]  // Green
+
+    /*for(let i = 0; i < screen.content.data.length; i+=4) {
+        screen.content.data[i] = gpu.frame_buffer[j][0]    // Red
+        screen.content.data[i+1] = gpu.frame_buffer[j][1]    // Blue
+        screen.content.data[i+2] = gpu.frame_buffer[j][2]  // Green
         screen.content.data[i+3] = 255  // Alpha (Transparent/Visible)
-    }
+        j++
+    }*/
+
+    let j = 0
+    gpu.frame_buffer.forEach( (color) => {
+        screen.content.data[j] =  color[0]
+        screen.content.data[j+1] =  color[1]    // Blue
+        screen.content.data[j+2] =  color[2]  // Green
+        screen.content.data[j+3] = 255  // Alpha (Transparent/Visible)
+        j += 4
+    })
 
     screen.context.putImageData(screen.content,0,0)
+
 }

@@ -142,7 +142,7 @@ cpu.update_Flags = function() {
 // At Startup the Game Boy expects certain Registers and Memory Location to contain the following data
 cpu.reset = function() {
     mmu.reset()
-    this.setAF(0x01B0)
+    this.setAF(0x0180)
     this.setBC(0x0013)
     this.setDE(0x00D8)
     this.setHL(0x014D)
@@ -234,12 +234,12 @@ cpu.checkInterrupt = () => {
     for (let i = 0; i < 5; i++) {
         if (int & (1 << i) && cpu.IE & (1 << i)) {    // 1 -> Interrupt Enabled
             console.error(`Interrupt ${i}`)
-            cpu.isHalt = false
             int &= (0xFF - (1 << i))
             mmu.write(int, 0xFF0F)
-            cpu.interruptRoutine[i]()
             cpu.clock.cycles += 4
             cpu.IME = false
+            cpu.isHalt = false
+            cpu.interruptRoutine[i]()
             break
         }
     }
@@ -275,7 +275,7 @@ cpu.INCM8 = () => {
     let address = cpu.HL()
     let data = mmu.read(address)
 
-    cpu.flags.HC = ((data & 0x0F) + 1) > 0x0F
+    cpu.flags.HC = ((data & 0xF) + 1) > 0xF
     //cpu.flags.C = (cpu[reg8] + 1) > 0xFF    // Doc. says this is not affected but some Emulators do it anyway
 
     data = ((data + 1) >>> 0) % 256
@@ -289,7 +289,7 @@ cpu.INCM8 = () => {
 
 // Decrement a 8-Bit Register
 cpu.DECR8 = (reg8) => {
-    cpu.flags.HC = ((cpu[reg8] & 0x0F) - 1)  < 0
+    cpu.flags.HC = ((cpu[reg8] & 0xF) - 1)  < 0
 
     cpu[reg8] = ((cpu[reg8] - 1) >>> 0) % 256 // Needs to stay in range of an 8-Bit Integer
 
@@ -297,7 +297,7 @@ cpu.DECR8 = (reg8) => {
     cpu.flags.Z = (cpu[reg8] === 0)
     cpu.flags.N = true
 
-    cpu.PC = (cpu.PC + 1) % 0x10000
+    cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 4
 }
 
@@ -306,7 +306,7 @@ cpu.DECM8 = () => {
     let address = cpu.HL()
     let data = mmu.read(address)
 
-    cpu.flags.HC = ((data & 0x0F) - 1) < 0
+    cpu.flags.HC = ((data & 0xF) - 1) < 0
 
     data = ((data - 1) >>> 0) % 256
 
@@ -789,8 +789,8 @@ cpu.STOP = () => {
 }
 
 cpu.HALT = () => {
+    cpu.isHalt = !(cpu.IE !== 0 && mmu.read(0xFF00) !== 0)
     cpu.clock.cycles += 4
-    cpu.isHalt = true
 }
 
 cpu.DAA = () => {
@@ -859,7 +859,6 @@ cpu.SRLR = (reg8) => {
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 8
 }
-
 
 // Rotate Left through Carry
 cpu.RLCR = (reg8) => {
@@ -986,6 +985,21 @@ cpu.RRA = () => {
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 4
 }
+
+cpu.RRCA = () => {
+    let bit1 = cpu.A & 0x1
+
+    cpu.A = (cpu.A >> 1)
+
+    cpu.flags.C = (bit1 === 1)
+    cpu.flags.Z = false
+    cpu.flags.HC = false
+    cpu.flags.N = false
+
+    cpu.clock.cycles += 4
+    cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
+}
+
 
 cpu.RLA = () => {
     let bit7 = cpu.A >> 7
@@ -1128,14 +1142,32 @@ cpu.ADDR16 = (dest_reg16, src_reg16) => {
 
 cpu.ADD_HL = (data) => {
     let HL = cpu.HL()
-    let result = ((HL + data) % 0x10000) >>> 0
+    let result = HL + data
 
     let half_carry =  (((HL & 0xFFF) + (data & 0xFFF)) & 0x1000) !== 0
-    cpu.flags.C = HL > 0xFFFF - data
+    cpu.flags.C = result > 0xFFFF
     cpu.flags.HC = half_carry
     cpu.flags.N = false
 
+
+    result = (result >>> 0) % 0x10000
     cpu.setHL(result)
     cpu.clock.cycles += 8
+    cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
+}
+
+cpu.ADD_SP = (data) => {
+    let SP = cpu.SP
+    let result = SP + data
+
+    let half_carry =  (((SP & 0xFFF) + (data & 0xFFF)) & 0x1000) !== 0
+    cpu.flags.C = result > 0xFFFF
+    cpu.flags.HC = half_carry
+
+    cpu.flags.Z = false
+    cpu.flags.N = false
+
+    cpu.SP = (result >>> 0) % 0x10000
+    cpu.clock.cycles += 16
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
 }
