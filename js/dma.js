@@ -37,6 +37,9 @@ oam.request = function(src) {
 }
 
 oam.update = function(cycles) {
+
+    if(this.active) {
+
     let from = this.source
     let to = this.destination
     let adjusted_cycles = cycles
@@ -45,7 +48,7 @@ oam.update = function(cycles) {
         adjusted_cycles = this.cycles
     }
 
-    let bytes = adjusted_cycles * 8
+    let bytes = (adjusted_cycles * 8) % 256
 
     this.source = (this.source + bytes) % 0x10000
     this.destination = (this.source + bytes) % 0x10000
@@ -53,13 +56,14 @@ oam.update = function(cycles) {
 
     if(this.cycles === 0) {
         this.active = false
-        this.cycles = 20;
+        this.cycles = 20
     }
 
-    if(this.active) {
-        for(let offset = 0; offset < bytes; offset++) {
-            let value = mmu.read(from + offset)
-            mmu.write(value,to + offset)
-        }
-    }
+   console.log("OAM write")
+   for(let offset = 0; offset < bytes; offset++) {
+        let value = mmu.read(from + offset)
+        //console.log(`OAM Val ${value} from ${(from+offset).toString(16)}`)
+        mmu.write(value,to + offset)
+     }
+   }
 }

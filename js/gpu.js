@@ -49,7 +49,7 @@ const BGP = 0xFF47  // Background Palette
 // TileEntry (for Tile Cache)
 class TileEntry {
     dirty = true
-    pixels = new Array(64)
+    pixels = new Array(64).fill(0)
 }
 
 class SpriteEntry {
@@ -104,15 +104,17 @@ gpu.reset = function () {
 
 gpu.update = function (cycles) {
 
-    let LCDC = mmu.io_reg[0xFF40 - 0xFF00] //gpu.read(0xFF40)
-    //console.log(`LCDC Bit 7: ${(LCDC & (1 << 7)).toString(16)} ${LCDC}`)
+    let LCDC = mmu.io_reg[0xFF40 - 0xFF00]
+
     if (!(LCDC & (1 << 7))) return
 
     //console.warn("LCDC Enabled: Updating GPU")
 
     let request = false
+
     this.clock.frame_cycles += cycles
     this.clock.scanline_cycles += cycles
+
     let old_mode = this.mode
     this.vblank = false
 
@@ -212,10 +214,10 @@ gpu.update_scanline = function () {
         this.drawFlag = true
     }
 
-    if (this.drawFlag) {
+    /*if (this.drawFlag) {
         screen.update()
         this.drawFlag = false
-    }
+    }*/
 
 }
 
@@ -356,7 +358,7 @@ gpu.draw_sprites = function (bg_priority) {
     let LCDC = mmu.read(0xFF40)
 
 
-    let tall_sprite_mode = LCDC & (1 << 2)
+    let tall_sprite_mode = !!(LCDC & (1 << 2))
     let sprite_y_max = 0
 
     if(tall_sprite_mode) {
@@ -365,24 +367,24 @@ gpu.draw_sprites = function (bg_priority) {
         sprite_y_max = 7
     }
 
-    for(let i = 0; i < this.sprite_table.length;i++) {
+    for(let i = 0; i < 10;i++) {    //this.sprite_table.length
 
         let sprite = this.sprite_table[i]
-        if(scanline_y >= sprite.y_pos && scanline_y <= sprite.y_pos + sprite_y_max
-            && sprite.x_pos + 8 >= 0 && sprite.x_pos < 16)
+        if(scanline_y >= sprite.y_pos && scanline_y <= (sprite.y_pos + sprite_y_max)
+            && (sprite.x_pos + 8) >= 0 && sprite.x_pos < 16)
         {
             let sprite_x = sprite.x_pos
             let sprite_y = sprite.y_pos
 
             let pixel_y = ((scanline_y - 1) >>> 0) % 8
-            let lookup_y = sprite.x_flip ? (pixel_y - 7) * -1 : pixel_y
+            let lookup_y = sprite.x_flip ? ((pixel_y - 7) * -1) % 256 : pixel_y
 
             let tile_id = 0
 
             if(tall_sprite_mode) {
                 if((scanline_y - sprite_y) < 8) {
                     if(sprite.y_flip) {
-                        tile_id = sprite.tile_id || 1
+                        tile_id = sprite.tile_id | 1
                     } else {
                         tile_id = sprite.tile_id & 0xFE
                     }
@@ -390,7 +392,7 @@ gpu.draw_sprites = function (bg_priority) {
                     if(sprite.y_flip) {
                         tile_id = sprite.tile_id & 0xFE
                     } else {
-                        tile_id = sprite.tile_id || 1
+                        tile_id = sprite.tile_id | 1
                     }
                 }
             } else {
@@ -408,13 +410,15 @@ gpu.draw_sprites = function (bg_priority) {
 
 
             for(let pixel_x = 0; i < 8;pixel_x++) {
-                let adjust_x = (sprite_x + pixel_x) % 256
+                let adjust_x = ((sprite_x + pixel_x) >>> 0) % 256
 
-                let lookup_x = sprite.x_flip ? (pixel_x -7) * -1 : pixel_x
+                if(adjust_x >= 160) {continue}
+
+                let lookup_x = sprite.x_flip ? ((pixel_x - 7) * -1) % 256 : pixel_x
 
                 let pixel = tile.pixels[(lookup_y * 8) + lookup_x]
-
-                if(pixel === 0) continue
+//                if( pixel === undefined) console.log((lookup_y * 8) + lookup_x)
+                if(pixel === 0) {continue}
 
                 // TODO Fix this
                 if(sprite.behind_background) {
@@ -462,7 +466,7 @@ gpu.colorize = (shade, palette) => {
             real = (palette & 0b11000000) >> 6
             break
         default:
-            console.error("Invalid Palette Shade!")
+            console.error(`Invalid Palette Shade ${shade.toString(16)}`)
     }
 
     return colors[real]
@@ -487,8 +491,8 @@ gpu.read = function (address) {
 }
 
 gpu.write = function (data, address) {
-    console.warn(`GPU -> Writing ${data.toString(16)} to ${address.toString(16)}`)
-
+    //console.warn(`GPU -> Writing ${data.toString(16)} to ${address.toString(16)}`)
+    if(data === undefined) console.error(`GPU -> Data undefined!`)
     if (address >= 0x8000 && address <= 0x97FF) {
         if (this.mode === 3) return
 
@@ -548,6 +552,7 @@ gpu.refresh_tile = function (id) {
     let offset = 0x8000 + (id * 16)
 
     let tile = new Array(64)
+    tile.fill(0)
 
     for (let y = 0; y < 8; y++) {
         let lowByte = this.read_raw(offset + (y * 2))

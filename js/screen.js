@@ -5,10 +5,9 @@ import {gpu} from "./gpu.js"
 export let screen = {
     canvas: undefined,
     context: undefined,
-    width: 160,     // Physical Screen Width
-    height: 144,    // Physical Screen Height
-    frequency: 60,
-    pixel_size: 2,
+
+    //frequency: 60,
+    //pixel_size: 2,
     content: undefined
 }
 
@@ -27,30 +26,23 @@ screen.init = () => {
 }
 
 screen.update = () => {
-    /*let buffer = []
-    for(const colors in gpu.frame_buffer) {
-        for(const color in colors) {
-            buffer.push(color)
+
+    for (let y = 0; y < 144; y++) {
+        for (let py = 0; py < 2; py++) {
+            let yOffset = (y * 2 + py) * 320;
+            for (let x = 0; x < 160; x++) {
+                for (let px = 0; px < 2; px++) {
+                    let offset = yOffset + (x * 2 + px);
+                    let v = gpu.frame_buffer[y*160 + x | 0]
+                    // set RGB values
+                    screen.content.data[offset * 4] = v[0]
+                    screen.content.data[offset * 4 + 1] = v[1]
+                    screen.content.data[offset * 4 + 2] = v[2]
+                    screen.content.data[offset * 4 + 3] = 255
+                }
+            }
         }
-    }*/
-
-
-    /*for(let i = 0; i < screen.content.data.length; i+=4) {
-        screen.content.data[i] = gpu.frame_buffer[j][0]    // Red
-        screen.content.data[i+1] = gpu.frame_buffer[j][1]    // Blue
-        screen.content.data[i+2] = gpu.frame_buffer[j][2]  // Green
-        screen.content.data[i+3] = 255  // Alpha (Transparent/Visible)
-        j++
-    }*/
-
-    let j = 0
-    gpu.frame_buffer.forEach( (color) => {
-        screen.content.data[j] =  color[0]
-        screen.content.data[j+1] =  color[1]    // Blue
-        screen.content.data[j+2] =  color[2]  // Green
-        screen.content.data[j+3] = 255  // Alpha (Transparent/Visible)
-        j += 4
-    })
+    }
 
     screen.context.putImageData(screen.content,0,0)
 

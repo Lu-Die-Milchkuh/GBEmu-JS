@@ -44,19 +44,19 @@ mmu.read = function(address) {
     if (address <= 0x7FFF) {    // ROM
         data = cartridge.read(address)
     } else if (address >= 0x8000 && address <= 0x9FFF) {    // VRAM
-        if(!gpu.vblank) {
+        //if(!gpu.vblank) {
             data = gpu.read(address)//gpu.vram[address - 0x8000]
-        } else {
-            console.warn(`Tried to read from VRAM at ${address.toString(16)} during VBLANK!`)
-            data = 0xFF
-        }
+        //} else {
+        //    console.warn(`Tried to read from VRAM at ${address.toString(16)} during VBLANK!`)
+        //    data = 0xFF
+        //}
 
     } else if (address >= 0xA000 && address <= 0xBFFF) {     // External RAM
         data = cartridge.read(address)
     } else if (address >= 0xC000 && address <= 0xDFFF) {    // Work RAM
         data = this.wram[address - 0xC000]
     } else if (address >= 0xE000 && address <= 0xFDFF) {    // Echo RAM
-        data = this.wram[(address - 0x2000) & 0x2000]
+        data = this.wram[address - 0xE000]
     } else if(address >= 0xFE00 && address <= 0xFE9F) {
         data = gpu.read(address)
     } else if(address >= 0xFEA0 && address <= 0xFEFF) {
@@ -80,12 +80,12 @@ mmu.write = function(data, address) {
         //mmu.rom[address] = data
         cartridge.write(data,address)
     } else if (address >= 0x8000 && address <= 0x9FFF) {    // VRAM
-        if (!gpu.vblank) {
+        //if (!gpu.vblank) {
             //gpu.vram[address - 0x8000] = data
             gpu.write(data,address)
-        } else {
-            console.warn(`Tried to write ${data.toString(16)} to VRAM at ${address.toString(16)} during VBLANK!`)
-        }
+        //} else {
+        //    console.warn(`Tried to write ${data.toString(16)} to VRAM at ${address.toString(16)} during VBLANK!`)
+        //}
     } else if (address >= 0xA000 && address <= 0xBFFF) {     // External RAM
         //this.extram[address - 0xA000] = data
         cartridge.write(data,address)
