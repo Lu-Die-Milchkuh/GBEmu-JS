@@ -192,9 +192,8 @@ gpu.setMode = function (mode) {
 
 gpu.update_scanline = function () {
     let LCDC = this.read(0xFF40)
-    //this.write(0xFF,0xFF40)
+
     let bg_priority = new Array(160)
-    //console.log(`GPU -> LCDC ${LCDC.toString(16)}`)
 
     if (LCDC & 0x1) {    // 0b0000 0001
         console.log("Draw -> Background")
@@ -213,11 +212,6 @@ gpu.update_scanline = function () {
         this.draw_window(bg_priority)
         this.drawFlag = true
     }
-
-    /*if (this.drawFlag) {
-        screen.update()
-        this.drawFlag = false
-    }*/
 
 }
 

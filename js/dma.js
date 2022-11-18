@@ -33,7 +33,7 @@ export let oam = {
 oam.request = function(src) {
     this.active = true
     this.source = src  / 0x100    // Check this
-    this.destination = 0xFE9F
+    this.destination = 0xFE00
 
 }
 

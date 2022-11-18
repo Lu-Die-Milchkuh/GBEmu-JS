@@ -11,12 +11,12 @@ export let screen = {
     content: undefined
 }
 
-screen.colors = [
+/*screen.colors = [
     [0x00, 0x00, 0x00], // Black
     [0x55, 0x55, 0x55], // Grey
     [0xAA, 0xAA, 0xAA], // Light Grey
     [0xFF, 0xFF, 0xFF], // White
-]
+]*/
 
 screen.init = () => {
     screen.canvas = document.querySelector("#game-screen")
