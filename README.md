@@ -4,12 +4,12 @@
 A Game Boy Emulator written in Javascript
 
 ## Todo
-- [] Pass all of Blarrg's test ROMs
-- [] Rendering
-- [] Audio
-- [] Keyboard Input
-- [] Controller Input
-- [] Debugger 
+- [ ] Pass all of Blarrg's test ROMs
+- [ ] Rendering
+- [ ] Audio
+- [ ] Keyboard Input
+- [ ] Controller Input
+- [ ] Debugger 
 
 ## Achievments
 
