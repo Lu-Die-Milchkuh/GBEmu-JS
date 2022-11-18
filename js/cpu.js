@@ -975,7 +975,7 @@ cpu.RRM = () => {
 
 cpu.RRA = () => {
     let bit1 = cpu.A & 0x1
-    let carry = cpu.C ? 1 : 0
+    let carry = cpu.flags.C ? 1 : 0
 
     cpu.A = (cpu.A >>> 1) | (carry << 7)
 
@@ -1005,7 +1005,7 @@ cpu.RRCA = () => {
 
 cpu.RLA = () => {
     let bit7 = cpu.A >>> 7
-    let carry = cpu.C ? 1 : 0
+    let carry = cpu.flags.C ? 1 : 0
 
     cpu.A = (cpu.A << 1) | carry
 
