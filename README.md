@@ -3,5 +3,5 @@ FEWEB Project
 
 ## Achievments
 
-- 18/11/22
-    - 07-jr,jp,call,ret,rst: PASS
+- 18 novemebr 2022
+    - Blarrg Test ROM 07-jr,jp,call,ret,rst: PASS
