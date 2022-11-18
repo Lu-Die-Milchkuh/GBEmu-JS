@@ -74,8 +74,8 @@ export async function run() {
             if(!cpu.isHalt && !cpu.isStop ) { //&& !gpu.vblank
                 // Opcodes are the Bytes that tell the cpu which instruction it should execute
                 let opcode = mmu.read(cpu.PC)
-                //cpu.clock.cycles += 4
-                //console.log(`Executing: ${opcode.toString(16)} @ ${cpu.PC.toString(16)} Counter: ${counter}`)
+                cpu.clock.cycles += 4
+                console.log(`Executing: ${opcode.toString(16)} @ ${cpu.PC.toString(16)} Counter: ${counter}`)
                 counter++
                 //gg += `Executing: ${opcode.toString(16)} @ ${cpu.PC.toString(16)} Counter: ${counter} <br>`
                 if (opcode === 0xCB) {

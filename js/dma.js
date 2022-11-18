@@ -21,6 +21,7 @@
 "use strict"
 
 import {mmu} from "./mmu.js"
+import {gpu} from "./gpu.js"
 
 export let oam = {
     active: false,
@@ -31,7 +32,7 @@ export let oam = {
 
 oam.request = function(src) {
     this.active = true
-    this.source = src * 0x100
+    this.source = src  / 0x100    // Check this
     this.destination = 0xFE9F
 
 }
@@ -39,31 +40,31 @@ oam.request = function(src) {
 oam.update = function(cycles) {
 
     if(this.active) {
+        let from = this.source
+        let to = this.destination
+        let adjusted_cycles = cycles
 
-    let from = this.source
-    let to = this.destination
-    let adjusted_cycles = cycles
+        if((this.cycles - adjusted_cycles) < 0) {
+            adjusted_cycles = this.cycles
+        }
 
-    if((this.cycles - adjusted_cycles) < 0) {
-        adjusted_cycles = this.cycles
-    }
+        let bytes = (adjusted_cycles * 8) % 256
 
-    let bytes = (adjusted_cycles * 8) % 256
+        this.source = (this.source + bytes) & 0xFFFF
+        this.destination = (this.source + bytes) & 0xFFFF
+        this.cycles -= adjusted_cycles
 
-    this.source = (this.source + bytes) % 0x10000
-    this.destination = (this.source + bytes) % 0x10000
-    this.cycles -= adjusted_cycles
+        if(this.cycles <= 0) {
+            this.active = false
+            this.cycles = 20
+        }
 
-    if(this.cycles === 0) {
-        this.active = false
-        this.cycles = 20
-    }
-
-   console.log("OAM write")
-   for(let offset = 0; offset < bytes; offset++) {
-        let value = mmu.read(from + offset)
-        //console.log(`OAM Val ${value} from ${(from+offset).toString(16)}`)
-        mmu.write(value,to + offset)
-     }
+        console.log(`OAM write Bytes: ${bytes}`)
+        for(let offset = 0; offset < bytes; offset++) {
+            let value = mmu.read((from + offset) & 0xFFFF)
+            //console.log(`OAM Val ${value} from ${(from+offset).toString(16)}`)
+            mmu.write(value,(to + offset) & 0xFFFF)
+            //gpu.write(value,(to + offset) & 0xFFFF) // TODO Check this
+        }
    }
 }

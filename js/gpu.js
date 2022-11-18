@@ -457,13 +457,13 @@ gpu.colorize = (shade, palette) => {
             real = palette & 0b00000011
             break
         case 1:
-            real = (palette & 0b00001100) >> 2
+            real = (palette & 0b00001100) >>> 2
             break
         case 2:
-            real = (palette & 0b00110000) >> 4
+            real = (palette & 0b00110000) >>> 4
             break
         case 3:
-            real = (palette & 0b11000000) >> 6
+            real = (palette & 0b11000000) >>> 6
             break
         default:
             console.error(`Invalid Palette Shade ${shade.toString(16)}`)
@@ -560,8 +560,8 @@ gpu.refresh_tile = function (id) {
         let x = 7
         while (x >= 0) {
             let flip_x = (x - 7) * -1
-            let low_bit = (lowByte >> x) & 1
-            let high_bit = (highByte >> x) & 1
+            let low_bit = (lowByte >>> x) & 1
+            let high_bit = (highByte >>> x) & 1
 
             tile[((y * 8) + flip_x)] = (high_bit << 1) | low_bit
 

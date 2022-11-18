@@ -72,10 +72,10 @@ const Interrupts = {
 
 // Some Register can be paired together
 cpu.AF = () => {
-    let F = (cpu.flags.C ? 1 : 0) << 4
-    F |= (cpu.flags.N ? 1 : 0) << 6
-    F |= (cpu.flags.HC ? 1 : 0) << 5
-    F |= (cpu.flags.Z ? 1 : 0) << 7
+    let F = ((cpu.flags.C ? 1 : 0) << 4)
+    F |= ((cpu.flags.N ? 1 : 0) << 6)
+    F |= ((cpu.flags.HC ? 1 : 0) << 5)
+    F |= ((cpu.flags.Z ? 1 : 0) << 7)
 
     cpu.F = F & 0xF0
     return (cpu.A << 8) | cpu.F
@@ -94,7 +94,7 @@ cpu.HL = () => {
 }
 
 cpu.setAF = (data) => {
-    cpu.A = (data & 0xFF00) >> 8
+    cpu.A = (data & 0xFF00) >>> 8
     cpu.F = data & 0x00FF
     cpu.F = cpu.F & 0xF0
     cpu.flags.C = !!(cpu.F & (1 << 4))
@@ -104,17 +104,17 @@ cpu.setAF = (data) => {
 }
 
 cpu.setBC = (data) => {
-    cpu.B = (data & 0xFF00) >> 8
+    cpu.B = (data & 0xFF00) >>> 8
     cpu.C = data & 0x00FF
 }
 
 cpu.setDE = (data) => {
-    cpu.D = (data & 0xFF00) >> 8
+    cpu.D = (data & 0xFF00) >>> 8
     cpu.E = data & 0x00FF
 }
 
 cpu.setHL = (data) => {
-    cpu.H = (data & 0xFF00) >> 8
+    cpu.H = (data & 0xFF00) >>> 8
     cpu.L = data & 0x00FF
 }
 
@@ -123,10 +123,10 @@ cpu.setSP = (data) => {
 }
 
 cpu.update_F = function () {
-    let F = (this.flags.C ? 1 : 0) << 4
-    F |= (this.flags.N ? 1 : 0) << 6
-    F |= (this.flags.HC ? 1 : 0) << 5
-    F |= (this.flags.Z ? 1 : 0) << 7
+    let F = ((this.flags.C ? 1 : 0) << 4)
+    F |= ((this.flags.N ? 1 : 0) << 6)
+    F |= ((this.flags.HC ? 1 : 0) << 5)
+    F |= ((this.flags.Z ? 1 : 0) << 7)
     F = F & 0xF0
     this.F = F
 }
@@ -184,7 +184,7 @@ cpu.reset = function() {
     mmu.write(0x00, 0xFF43)   // SCX
     mmu.write(0x00,0xFF44)
     mmu.write(0x00, 0xFF45)   // LYC
-    mmu.write(0xFF,0xFF46)
+    mmu.write(0xFF,0xFF46)    // OAM
     mmu.write(0xFC, 0xFF47)   // BGP
     mmu.write(0xFF, 0xFF48)   // OBP0
     mmu.write(0xFF, 0xFF49)   // OBP1
@@ -593,7 +593,7 @@ cpu.JRC = (offset, condition) => {
 // Call Subroutine, original PC will be stored in Stack
 cpu.CALL = (address) => {
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
-    let highByte = (cpu.PC & 0xFF00) >> 8
+    let highByte = (cpu.PC & 0xFF00) >>> 8
     let lowByte = (cpu.PC & 0x00FF)
 
     console.warn(`Low Byte: ${lowByte.toString(16)}, High Byte: ${highByte.toString(16)}`)
@@ -613,7 +613,7 @@ cpu.CALLC = (address, condition) => {
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
 
     if (condition) {
-        let highByte = (cpu.PC & 0xFF00) >> 8
+        let highByte = (cpu.PC & 0xFF00) >>> 8
         let lowByte = cpu.PC & 0x00FF
 
         cpu.SP = ((cpu.SP - 1) >>> 0) % 0x10000
@@ -646,7 +646,7 @@ cpu.RETC = (condition) => {
         cpu.SP = ((cpu.SP + 1) >>> 0) % 0x10000
         let highByte = mmu.read(cpu.SP)
         cpu.SP = ((cpu.SP + 1) >>> 0) % 0x10000
-        cpu.PC = (highByte << 8 | lowByte)
+        cpu.PC = ((highByte << 8) | lowByte)
         cpu.clock.cycles += 20
     } else {
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
@@ -671,7 +671,7 @@ cpu.RETI = () => {
 cpu.RST = (address) => {
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
 
-    let highByte = (cpu.PC & 0xFF00) >> 8
+    let highByte = (cpu.PC & 0xFF00) >>> 8
     let lowByte = cpu.PC & 0x00FF
 
     cpu.SP = ((cpu.SP - 1 ) >>> 0) % 0x10000
@@ -821,7 +821,7 @@ cpu.SWAP = (reg8) => {
     let highNibble = cpu[reg8] & 0xF0
     let lowNibble = cpu[reg8] & 0x0F
 
-    cpu[reg8] = (highNibble >> 4) | (lowNibble << 4)
+    cpu[reg8] = (highNibble >>> 4) | (lowNibble << 4)
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 8
 
@@ -837,7 +837,7 @@ cpu.SWAPM = () => {
     let highNibble = byte & 0xF0
     let lowNibble = byte & 0x0F
 
-    byte = (highNibble >> 4) | (lowNibble << 4)
+    byte = (highNibble >>> 4) | (lowNibble << 4)
     mmu.write(byte, cpu.HL())
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 16
@@ -854,7 +854,9 @@ cpu.SRLR = (reg8) => {
     cpu.flags.HC = false
     cpu.flags.N = false
     cpu.flags.C = (bit1 === 1)
-    cpu[reg8] = cpu[reg8] >> 1
+
+    cpu[reg8] = cpu[reg8] >>> 1
+
     cpu.flags.Z = cpu[reg8] === 0
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 8
@@ -862,13 +864,13 @@ cpu.SRLR = (reg8) => {
 
 // Rotate Left through Carry
 cpu.RLCR = (reg8) => {
-    let bit7 = cpu[reg8] >> 7
+    let bit7 = cpu[reg8] >>> 7
 
     cpu[reg8] = cpu[reg8] << 1
 
     cpu.flags.C = (bit7 === 1)
     cpu.flags.HC = false
-    cpu.flags.Z = cpu[reg8] === 0
+    cpu.flags.Z = (cpu[reg8] === 0)
     cpu.flags.N = false
 
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
@@ -877,7 +879,7 @@ cpu.RLCR = (reg8) => {
 }
 
 cpu.RLCA = () => {
-    let bit7 = cpu.A >> 7
+    let bit7 = cpu.A >>> 7
 
     cpu.A = cpu.A << 1
 
@@ -892,7 +894,7 @@ cpu.RLCA = () => {
 
 cpu.RLCM = () => {
     let byte = mmu.read(cpu.HL())
-    let bit7 = byte >> 7
+    let bit7 = byte >>> 7
 
     byte = byte << 1
 
@@ -909,7 +911,7 @@ cpu.RLCM = () => {
 cpu.RRCR = (reg8) => {
     let bit1 = cpu[reg8] & 0x1
 
-    cpu[reg8] = cpu[reg8] >> 1
+    cpu[reg8] = cpu[reg8] >>> 1
 
     cpu.flags.C = (bit1 === 1)
     cpu.flags.Z = (cpu[reg8] === 0)
@@ -924,7 +926,7 @@ cpu.RRCM = () => {
     let byte = mmu.read(cpu.HL())
     let bit1 = byte & 0x1
 
-    byte = byte >> 1
+    byte = byte >>> 1
 
     cpu.flags.C = (bit1 === 1)
     cpu.flags.Z = (byte === 0)
@@ -943,7 +945,7 @@ cpu.RRR = (reg8) => {
     let bit1 = cpu[reg8] & 0x1
     let carry = cpu.flags.C ? 1 : 0
 
-    cpu[reg8] = (cpu[reg8] >> 1) | (carry << 7)
+    cpu[reg8] = (cpu[reg8] >>> 1) | (carry << 7)
 
     cpu.flags.C = (bit1 === 1)
     cpu.flags.Z = (cpu[reg8] === 0)
@@ -959,7 +961,7 @@ cpu.RRM = () => {
     let bit1 = byte & 0x1
     let carry = cpu.flags.C ? 1 : 0
 
-    byte = (byte >> 1) | (carry << 7)
+    byte = (byte >>> 1) | (carry << 7)
 
     cpu.flags.C = (bit1 === 1)
     cpu.flags.Z = (byte === 0)
@@ -975,7 +977,7 @@ cpu.RRA = () => {
     let bit1 = cpu.A & 0x1
     let carry = cpu.C ? 1 : 0
 
-    cpu.A = (cpu.A >> 1) | (carry << 7)
+    cpu.A = (cpu.A >>> 1) | (carry << 7)
 
     cpu.flags.C = (bit1 === 1)
     cpu.flags.Z = false
@@ -989,7 +991,7 @@ cpu.RRA = () => {
 cpu.RRCA = () => {
     let bit1 = cpu.A & 0x1
 
-    cpu.A = (cpu.A >> 1)
+    cpu.A = (cpu.A >>> 1)
 
     cpu.flags.C = (bit1 === 1)
     cpu.flags.Z = false
@@ -1002,7 +1004,7 @@ cpu.RRCA = () => {
 
 
 cpu.RLA = () => {
-    let bit7 = cpu.A >> 7
+    let bit7 = cpu.A >>> 7
     let carry = cpu.C ? 1 : 0
 
     cpu.A = (cpu.A << 1) | carry
@@ -1020,10 +1022,10 @@ cpu.RLA = () => {
 
 // Rotate Left through carry
 cpu.RLR = (reg8) => {
-    let bit7 = cpu[reg8] >> 7
+    let bit7 = cpu[reg8] >>> 7
     let carry = cpu.flags.C ? 1 : 0
 
-    cpu[reg8] = cpu[reg8] << 1 | carry
+    cpu[reg8] = (cpu[reg8] << 1) | carry
 
     cpu.flags.C = (bit7 === 1)
     cpu.flags.Z = (cpu[reg8] === 0)
@@ -1036,10 +1038,10 @@ cpu.RLR = (reg8) => {
 
 cpu.RLM = () => {
     let byte = mmu.read(cpu.HL())
-    let bit7 = byte >> 7
+    let bit7 = byte >>> 7
     let carry = cpu.flags.C ? 1 : 0
 
-    byte = byte << 1 | carry
+    byte = (byte << 1) | carry
 
     cpu.flags.C = (bit7 === 1)
     cpu.flags.Z = (byte === 0)
@@ -1058,7 +1060,7 @@ cpu.RLM = () => {
 
 // Push Register to Stack
 cpu.PUSH = (reg16) => {
-    let highByte = (reg16 & 0xFF00) >> 8
+    let highByte = (reg16 & 0xFF00) >>> 8
     let lowByte = reg16 & 0x00FF
 
     cpu.SP = ((cpu.SP - 1) >>> 0) % 0x10000
@@ -1078,7 +1080,7 @@ cpu.POP = (reg16) => {
     let highByte = mmu.read(cpu.SP)
     cpu.SP = ((cpu.SP + 1) >>> 0) % 0x10000
 
-    cpu[`set${reg16}`](highByte << 8 | lowByte)
+    cpu[`set${reg16}`]((highByte << 8) | lowByte)
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 12
 }

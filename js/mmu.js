@@ -27,7 +27,7 @@ import {cartridge} from "./cartridge.js"
 
 export let mmu = {
     wram: new Array(0x2000), // 8192 Bytes of Work RAM
-    hram: new Array(0x7E), // 126 Bytes of High RAM
+    hram: new Array(127), // 126 Bytes of High RAM
     io_reg: new Array(0x7F)
 }
 
@@ -61,6 +61,8 @@ mmu.read = function(address) {
         data = gpu.read(address)
     } else if(address >= 0xFEA0 && address <= 0xFEFF) {
         // unused memory region
+        console.error(`Tried to read from unused memory region (${address.toString(16)})`)
+        data = 0xFF
     }
     else if (address >= 0xFF00 && address <= 0xFF7F) {     // IO Register
         data = this.io_reg[address - 0xFF00]
@@ -96,16 +98,20 @@ mmu.write = function(data, address) {
     } else if(address >= 0xE000 && address <= 0xFDFF) { // Echo RAM
         this.wram[address - 0xE000] = data
     }
-    else if(address >= 0xFE00 && address <= 0xFE9F) {
+    else if(address >= 0xFE00 && address <= 0xFE9F) {   // OAM
         gpu.write(data,address)
         //gpu.oam[address - 0xFE00] = data
     }
     else if(address >= 0xFEA0 && address <= 0xFEFF) {
         // unused memory region
+        console.error(`Tried to write ${data.toString(16)} to unused memory region (${address.toString(16)})`)
+        //gpu.write(data,address)
     }
     else if (address >= 0xFF00 && address <= 0xFF7F) {     // IO Register
+
         if(address !== 0xFF04) {
             if(address === 0xFF46) {
+                console.log(`Requested OAM transfer: ${data.toString()}`)
                 oam.request(data)
             } else {
                 this.io_reg[address - 0xFF00] = data
@@ -113,6 +119,7 @@ mmu.write = function(data, address) {
         } else {    // If the CPU write to DIV, it will be reset
             this.io_reg[0xFF04 - 0xFF00] = 0
         }
+
     } else if (address >= 0xFF80 && address <= 0xFFFE) {    // High RAM
         this.hram[address - 0xFF80] = data
     } else {

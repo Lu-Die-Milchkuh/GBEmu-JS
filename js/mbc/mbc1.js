@@ -43,22 +43,22 @@ mbc1.adjust_rom_bank = function () {
 mbc1.read = function(address) {
     let data = 0
 
-    if(address >= 0 && address <= 0x3FFF) {
+    if(address >= 0 && address <= 0x3FFF) { // Rom Bank 0
         data = cartridge.rom[address]
 
-    } else if(address >= 0x4000 && address <= 0x7FFF){
+    } else if(address >= 0x4000 && address <= 0x7FFF){  // Rom Bank 1
         let index = address - 0x4000
         let offset = (0x4000 * this.rom_bank) + index
-        data = cartridge.rom[offset]
+        data = cartridge.rom[offset & 0xFFFF]
     }
-    else if(address >= 0xA000 && address <= 0xBFFF) {
+    else if(address >= 0xA000 && address <= 0xBFFF) {   // External RAm
         if(!this.ram_enabled)  {
             data = 0xFF
         }
         else {
-            let index = address - 0xE000
+            let index = address - 0xA000
             let offset = (0x2000 * this.ram_bank) + index
-            data = this.extram[offset]
+            data = this.extram[offset & 0xFFFF]
         }
     }
 
@@ -66,9 +66,10 @@ mbc1.read = function(address) {
 }
 
 mbc1.write = function (data,address) {
-    if(address >= 0 && address <= 0x1FFF) {
+
+    if(address >= 0 && address <= 0x1FFF) {     // Writing to Rom Bank 0 enables external RAM
         let bits = data & 0xF
-        this.ram_enabled = bits === 0x0A
+        this.ram_enabled = (bits === 0x0A)
 
     } else if(address >= 0x2000 && address <= 0x3FFF) {
 
@@ -96,7 +97,7 @@ mbc1.write = function (data,address) {
 
         let index = address - 0xA000
         let offset = (0x2000 * this.ram_bank) + index
-        this.extram[offset] = data
+        this.extram[offset & 0xFFFF] = data
 
     } else {
         console.error(`MBC1 Write ${data.toString(16)} to invalid address : ${address.toString(16)}`)
