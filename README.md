@@ -18,7 +18,7 @@ A Game Boy Emulator written in Javascript
 |01-special| Fails   |
 |02-interrupts| Fails   |
 |03-op sp,hl| Fails   |
-|04-op r,imm| Unknown |
+|04-op r,imm| Passed  |
 |05-op rp| Unknown |
 |06-ld r,r| PASS    |
 |07-jr,jp,call,ret,rst | PASS    |
