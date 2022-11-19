@@ -15,7 +15,7 @@ A Game Boy Emulator written in Javascript
 
 | ROM  | Status  | 
 |----------------------|---------|
-|01-special| Unknown |
+|01-special| Fails   |
 |02-interrupts| Fails   |
 |03-op sp,hl| Fails   |
 |04-op r,imm| Unknown |
