@@ -368,22 +368,26 @@ cpu.ORM = (data) => {
 
 // Bitwise AND A with register
 cpu.ANDR = (reg8) => {
-    cpu.A &= cpu.A
+    cpu.A = cpu.A & cpu.A
+
     cpu.flags.Z = (cpu.A === 0)
     cpu.flags.C = false
     cpu.flags.N = false
     cpu.flags.HC = true
+
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 4
 }
 
 // Bitwise AND A with mmu
 cpu.ANDM = (data) => {
-    cpu.A &= data
+    cpu.A = cpu.A & data
+
     cpu.flags.Z = (cpu.A === 0)
     cpu.flags.C = false
     cpu.flags.N = false
     cpu.flags.HC = true
+
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 8
 }
@@ -416,7 +420,7 @@ cpu.SUBM = (data) => {
 
 // Subtract register and carry flag from A
 cpu.SBCR = (reg8) => {
-    let carry = cpu.C ? 1 : 0
+    let carry = cpu.flags.C ? 1 : 0
     cpu.flags.N = true
     cpu.flags.C = ((cpu.A - cpu[reg8] - carry) < 0)
     cpu.flags.HC = ((cpu.A & 0x0F) - (cpu[reg8] & 0x0F) - carry) < 0
@@ -474,7 +478,7 @@ cpu.ADDCR = (reg8) => {
     cpu.flags.C = ((cpu.A + cpu[reg8] + carry) > 255)
     cpu.flags.HC = ((cpu.A & 0x0F) + (cpu[reg8] & 0x0F) + carry) > 0x0F
 
-    cpu.A = ((cpu.A + cpu[reg8]) >>> 0) % 256
+    cpu.A = ((cpu.A + cpu[reg8] + carry) >>> 0) % 256
     cpu.flags.Z = (cpu.A === 0)
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 4
@@ -866,7 +870,7 @@ cpu.SRLR = (reg8) => {
 cpu.RLCR = (reg8) => {
     let bit7 = cpu[reg8] >>> 7
 
-    cpu[reg8] = cpu[reg8] << 1
+    cpu[reg8] = (cpu[reg8] << 1) & 0xFF
 
     cpu.flags.C = (bit7 === 1)
     cpu.flags.HC = false
@@ -881,7 +885,7 @@ cpu.RLCR = (reg8) => {
 cpu.RLCA = () => {
     let bit7 = cpu.A >>> 7
 
-    cpu.A = cpu.A << 1
+    cpu.A = (cpu.A << 1) & 0xFF
 
     cpu.flags.C = (bit7 === 1)
     cpu.flags.HC = false
@@ -896,12 +900,14 @@ cpu.RLCM = () => {
     let byte = mmu.read(cpu.HL())
     let bit7 = byte >>> 7
 
-    byte = byte << 1
+    byte = (byte << 1) & 0xFF
 
     cpu.flags.C = bit7 === 1
     cpu.flags.Z = byte === 0
     cpu.flags.HC = false
     cpu.flags.N = false
+
+    mmu.write(byte,cpu.HL())
 
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 16
@@ -945,7 +951,7 @@ cpu.RRR = (reg8) => {
     let bit1 = cpu[reg8] & 0x1
     let carry = cpu.flags.C ? 1 : 0
 
-    cpu[reg8] = (cpu[reg8] >>> 1) | (carry << 7)
+    cpu[reg8] = ((cpu[reg8] >>> 1) | (carry << 7)) & 0xFF
 
     cpu.flags.C = (bit1 === 1)
     cpu.flags.Z = (cpu[reg8] === 0)
@@ -991,7 +997,7 @@ cpu.RRA = () => {
 cpu.RRCA = () => {
     let bit1 = cpu.A & 0x1
 
-    cpu.A = (cpu.A >>> 1)
+    cpu.A = cpu.A >>> 1
 
     cpu.flags.C = (bit1 === 1)
     cpu.flags.Z = false
@@ -1007,14 +1013,14 @@ cpu.RLA = () => {
     let bit7 = cpu.A >>> 7
     let carry = cpu.flags.C ? 1 : 0
 
-    cpu.A = (cpu.A << 1) | carry
+    cpu.A = ((cpu.A << 1) & 0xFF) | carry
 
     cpu.flags.Z = (cpu.A === 0)
     cpu.flags.N = false
     cpu.flags.HC = false
     cpu.flags.C = (bit7 === 1)
 
-    cpu.A = cpu.A << 1
+    cpu.A = (cpu.A << 1) & 0xFF
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 4
 
@@ -1025,7 +1031,7 @@ cpu.RLR = (reg8) => {
     let bit7 = cpu[reg8] >>> 7
     let carry = cpu.flags.C ? 1 : 0
 
-    cpu[reg8] = (cpu[reg8] << 1) | carry
+    cpu[reg8] = ((cpu[reg8] << 1) | carry) & 0xFF
 
     cpu.flags.C = (bit7 === 1)
     cpu.flags.Z = (cpu[reg8] === 0)
@@ -1041,7 +1047,7 @@ cpu.RLM = () => {
     let bit7 = byte >>> 7
     let carry = cpu.flags.C ? 1 : 0
 
-    byte = (byte << 1) | carry
+    byte = ((byte << 1) | carry) & 0xFF
 
     cpu.flags.C = (bit7 === 1)
     cpu.flags.Z = (byte === 0)
@@ -1135,7 +1141,7 @@ cpu.ADDR16 = (dest_reg16, src_reg16) => {
     cpu.flags.HC = ((cpu[dest_reg16]() & 0xFF) + (cpu[src_reg16]() & 0xFF)) > 0xFF
     //cpu.flags.Z = (temp % 0x10000) === 0
 
-    temp = (temp >>> 0) % 0x10000
+    temp = temp & 0xFFFF
 
     cpu[`set${dest_reg16}`](temp)
     cpu.clock.cycles += 8

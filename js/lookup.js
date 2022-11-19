@@ -652,7 +652,8 @@ export const lookup = {
         cpu.ANDR("L")
     },
     0xa6: () => {
-        cpu.ANDM(mmu.read(cpu.HL()))
+        let byte = mmu.read(cpu.HL())
+        cpu.ANDM(byte)
     },
     0xa7: () => {
         cpu.ANDR("A")
