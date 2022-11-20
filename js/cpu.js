@@ -62,14 +62,6 @@ export let cpu = {
 
 }
 
-const Interrupts = {
-    vblank: 0,
-    lcd_stat: 1,
-    timer: 2,
-    serial: 3,
-    joypad: 4
-}
-
 // Some Register can be paired together
 cpu.AF = () => {
     let F = ((cpu.flags.C ? 1 : 0) << 4)

@@ -20,7 +20,7 @@
 
 "use strict"
 
-import {cartridge} from "../cartridge.js";
+import {cartridge} from "../cartridge.js"
 
 export let mbc0 = {
     read: function (address) {

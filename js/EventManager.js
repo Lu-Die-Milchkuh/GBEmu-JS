@@ -22,7 +22,6 @@
 
 import {setPaused, setRunning, setRatio, run, paused} from "./emulator.js"
 import {cartridge, read_rom_info} from "./cartridge.js"
-import {mmu} from "./mmu.js"
 import {cpu} from "./cpu.js"
 
 // File Input
