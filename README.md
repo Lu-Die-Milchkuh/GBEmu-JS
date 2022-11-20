@@ -24,7 +24,7 @@ A Game Boy Emulator written in Javascript
 | 07-jr,jp,call,ret,rst | PASS    |
 | 08-misc instrs        | PASS    |
 | 09-op r,r             | Unknown |
-| 10-bit ops            | Fails   |
+| 10-bit ops            | PASS    |
 | 11-op a,(hl)          | Unknown |
 
 - PASS -> ROM outputs "Passed" status
