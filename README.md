@@ -9,6 +9,8 @@ A Game Boy Emulator written in Javascript
 - [ ] Audio
 - [ ] Keyboard Input
 - [ ] Controller Input
+- [ ] Code Optimization
+- [ ] WASM backend (Idea)
 - [ ] Debugger 
 
 ## Achievements
