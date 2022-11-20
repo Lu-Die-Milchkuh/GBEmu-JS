@@ -1185,7 +1185,8 @@ cpu.DECR16 = (reg16) => {
 }
 
 cpu.DEC_SP = () => {
-    cpu.SP = ((cpu.SP - 1) >>> 0) % 0x10000
+    cpu.SP = ((cpu.SP - 1) >>> 0) & 0xFFFF
+
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 8
 }
@@ -1193,7 +1194,7 @@ cpu.DEC_SP = () => {
 cpu.ADDR16 = (dest_reg16, src_reg16) => {
     let temp = cpu[dest_reg16]() + cpu[src_reg16]()
 
-    cpu.flags.C = temp > 0xFFFF
+    cpu.flags.C = (temp > 0xFFFF)
     cpu.flags.N = false
     cpu.flags.HC = ((cpu[dest_reg16]() & 0xFF) + (cpu[src_reg16]() & 0xFF)) > 0xFF
     //cpu.flags.Z = (temp % 0x10000) === 0
