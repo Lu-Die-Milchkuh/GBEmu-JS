@@ -725,7 +725,7 @@ cpu.RESM = (n) => {
 // Check if a Bit at given index is set
 cpu.BIT = (index, data) => {
 
-    cpu.flags.Z = (data & (1 << index)) !== 0
+    cpu.flags.Z = (data & (1 << index)) === 0
     cpu.flags.HC = true
     cpu.flags.N = false
 
@@ -1008,7 +1008,6 @@ cpu.RRCA = () => {
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
 }
 
-
 cpu.RLA = () => {
     let bit7 = cpu.A >>> 7
     let carry = cpu.flags.C ? 1 : 0
@@ -1059,6 +1058,67 @@ cpu.RLM = () => {
     cpu.clock.cycles += 16
 }
 
+cpu.SLA = (reg8) => {
+    let bit7 = cpu[reg8] >>> 7
+
+    cpu[reg8] = (cpu[reg8] << 1) & 0xFF
+
+    cpu.flags.C = (bit7 === 1)
+    cpu.flags.HC = false
+    cpu.flags.N = false
+    cpu.flags.Z = (cpu[reg8] === 0)
+
+    cpu.clock.cycles += 8
+    cpu.PC = (cpu.PC + 1) & 0xFFFF
+
+}
+
+cpu.SLAM = () => {
+
+    let data = mmu.read(cpu.HL())
+    let bit7 = data >>> 7
+
+    data = (data << 1) & 0xFF
+
+    cpu.flags.C = (bit7 === 0)
+    cpu.flags.HC = false
+    cpu.flags.N = false
+    cpu.flags.Z = (data === 0)
+
+    cpu.clock.cycles += 16
+    cpu.PC = (cpu.PC + 1) & 0xFFFF
+    mmu.write(data,cpu.HL())
+
+}
+
+cpu.SRA = (reg8) => {
+
+    cpu[reg8] = cpu[reg8] >>> 1
+
+    cpu.flags.C = false
+    cpu.flags.N = false
+    cpu.flags.HC = false
+    cpu.flags.Z = (cpu[reg8] === 0)
+
+    cpu.clock.cycles += 8
+    cpu.PC = (cpu.PC + 1) & 0xFFFF
+}
+
+cpu.SRAM = () => {
+    let byte = mmu.read(cpu.HL())
+
+    byte = byte >>> 1
+
+    cpu.flags.C = false
+    cpu.flags.N = false
+    cpu.flags.HC = false
+    cpu.flags.Z = (byte === 0)
+
+    mmu.write(byte,cpu.HL())
+
+    cpu.clock.cycles += 16
+    cpu.PC = (cpu.PC + 1) & 0xFFFF
+}
 
 /*
     16-Bit Instructions

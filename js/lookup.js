@@ -580,7 +580,8 @@ export const lookup = {
         cpu.ADDCR("L")
     },
     0x8e: () => {
-        cpu.ADDCM(mmu.read(cpu.HL()))
+        let byte = mmu.read(cpu.HL())
+        cpu.ADDCM(byte)
     },
     0x8f: () => {
         cpu.ADDCR("A")
@@ -604,7 +605,8 @@ export const lookup = {
         cpu.SUBR("L")
     },
     0x96: () => {
-        cpu.SUBM(mmu.read(cpu.HL()))
+        let byte = mmu.read(cpu.HL())
+        cpu.SUBM(byte)
     },
     0x97: () => {
         cpu.SUBR("A")
@@ -628,7 +630,8 @@ export const lookup = {
         cpu.SBCR("L")
     },
     0x9e: () => {
-        cpu.SBCM(mmu.read(cpu.HL()))
+        let byte = mmu.read(cpu.HL())
+        cpu.SBCM(byte)
     },
     0x9f: () => {
         cpu.SBCR("A")
@@ -1162,36 +1165,52 @@ export const prefix_lookup = {
         cpu.RRR("A")
     },
     0x20: () => {
+        cpu.SLA("B")
     },
     0x21: () => {
+        cpu.SLA("C")
     },
     0x22: () => {
+        cpu.SLA("D")
     },
     0x23: () => {
+        cpu.SLA("E")
     },
     0x24: () => {
+        cpu.SLA("H")
     },
     0x25: () => {
+        cpu.SLA("L")
     },
     0x26: () => {
+        cpu.SLAM()
     },
     0x27: () => {
+        cpu.SLA("A")
     },
     0x28: () => {
+        cpu.SRA("B")
     },
     0x29: () => {
+        cpu.SRA("C")
     },
     0x2a: () => {
+        cpu.SRA("D")
     },
     0x2b: () => {
+        cpu.SRA("E")
     },
     0x2c: () => {
+        cpu.SRA("H")
     },
     0x2d: () => {
+        cpu.SRA("L")
     },
     0x2e: () => {
+        cpu.SRAM()
     },
     0x2f: () => {
+        cpu.SRA("A")
     },
     0x30: () => {
         cpu.SWAP("B")
