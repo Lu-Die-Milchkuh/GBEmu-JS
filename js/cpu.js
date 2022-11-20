@@ -368,7 +368,7 @@ cpu.ORM = (data) => {
 
 // Bitwise AND A with register
 cpu.ANDR = (reg8) => {
-    cpu.A = cpu.A & cpu.A
+    cpu.A = cpu.A & cpu[reg8]
 
     cpu.flags.Z = (cpu.A === 0)
     cpu.flags.C = false
