@@ -11,7 +11,7 @@ A Game Boy Emulator written in Javascript
 - [ ] Controller Input
 - [ ] Debugger 
 
-## Achievments
+## Achievements
 
 | ROM                   | Status | 
 |-----------------------|--------|
