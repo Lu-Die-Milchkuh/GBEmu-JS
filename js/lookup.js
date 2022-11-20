@@ -757,7 +757,7 @@ export const lookup = {
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let highByte = mmu.read(cpu.PC)
 
-        console.log(`C3: Jumping to ${(highByte << 8 | lowByte).toString(16)}`)
+        //console.log(`C3: Jumping to ${(highByte << 8 | lowByte).toString(16)}`)
         cpu.JP((highByte << 8) | lowByte)
     },
     0xc4: () => {
@@ -921,7 +921,7 @@ export const lookup = {
         console.error("Illegal Opcode!")
     },
     0xe5: () => {
-        console.log(`Push HL ${cpu.HL().toString(16)}`)
+        //console.log(`Push HL ${cpu.HL().toString(16)}`)
         cpu.PUSH(cpu.HL())
     },
     0xe6: () => {
@@ -1722,7 +1722,7 @@ export const prefix_lookup = {
         cpu.SETR("B", 3)
     },
     0xd9: () => {
-        cpu.SETR("C", 2)
+        cpu.SETR("C", 3)
     },
     0xda: () => {
         cpu.SETR("D", 3)

@@ -600,8 +600,6 @@ cpu.CALL = (address) => {
     let highByte = (cpu.PC & 0xFF00) >>> 8
     let lowByte = (cpu.PC & 0x00FF)
 
-    console.warn(`Low Byte: ${lowByte.toString(16)}, High Byte: ${highByte.toString(16)}`)
-
     cpu.SP = ((cpu.SP - 1) >>> 0) % 0x10000
     mmu.write(highByte, cpu.SP)
 
@@ -633,7 +631,6 @@ cpu.CALLC = (address, condition) => {
 
 // Return from Subroutine
 cpu.RET = () => {
-    console.log(`RET SP -> ${cpu.SP.toString(16)}`)
     let lowByte = mmu.read(cpu.SP)
     cpu.SP = ((cpu.SP + 1) >>> 0) % 0x10000
     let highByte = mmu.read(cpu.SP)
