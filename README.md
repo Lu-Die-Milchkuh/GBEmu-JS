@@ -13,19 +13,19 @@ A Game Boy Emulator written in Javascript
 
 ## Achievments
 
-| ROM                   | Status  | 
-|-----------------------|---------|
-| 01-special            | Fails   |
-| 02-interrupts         | Fails   |
-| 03-op sp,hl           | Fails   |
-| 04-op r,imm           | PASS    |
-| 05-op rp              | Unknown |
-| 06-ld r,r             | PASS    |
-| 07-jr,jp,call,ret,rst | PASS    |
-| 08-misc instrs        | PASS    |
-| 09-op r,r             | Unknown |
-| 10-bit ops            | PASS    |
-| 11-op a,(hl)          | Unknown |
+| ROM                   | Status | 
+|-----------------------|--------|
+| 01-special            | Fails  |
+| 02-interrupts         | Fails  |
+| 03-op sp,hl           | Fails  |
+| 04-op r,imm           | PASS   |
+| 05-op rp              | Fails  |
+| 06-ld r,r             | PASS   |
+| 07-jr,jp,call,ret,rst | PASS   |
+| 08-misc instrs        | PASS   |
+| 09-op r,r             | Fails  |
+| 10-bit ops            | PASS   |
+| 11-op a,(hl)          | Fails  |
 
 - PASS -> ROM outputs "Passed" status
 - Fails -> ROM outputs "Failed" status
