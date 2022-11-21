@@ -229,21 +229,10 @@ gpu.draw_background = function (bg_priority) {
         Map 1 -> 0x9C00 -> 0x9FFF
     */
 
-
     /*
         Tiles are 8x8 Pixels(64). Every Pixel needs 2 Bits Color Data!
         -> 2 x 64 = 128 Bits -> 16 Bytes
     */
-    //const size_of_tile = 16
-
-    // View Port -> Specify the top left coords of th 160x144 area within the 256x256 BG Map
-    //let scx = gpu.read(SCX)
-    //let scy = gpu.read(SCY)
-
-    // Specify the top-left coords of the Window
-    //let winY = gpu.read(WINY)
-    //let winX = gpu.read(WINX) + 7
-
 
     let LCDC = this.read(0xFF40)
 

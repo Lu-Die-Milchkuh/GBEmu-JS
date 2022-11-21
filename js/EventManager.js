@@ -21,6 +21,7 @@
 "use strict"
 
 import {setPaused, setRunning, setRatio, run, paused} from "./emulator.js"
+import {keyboard_update} from "./keyboard.js"
 import {cartridge, read_rom_info} from "./cartridge.js"
 import {cpu} from "./cpu.js"
 
@@ -78,4 +79,17 @@ document.querySelector("#pause-button").addEventListener("click", () => {
     button.textContent = paused ? "Resume" : "Pause"
     //button.style.backgroundColor = paused ? "Red" : "#7C7C7C"
     console.log(`Emulation Paused: ${paused}`)
+})
+
+// Event Listener for Keyboard Input
+window.addEventListener("keypress", keyboard_update)
+
+// gamepad Connected Event
+window.addEventListener("gamepadconnected", (e) => {
+    console.log(`Gamepad: ${e.gamepad.id} connected at index ${e.gamepad.index}`)
+})
+
+// Gamepad Disconnect Event
+window.addEventListener("gamepaddisconnected", (e) => {
+    console.log(`Gamepad disconnected from index ${e.gamepad.index}: ${e.gamepad.id}`)
 })

@@ -7,6 +7,11 @@
     }
 }
 
+/*
+        Infinite Image Sliding
+
+        Credits to https://blog.logrocket.com/creating-infinite-css-background-image-loop/
+*/
 @keyframes slide {
     0% {
         transform: translate3d(0, 0, 0);
@@ -15,6 +20,12 @@
         transform: translate3d(-410px, 0, 0);
     }
 }
+
+/*
+    CRT Effect
+
+    Credits to http://aleclownes.com/2017/02/01/crt-display.html
+*/
 
 @keyframes flicker {
     0% {opacity: 0.27861;}

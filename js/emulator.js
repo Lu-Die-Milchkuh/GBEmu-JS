@@ -48,13 +48,13 @@ export let setPaused = (cond) => {
 
 export async function run() {
     const max_cycles = 69905 // 4194304 HZ / 60 HZ
-    const frame_time = 16.6 // ms
+    //const frame_time = 16.6 // ms
 
     screen.init()
     mmu.reset()
     gpu.reset()
     cpu.reset()
-    let counter = 0
+    //let counter = 0
 
     while (running) {
         while (paused) {
@@ -76,7 +76,7 @@ export async function run() {
                 let opcode = mmu.read(cpu.PC)
                 cpu.clock.cycles += 4
                 //console.log(`Executing: ${opcode.toString(16)} @ ${cpu.PC.toString(16)} Counter: ${counter}`)
-                counter++
+                //counter++
 
                 if (opcode === 0xCB) {
                     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
@@ -133,7 +133,8 @@ export async function run() {
     //document.querySelector("#test").innerHTML = gg
 }
 let serial = []
-let gg = ""
+
+/*let gg = ""
 function printCPUState() {
     /*console.warn(`CPU State`)
     console.log(`A -> ${cpu.A.toString(16)}`)
@@ -150,7 +151,7 @@ function printCPUState() {
     console.log(`Z: ${cpu.flags.Z}`)
     console.log(`N: ${cpu.flags.N}`)
     console.log(`N: ${cpu.flags.N}`)
-    console.log(`C: ${cpu.flags.C}`)*/
+    console.log(`C: ${cpu.flags.C}`)
     gg += `A -> ${cpu.A.toString(16)} <br>`
             +`F -> ${cpu.F.toString(16)} <br>`
             +`B -> ${cpu.B.toString(16)} <br>`
@@ -167,4 +168,4 @@ function printCPUState() {
     +`C: ${cpu.flags.C}<br>`
 
 
-}
+}*/
