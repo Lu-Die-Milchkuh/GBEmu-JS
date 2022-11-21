@@ -20,7 +20,9 @@
 
 "use strict"
 
-function gamepad_update() {
+export let gamepad_state = 0xCF
+
+export function gamepad_update() {
     let gamepad = navigator.getGamepads()[0]
 
     for(const button of gamepad.buttons) {

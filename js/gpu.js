@@ -76,7 +76,7 @@ export let gpu = {
     tile_cache: [],
     sprite_table: [],
     frame_buffer: [], //new Array(160 * 144),
-    drawFlag: false
+    //drawFlag: false
     //bg_buffer: new Array(256 * 256),
 }
 
@@ -196,21 +196,21 @@ gpu.update_scanline = function () {
     let bg_priority = new Array(160)
 
     if (LCDC & 0x1) {    // 0b0000 0001
-        console.log("Draw -> Background")
+        //console.log("Draw -> Background")
         this.draw_background(bg_priority)
-        this.drawFlag = true
+        //this.drawFlag = true
     }
 
     if (LCDC & 0x2) {    // 0b0000 0010
-        console.log("Draw -> Sprites")
+        //console.log("Draw -> Sprites")
         this.draw_sprites(bg_priority)
-        this.drawFlag = true
+        //this.drawFlag = true
     }
 
     if (LCDC & 0x20) {   // 0b0010 0000
-        console.log("Draw -> Window")
+        //console.log("Draw -> Window")
         this.draw_window(bg_priority)
-        this.drawFlag = true
+        //this.drawFlag = true
     }
 
 }

@@ -48,14 +48,13 @@ const keyboard_Joypad = {
     "q": 2,   // Select
 }
 
+export let keyboard_state = 0xCF
+
 export function keyboard_update(event) {
     if(valid_keys.includes(event.key)) {
         console.log(event.key)
         let old_input = mmu.read(0xFF00)
-
-        let new_input = old_input & ~(1 << keyboard_Joypad[event.key])
-
-        console.log(new_input.toString(2))
-        mmu.write(new_input,0xFF00)
+        //console.log(new_input.toString(2))
+        keyboard_state = old_input & ~(1 << keyboard_Joypad[event.key])
     }
 }

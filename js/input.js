@@ -20,6 +20,10 @@
 
 "use strict"
 
+import {mmu} from "./mmu.js"
+import {gamepad_state} from "./controller.js"
+import {keyboard_state} from "./keyboard.js"
+
 /*
 Taken from pandocs
     Bit 7 - Not used
@@ -31,8 +35,10 @@ Taken from pandocs
     Bit 1 - P11 Input Left or Button B (0=Pressed) (Read Only)
     Bit 0 - P10 Input Right or Button A (0=Pressed) (Read Only)
 */
-let state = 0xFF
+let state = 0xCF
 
-export function updateControls(event) {
-
+export function updateControls() {
+    state = keyboard_state | gamepad_state
+    mmu.write(state,0xFF00)
+    //console.log(`Updating Controls ${state.toString(2)}`)
 }
