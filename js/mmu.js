@@ -28,7 +28,7 @@ import {cartridge} from "./cartridge.js"
 export let mmu = {
     wram: new Array(0x2000), // 8192 Bytes of Work RAM
     hram: new Array(127), // 126 Bytes of High RAM
-    io_reg: new Array(0x7F)
+    io_reg: new Array(0x80)
 }
 
 mmu.reset = function() {
@@ -71,12 +71,12 @@ mmu.read = function(address) {
     } else {
         data = cpu.IE
     }
-
+    //if(data === undefined) console.error(`Read "undefined" data at ${address.toString(16)}`)
     return data
 }
 
 mmu.write = function(data, address) {
-    console.warn(`CPU -> Writing ${data.toString(16)} to ${address.toString(16)}`)
+    //console.warn(`CPU -> Writing ${data.toString(16)} to ${address.toString(16)}`)
     if (address >= 0 && address <= 0x7FFF) {   // ROM 0x014F
         //console.warn(`Tried to write ${data.toString(16)} into ROM at address ${address.toString(16)}`)
         //mmu.rom[address] = data
