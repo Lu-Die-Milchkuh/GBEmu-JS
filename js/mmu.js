@@ -116,7 +116,7 @@ mmu.write = function(data, address) {
             } else {
                 this.io_reg[address - 0xFF00] = data
             }
-        } else {    // If the CPU write to DIV, it will be reset
+        } else {    // If the CPU writes to DIV, it will be reset
             this.io_reg[0xFF04 - 0xFF00] = 0
         }
 
