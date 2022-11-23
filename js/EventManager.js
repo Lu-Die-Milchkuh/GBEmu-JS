@@ -24,6 +24,7 @@ import {setPaused, setRunning, setRatio, run, paused} from "./emulator.js"
 import {keyboard_update} from "./keyboard.js"
 import {cartridge, read_rom_info} from "./cartridge.js"
 import {cpu} from "./cpu.js"
+import {gamepad_update} from "./controller.js";
 
 // File Input
 document.querySelector("#file-input").addEventListener("change", (event) => {
@@ -84,12 +85,16 @@ document.querySelector("#pause-button").addEventListener("click", () => {
 // Event Listener for Keyboard Input
 window.addEventListener("keypress", keyboard_update)
 
-// gamepad Connected Event
+// Gamepad Connected Event
 window.addEventListener("gamepadconnected", (e) => {
     console.log(`Gamepad: ${e.gamepad.id} connected at index ${e.gamepad.index}`)
+    console.log(`Mapping: ${e.gamepad.mapping}`)
+    setInterval(gamepad_update,10)
 })
 
 // Gamepad Disconnect Event
 window.addEventListener("gamepaddisconnected", (e) => {
     console.log(`Gamepad disconnected from index ${e.gamepad.index}: ${e.gamepad.id}`)
 })
+
+//window.addEventListener("ongamepadconnected",gamepad_update)

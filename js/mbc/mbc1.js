@@ -26,7 +26,7 @@ export let mbc1 = {
     rom_bank: 1,
     ram_bank: 0,
     ram_enabled: false,
-    extram: new Array(0x8000),
+    extram: new Array(0x8000).fill(0),
     mode: 0 // 0 -> Rom, 1 -> RAM
 
 }

@@ -143,7 +143,7 @@ gpu.update = function (cycles) {
         } else if (this.clock.scanline_cycles >= OAM_PERIOD && this.clock.scanline_cycles <= TRANSFER_PERIOD) {
             if (old_mode !== 3) {
                 this.setMode(3)  // Transfer Data to LCD
-                console.log("Update Scanline")
+                //console.log("Update Scanline")
                 this.update_scanline()
             }
 
@@ -201,15 +201,15 @@ gpu.update_scanline = function () {
         //this.drawFlag = true
     }
 
-    if (LCDC & 0x2) {    // 0b0000 0010
-        //console.log("Draw -> Sprites")
-        this.draw_sprites(bg_priority)
-        //this.drawFlag = true
-    }
-
     if (LCDC & 0x20) {   // 0b0010 0000
         //console.log("Draw -> Window")
         this.draw_window(bg_priority)
+        //this.drawFlag = true
+    }
+
+    if (LCDC & 0x2) {    // 0b0000 0010
+        //console.log("Draw -> Sprites")
+        this.draw_sprites(bg_priority)
         //this.drawFlag = true
     }
 
@@ -451,7 +451,7 @@ gpu.colorize = (shade, palette) => {
         default:
             console.error(`Invalid Palette Shade ${shade.toString(16)}`)
     }
-
+    //if(colors[real].toString() !== [0xFF,0xFF,0xFF].toString()) console.log(colors[real])
     return colors[real]
 }
 
@@ -465,7 +465,11 @@ gpu.read = function (address) {
         }
 
     } else if (address >= 0xFE00 && address <= 0xFE9F) {
-        data = this.oam[address - 0xFE00]
+        if(this.mode === 3 || this.mode === 2) {
+            data = 0xFF
+        } else {
+            data = this.oam[address - 0xFE00]
+        }
     } else if (address >= 0xFF00 && address <= 0xFF7F) {
         data = mmu.io_reg[address - 0xFF00]
     }
@@ -493,12 +497,19 @@ gpu.write = function (data, address) {
             return
         }
         this.oam[address - 0xFE00] = data
+        console.log(`Update Sprite  ${address.toString(16)} ${data.toString(16)}`)
         this.update_sprite(data,address)
     }
     else if (address >= 0xFF00 && address <= 0xFF7F) {
         if(address === 0xFF40) {
             this.update_lcdc(data)
-        } else {
+        } else if(address === 0xFF41) {
+            let stat = mmu.read(STAT)
+            let high = data & 0xF8
+            let low = stat & 0x7
+            mmu.io_reg[address - 0xFF00] = high | low
+        }
+        else {
             mmu.io_reg[address - 0xFF00] = data
         }
 

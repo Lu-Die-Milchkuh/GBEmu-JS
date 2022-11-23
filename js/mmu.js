@@ -76,7 +76,7 @@ mmu.read = function(address) {
 }
 
 mmu.write = function(data, address) {
-    //console.warn(`CPU -> Writing ${data.toString(16)} to ${address.toString(16)}`)
+    console.warn(`CPU -> Writing ${data.toString(16)} to ${address.toString(16)}`)
     if (address >= 0 && address <= 0x7FFF) {   // ROM 0x014F
         //console.warn(`Tried to write ${data.toString(16)} into ROM at address ${address.toString(16)}`)
         //mmu.rom[address] = data

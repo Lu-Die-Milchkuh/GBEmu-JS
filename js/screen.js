@@ -42,10 +42,10 @@ screen.update = () => {
 
     for (let y = 0; y < 144; y++) {
         for (let py = 0; py < 2; py++) {
-            let yOffset = (y * 2 + py) * 320;
+            let yOffset = (y * 2 + py) * 320
             for (let x = 0; x < 160; x++) {
                 for (let px = 0; px < 2; px++) {
-                    let offset = yOffset + (x * 2 + px);
+                    let offset = yOffset + (x * 2 + px)
                     let v = gpu.frame_buffer[y*160 + x | 0]
                     // set RGB values
                     screen.content.data[offset * 4] = v[0]

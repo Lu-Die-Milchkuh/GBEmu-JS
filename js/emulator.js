@@ -131,7 +131,7 @@ export async function run() {
 
         screen.update()
     }
-    //console.log(gpu.frame_buffer)
+    //console.log(gpu.sprite_table)
     //document.querySelector("#test").innerHTML = gg
 }
 

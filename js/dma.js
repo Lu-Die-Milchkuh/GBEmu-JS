@@ -21,6 +21,7 @@
 "use strict"
 
 import {mmu} from "./mmu.js"
+import {gpu} from "./gpu.js"
 
 export let oam = {
     active: false,
@@ -31,7 +32,7 @@ export let oam = {
 
 oam.request = function(src) {
     this.active = true
-    this.source = src  / 0x100    // Check this
+    this.source = (src * 0x100) & 0xFFFF   // Check this
     this.destination = 0xFE00
 
 }
@@ -50,7 +51,7 @@ oam.update = function(cycles) {
         let bytes = (adjusted_cycles * 8) % 256
 
         this.source = (this.source + bytes) & 0xFFFF
-        this.destination = (this.source + bytes) & 0xFFFF
+        this.destination = (this.destination + bytes) & 0xFFFF
         this.cycles -= adjusted_cycles
 
         if(this.cycles <= 0) {
@@ -61,8 +62,10 @@ oam.update = function(cycles) {
         console.log(`OAM write Bytes: ${bytes}`)
         for(let offset = 0; offset < bytes; offset++) {
             let value = mmu.read((from + offset) & 0xFFFF)
-            //console.log(`OAM Val ${value} from ${(from+offset).toString(16)}`)
+            console.log(`OAM Val ${value} from ${(from+offset).toString(16)}`)
             mmu.write(value,(to + offset) & 0xFFFF)
+            console.log(`OAM Val ${value} to ${(to + offset).toString(16)}`)
+            //gpu.sprite_table[(to + offset) - 0xFE00] = value
             //gpu.write(value,(to + offset) & 0xFFFF) // TODO Check this
         }
    }
