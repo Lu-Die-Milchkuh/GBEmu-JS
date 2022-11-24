@@ -802,7 +802,9 @@ cpu.DAA = () => {
     cpu.flags.HC = false
     cpu.flags.Z = (A === 0)
     cpu.A = A
+
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
+    cpu.clock.cycles += 4
 }
 
 /*
@@ -815,13 +817,14 @@ cpu.SWAP = (reg8) => {
     let lowNibble = cpu[reg8] & 0x0F
 
     cpu[reg8] = (highNibble >>> 4) | (lowNibble << 4)
-    cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
-    cpu.clock.cycles += 8
 
     cpu.flags.Z = (cpu[reg8] === 0)
     cpu.flags.N = false
     cpu.flags.HC = false
     cpu.flags.C = false
+
+    cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
+    cpu.clock.cycles += 8
 }
 
 // Swap nibbles at memory location
@@ -831,14 +834,16 @@ cpu.SWAPM = () => {
     let lowNibble = byte & 0x0F
 
     byte = (highNibble >>> 4) | (lowNibble << 4)
+
     mmu.write(byte, cpu.HL())
-    cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
-    cpu.clock.cycles += 16
 
     cpu.flags.Z = (byte === 0)
     cpu.flags.N = false
     cpu.flags.HC = false
     cpu.flags.C = false
+
+    cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
+    cpu.clock.cycles += 16
 }
 
 // Right Logical Shift
@@ -1084,7 +1089,7 @@ cpu.SLAM = () => {
 
     data = (data << 1) & 0xFF
 
-    cpu.flags.C = (bit7 === 0)
+    cpu.flags.C = (bit7 === 1)
     cpu.flags.HC = false
     cpu.flags.N = false
     cpu.flags.Z = (data === 0)

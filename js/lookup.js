@@ -1230,7 +1230,7 @@ export const prefix_lookup = {
         cpu.SWAP("L")
     },
     0x36: () => {
-        cpu.SWAP()
+        cpu.SWAPM()
     },
     0x37: () => {
         cpu.SWAP("A")
