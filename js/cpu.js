@@ -1188,7 +1188,7 @@ cpu.ADDR16 = (dest_reg16, src_reg16) => {
 
     cpu.flags.C = (temp > 0xFFFF)
     cpu.flags.N = false
-    cpu.flags.HC = ((cpu[dest_reg16]() & 0xFF) + (cpu[src_reg16]() & 0xFF)) > 0xFF
+    cpu.flags.HC = (((cpu[dest_reg16]() & 0xFFF) + (cpu[src_reg16]() & 0xFFF)) & 0x1000) !== 0//((cpu[dest_reg16]() & 0xFF) + (cpu[src_reg16]() & 0xFF)) > 0xFF
     //cpu.flags.Z = (temp % 0x10000) === 0
 
     temp = temp & 0xFFFF
