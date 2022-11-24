@@ -1239,19 +1239,25 @@ export const prefix_lookup = {
         cpu.SRLR("B")
     },
     0x39: () => {
+        cpu.SRLR("C")
     },
     0x3a: () => {
+        cpu.SRLR("D")
     },
     0x3b: () => {
-
+        cpu.SRLR("E")
     },
     0x3c: () => {
+        cpu.SRLR("H")
     },
     0x3d: () => {
+        cpu.SRLR("L")
     },
     0x3e: () => {
+        cpu.SRLM()
     },
     0x3f: () => {
+        cpu.SRLR("A")
     },
     0x40: () => {
         cpu.BIT(0, cpu.B)

@@ -855,11 +855,27 @@ cpu.SRLR = (reg8) => {
     cpu.clock.cycles += 8
 }
 
+cpu.SRLM = () => {
+    let byte = mmu.read(cpu.HL())
+    let bit1 = byte & 1
+    cpu.flags.HC = false
+    cpu.flags.N = false
+    cpu.flags.C = (bit1 === 1)
+
+    byte = byte >>> 1
+
+    cpu.flags.Z = (byte === 0)
+    mmu.write(byte,cpu.HL())
+
+    cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
+    cpu.clock.cycles += 8
+}
+
 // Rotate Left through Carry
 cpu.RLCR = (reg8) => {
     let bit7 = cpu[reg8] >>> 7
 
-    cpu[reg8] = (cpu[reg8] << 1) & 0xFF
+    cpu[reg8] = ((cpu[reg8] << 1) + bit7) & 0xFF
 
     cpu.flags.C = (bit7 === 1)
     cpu.flags.HC = false
@@ -874,7 +890,7 @@ cpu.RLCR = (reg8) => {
 cpu.RLCA = () => {
     let bit7 = cpu.A >>> 7
 
-    cpu.A = (cpu.A << 1) & 0xFF
+    cpu.A = ((cpu.A << 1) + bit7) & 0xFF
 
     cpu.flags.C = (bit7 === 1)
     cpu.flags.HC = false
@@ -889,13 +905,12 @@ cpu.RLCM = () => {
     let byte = mmu.read(cpu.HL())
     let bit7 = byte >>> 7
 
-    byte = (byte << 1) & 0xFF
+    byte = ((byte << 1) + bit7) & 0xFF
 
-    cpu.flags.C = bit7 === 1
-    cpu.flags.Z = byte === 0
+    cpu.flags.C = (bit7 === 1)
+    cpu.flags.Z = (byte === 0)
     cpu.flags.HC = false
     cpu.flags.N = false
-
     mmu.write(byte,cpu.HL())
 
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
@@ -906,7 +921,7 @@ cpu.RLCM = () => {
 cpu.RRCR = (reg8) => {
     let bit1 = cpu[reg8] & 0x1
 
-    cpu[reg8] = cpu[reg8] >>> 1
+    cpu[reg8] = (cpu[reg8] >>> 1) | (bit1 << 7)
 
     cpu.flags.C = (bit1 === 1)
     cpu.flags.Z = (cpu[reg8] === 0)
@@ -921,7 +936,7 @@ cpu.RRCM = () => {
     let byte = mmu.read(cpu.HL())
     let bit1 = byte & 0x1
 
-    byte = byte >>> 1
+    byte = (byte >>> 1) | (bit1 << 7)
 
     cpu.flags.C = (bit1 === 1)
     cpu.flags.Z = (byte === 0)
@@ -986,7 +1001,7 @@ cpu.RRA = () => {
 cpu.RRCA = () => {
     let bit1 = cpu.A & 0x1
 
-    cpu.A = cpu.A >>> 1
+    cpu.A = (cpu.A >>> 1) | (bit1 << 7)
 
     cpu.flags.C = (bit1 === 1)
     cpu.flags.Z = false
@@ -1001,14 +1016,14 @@ cpu.RLA = () => {
     let bit7 = cpu.A >>> 7
     let carry = cpu.flags.C ? 1 : 0
 
-    cpu.A = ((cpu.A << 1) & 0xFF) | carry
+    cpu.A = ((cpu.A << 1) + carry ) & 0xFF
 
-    cpu.flags.Z = (cpu.A === 0)
+    cpu.flags.Z = false
     cpu.flags.N = false
     cpu.flags.HC = false
     cpu.flags.C = (bit7 === 1)
 
-    cpu.A = (cpu.A << 1) & 0xFF
+
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 4
 
@@ -1019,7 +1034,7 @@ cpu.RLR = (reg8) => {
     let bit7 = cpu[reg8] >>> 7
     let carry = cpu.flags.C ? 1 : 0
 
-    cpu[reg8] = ((cpu[reg8] << 1) | carry) & 0xFF
+    cpu[reg8] = ((cpu[reg8] << 1) + carry) & 0xFF
 
     cpu.flags.C = (bit7 === 1)
     cpu.flags.Z = (cpu[reg8] === 0)
@@ -1082,9 +1097,12 @@ cpu.SLAM = () => {
 
 cpu.SRA = (reg8) => {
 
-    cpu[reg8] = cpu[reg8] >>> 1
+    let bit1 = cpu[reg8] & 0x1
+    let bit7 = cpu[reg8] & 0x80
 
-    cpu.flags.C = false
+    cpu[reg8] = (cpu[reg8] >>> 1) | bit7
+
+    cpu.flags.C = (bit1 === 1)
     cpu.flags.N = false
     cpu.flags.HC = false
     cpu.flags.Z = (cpu[reg8] === 0)
@@ -1096,9 +1114,12 @@ cpu.SRA = (reg8) => {
 cpu.SRAM = () => {
     let byte = mmu.read(cpu.HL())
 
-    byte = byte >>> 1
+    let bit1 = byte & 0x1
+    let bit7 = byte & 0x80
 
-    cpu.flags.C = false
+    byte = (byte >>> 1) | bit7
+
+    cpu.flags.C = (bit1 === 1)
     cpu.flags.N = false
     cpu.flags.HC = false
     cpu.flags.Z = (byte === 0)
@@ -1199,12 +1220,11 @@ cpu.ADDR16 = (dest_reg16, src_reg16) => {
 }
 
 cpu.ADD_HL = (data) => {
-    let HL = cpu.HL()
-    let result = HL + data
 
-    let half_carry =  (((HL & 0xFFF) + (data & 0xFFF)) & 0x1000) !== 0
+    let result = cpu.HL() + data
+
     cpu.flags.C = result > 0xFFFF
-    cpu.flags.HC = half_carry
+    cpu.flags.HC = (((cpu.HL() & 0xFFF) + (data & 0xFFF)) & 0x1000) !== 0
     cpu.flags.N = false
 
 
@@ -1215,12 +1235,10 @@ cpu.ADD_HL = (data) => {
 }
 
 cpu.ADD_SP = (data) => {
-    let SP = cpu.SP
-    let result = SP + data
+    let result = cpu.SP + data
 
-    let half_carry =  (((SP & 0xFFF) + (data & 0xFFF)) & 0x1000) !== 0
     cpu.flags.C = result > 0xFFFF
-    cpu.flags.HC = half_carry
+    cpu.flags.HC = (((cpu.SP & 0xFFF) + (data & 0xFFF)) & 0x1000) !== 0
 
     cpu.flags.Z = false
     cpu.flags.N = false
