@@ -21,7 +21,7 @@ A Game Boy Emulator written in Javascript
 | 02-interrupts         | Fails  |
 | 03-op sp,hl           | Fails  |
 | 04-op r,imm           | PASS   |
-| 05-op rp              | Fails  |
+| 05-op rp              | PASS   |
 | 06-ld r,r             | PASS   |
 | 07-jr,jp,call,ret,rst | PASS   |
 | 08-misc instrs        | PASS   |
