@@ -124,7 +124,7 @@ export async function run() {
         console.warn(`From Serial: ${foo}`)
         //printCPUState()
         //gpu.frame_buffer.forEach((e) => {console.log(e.values())})
-        //let foo2 = gpu.frame_buffer.values()
+        //let foo2 = gpu.sprite_table.values()
         //for (let elements of foo2) {
         //    console.log(elements)
         //}

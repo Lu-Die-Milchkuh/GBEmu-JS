@@ -70,9 +70,9 @@ export let gpu = {
         frame_cycles: 0,
         scanline_cycles: 0
     },
-    mode: 2,
+    //mode: 2,
     line: 0,
-    vblank: false,
+    //vblank: false,
     tile_cache: [],
     sprite_table: [],
     frame_buffer: [], //new Array(160 * 144),
@@ -115,11 +115,11 @@ gpu.update = function (cycles) {
     this.clock.frame_cycles += cycles
     this.clock.scanline_cycles += cycles
 
-    let old_mode = this.mode
+    let old_mode = this.get_mode()
     this.vblank = false
 
     if (this.clock.frame_cycles > FRAME_PERIOD) {
-        this.vblank = true
+        //this.vblank = true
         if (old_mode !== 1) {
             this.setMode(1)    // We are in VBLANK
             cpu.requestInterrupt(0)
@@ -182,7 +182,6 @@ gpu.line_compare = function () {
 }
 
 gpu.setMode = function (mode) {
-    this.mode = mode
     let newSTAT = this.read(STAT)
     newSTAT &= 0xFC
     newSTAT |= mode
@@ -193,24 +192,21 @@ gpu.setMode = function (mode) {
 gpu.update_scanline = function () {
     let LCDC = this.read(0xFF40)
 
-    let bg_priority = new Array(160)
+    let bg_priority = new Array(160).fill(false)
 
     if (LCDC & 0x1) {    // 0b0000 0001
         //console.log("Draw -> Background")
         this.draw_background(bg_priority)
-        //this.drawFlag = true
     }
 
     if (LCDC & 0x20) {   // 0b0010 0000
         //console.log("Draw -> Window")
         this.draw_window(bg_priority)
-        //this.drawFlag = true
     }
 
     if (LCDC & 0x2) {    // 0b0000 0010
         //console.log("Draw -> Sprites")
         this.draw_sprites(bg_priority)
-        //this.drawFlag = true
     }
 
 }
@@ -339,7 +335,7 @@ gpu.draw_window = function (bg_priority) {
 gpu.draw_sprites = function (bg_priority) {
     let scanline_y = mmu.read(LY)
     let LCDC = mmu.read(0xFF40)
-
+    //console.log("Sprite Draw")
 
     let tall_sprite_mode = !!(LCDC & (1 << 2))
     let sprite_y_max = 0
@@ -458,14 +454,14 @@ gpu.colorize = (shade, palette) => {
 gpu.read = function (address) {
     let data = 0
     if (address >= 0x8000 && address <= 0x9FFF) { // VRAM
-        if(this.mode === 3) {
+        if(this.get_mode() === 3) {
             data = 0xFF
         } else {
             data = this.vram[address - 0x8000]
         }
 
     } else if (address >= 0xFE00 && address <= 0xFE9F) {
-        if(this.mode === 3 || this.mode === 2) {
+        if(this.get_mode() === 3 || this.get_mode() === 2) {
             data = 0xFF
         } else {
             data = this.oam[address - 0xFE00]
@@ -481,7 +477,7 @@ gpu.write = function (data, address) {
     //console.warn(`GPU -> Writing ${data.toString(16)} to ${address.toString(16)}`)
     if(data === undefined) console.error(`GPU -> Data undefined!`)
     if (address >= 0x8000 && address <= 0x97FF) {
-        if (this.mode === 3) return
+        if (this.get_mode() === 3) return
 
         let index = address - 0x8000
         this.vram[index] = data
@@ -493,7 +489,7 @@ gpu.write = function (data, address) {
 
     }
     else if(address >= 0xFE00 && address <= 0xFE9F) {
-        if(this.mode === 2 || this.mode === 3 ) {
+        if(this.get_mode() === 2 || this.get_mode() === 3 ) {
             return
         }
         this.oam[address - 0xFE00] = data
@@ -579,13 +575,24 @@ gpu.update_lcdc = function (data) {
 
     if(!(data & (1<<7)) && LCDC & (1 << 7)) {
 
-        if(this.mode !== 1) {
+        if(this.get_mode() !== 1) {
 
         }
         this.write(0,LY)
-        this.mode = 0
+        this.setMode(0)
     }
     this.write(data,0xFF40)
+}
+
+gpu.get_mode = function () {
+    let stat = mmu.read(STAT)
+    /*
+        0 -> HBlank
+        1 -> VBlank
+        2 -> Oam
+        3 -> Transfer
+     */
+    return stat & 0x3
 }
 
 
