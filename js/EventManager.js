@@ -89,7 +89,11 @@ window.addEventListener("keypress", keyboard_update)
 window.addEventListener("gamepadconnected", (e) => {
     console.log(`Gamepad: ${e.gamepad.id} connected at index ${e.gamepad.index}`)
     console.log(`Mapping: ${e.gamepad.mapping}`)
-    setInterval(gamepad_update,10)
+
+    if(navigator.userAgent.includes("Chrome")) {
+        setInterval(gamepad_update,10)
+    }
+
 })
 
 // Gamepad Disconnect Event

@@ -774,7 +774,6 @@ cpu.DI = () => {
     cpu.clock.cycles += 4
 }
 
-// TODO: Needs to be implemented correctly!
 cpu.STOP = () => {
     cpu.clock.cycles += 4
     //cpu.PC = (cpu.PC + 2) % 0x10000
@@ -786,6 +785,8 @@ cpu.HALT = () => {
     cpu.clock.cycles += 4
 }
 
+// Special thanks to mattbruv. My initial implementation was faulty, but his works!
+// DAA -> Decimal Adjust Accumulator
 cpu.DAA = () => {
     let A = cpu.A
     let adjust = cpu.flags.C ? 0x60 : 0
@@ -1221,31 +1222,29 @@ cpu.DEC_SP = () => {
 }
 
 cpu.ADDR16 = (dest_reg16, src_reg16) => {
-    let temp = cpu[dest_reg16]() + cpu[src_reg16]()
+    let result = cpu[dest_reg16]() + cpu[src_reg16]()
 
-    cpu.flags.C = (temp > 0xFFFF)
+    cpu.flags.C = (result > 0xFFFF)
     cpu.flags.N = false
-    cpu.flags.HC = (((cpu[dest_reg16]() & 0xFFF) + (cpu[src_reg16]() & 0xFFF)) & 0x1000) !== 0//((cpu[dest_reg16]() & 0xFF) + (cpu[src_reg16]() & 0xFF)) > 0xFF
-    //cpu.flags.Z = (temp % 0x10000) === 0
+    cpu.flags.HC = (((cpu[dest_reg16]() & 0xFF) + (cpu[src_reg16]() & 0xFF)) > 0xFF)
 
-    temp = temp & 0xFFFF
+    result &= 0xFFFF
 
-    cpu[`set${dest_reg16}`](temp)
+    cpu[`set${dest_reg16}`](result)
     cpu.clock.cycles += 8
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
 }
 
 cpu.ADD_HL = (data) => {
-
     let result = cpu.HL() + data
 
-    cpu.flags.C = result > 0xFFFF
-    cpu.flags.HC = (((cpu.HL() & 0xFFF) + (data & 0xFFF)) & 0x1000) !== 0
+    cpu.flags.C = (result > 0xFFFF)
+    cpu.flags.HC = (((cpu.HL() & 0xFF) + (data & 0xFF))  > 0xFF)
     cpu.flags.N = false
 
-
-    result = (result >>> 0) % 0x10000
+    result = result & 0xFFFF
     cpu.setHL(result)
+
     cpu.clock.cycles += 8
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
 }
@@ -1254,12 +1253,12 @@ cpu.ADD_SP = (data) => {
     let result = cpu.SP + data
 
     cpu.flags.C = result > 0xFFFF
-    cpu.flags.HC = (((cpu.SP & 0xFFF) + (data & 0xFFF)) & 0x1000) !== 0
+    cpu.flags.HC = (((cpu.SP & 0xFF) + data) > 0xFF)
 
     cpu.flags.Z = false
     cpu.flags.N = false
 
-    cpu.SP = (result >>> 0) % 0x10000
+    cpu.SP = result & 0xFFFF
     cpu.clock.cycles += 16
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
 }

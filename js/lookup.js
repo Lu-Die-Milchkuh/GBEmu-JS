@@ -32,7 +32,7 @@ export const lookup = {
         let lowByte = mmu.read(cpu.PC)
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let highByte = mmu.read(cpu.PC)
-        let data = highByte << 8 | lowByte
+        let data = (highByte << 8) | lowByte
         cpu.LDR16("BC", data)
 
     },
@@ -64,7 +64,7 @@ export const lookup = {
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let highByte = mmu.read(cpu.PC)
 
-        let address = highByte << 8 | lowByte
+        let address = (highByte << 8) | lowByte
 
         let lowSP = cpu.SP & 0x00FF
         let highSP = (cpu.SP % 0xFF00) >> 8
@@ -248,7 +248,7 @@ export const lookup = {
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let highByte = mmu.read(cpu.PC)
         //console.error(`Error ${(highByte << 8 | lowByte).toString(16)} PC ${cpu.PC.toString(16)}`)
-        cpu.LDR16("SP", highByte << 8 | lowByte)
+        cpu.LDR16("SP", (highByte << 8) | lowByte)
     },
     0x32: () => {
         cpu.LDM(cpu.A, cpu.HL())
@@ -747,7 +747,7 @@ export const lookup = {
         let lowByte = mmu.read(cpu.PC)
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let highByte = mmu.read(cpu.PC)
-        cpu.JPC(highByte << 8 | lowByte, cpu.flags.Z === false)
+        cpu.JPC((highByte << 8) | lowByte, cpu.flags.Z === false)
     },
     0xc3: () => {
         // Memory -> Little Endian, the Least Sig Byte comes first
@@ -765,7 +765,7 @@ export const lookup = {
         let lowByte = mmu.read(cpu.PC)
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let highByte = mmu.read(cpu.PC)
-        cpu.CALLC(highByte << 8 | lowByte, cpu.flags.Z === false)
+        cpu.CALLC((highByte << 8) | lowByte, cpu.flags.Z === false)
     },
     0xc5: () => {
         cpu.PUSH(cpu.BC())
@@ -791,7 +791,7 @@ export const lookup = {
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let highByte = mmu.read(cpu.PC)
 
-        cpu.JPC(highByte << 8 | lowByte, cpu.flags.Z === true)
+        cpu.JPC((highByte << 8) | lowByte, cpu.flags.Z === true)
     },
     0xcb: () => {
         console.error("CB Prefix used in wrong lookup table!")
@@ -803,7 +803,7 @@ export const lookup = {
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let highByte = mmu.read(cpu.PC)
 
-        cpu.CALLC(highByte << 8 | lowByte, cpu.flags.Z === true)
+        cpu.CALLC((highByte << 8) | lowByte, cpu.flags.Z === true)
     },
     0xcd: () => {
         // Memory -> Little Endian, the Least Sig Byte comes first
@@ -812,7 +812,7 @@ export const lookup = {
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let highByte = mmu.read(cpu.PC)
 
-        cpu.CALL(highByte << 8 | lowByte)
+        cpu.CALL((highByte << 8) | lowByte)
     },
     0xce: () => {
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
@@ -836,7 +836,7 @@ export const lookup = {
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let highByte = mmu.read(cpu.PC)
 
-        cpu.JPC(highByte << 8 | lowByte, cpu.flags.C === false)
+        cpu.JPC((highByte << 8) | lowByte, cpu.flags.C === false)
     },
     0xd3: () => {
         console.error("Illegal Opcode!")
@@ -848,7 +848,7 @@ export const lookup = {
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let highByte = mmu.read(cpu.PC)
 
-        cpu.CALLC(highByte << 8 | lowByte, cpu.flags.C === false)
+        cpu.CALLC((highByte << 8) | lowByte, cpu.flags.C === false)
     },
     0xd5: () => {
         cpu.PUSH(cpu.DE())
@@ -874,7 +874,7 @@ export const lookup = {
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let highByte = mmu.read(cpu.PC)
 
-        cpu.JPC(highByte << 8 | lowByte, cpu.flags.C === true)
+        cpu.JPC((highByte << 8) | lowByte, cpu.flags.C === true)
     },
     0xdb: () => {
         console.error("Illegal Opcode!")
@@ -885,7 +885,7 @@ export const lookup = {
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let highByte = mmu.read(cpu.PC)
 
-        cpu.CALLC(highByte << 8 | lowByte, cpu.flags.C === true)
+        cpu.CALLC((highByte << 8) | lowByte, cpu.flags.C === true)
     },
     0xdd: () => {
         console.error("Illegal Opcode!")
@@ -948,7 +948,7 @@ export const lookup = {
         let lowByte = mmu.read(cpu.PC)
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let highByte = mmu.read(cpu.PC)
-        let address = highByte << 8 | lowByte
+        let address = (highByte << 8) | lowByte
         cpu.LDM(cpu.A, address)
         cpu.clock.cycles += 8
     },
@@ -1023,14 +1023,18 @@ export const lookup = {
 
         cpu.flags.Z = false
         cpu.flags.N = false
-        cpu.flags.HC = (SP & 0xF) < (cpu.SP & 0xF)
-        cpu.flags.C = (SP & 0xFF) < (cpu.SP & 0xFF)
-        cpu.LDR16("HL", SP)
+        cpu.flags.HC = ((cpu.SP & 0XFF ) + byte) > 0xFF //(SP & 0xF) < (cpu.SP & 0xF)
+        cpu.flags.C = (SP > 0xFFFF)
+
+        cpu.SP = SP & 0xFFFF
+
+        cpu.LDR16("HL", cpu.SP)
         //cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     },
     0xf9: () => {
-
+        // LD SP,HL
         cpu.SP = cpu.HL()
+
         cpu.clock.cycles += 8
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     },
@@ -1040,7 +1044,7 @@ export const lookup = {
         cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
         let highByte = mmu.read(cpu.PC)
 
-        let address = highByte << 8 | lowByte
+        let address = (highByte << 8) | lowByte
         let data = mmu.read(address)
         cpu.LDR("A", data)
         cpu.clock.cycles += 12
