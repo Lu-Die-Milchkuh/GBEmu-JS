@@ -19,7 +19,7 @@ A Game Boy Emulator written in Javascript
 
 | ROM                   | Status   | 
 |-----------------------|----------|
-| 01-special            | Fails    |
+| 01-special            | PASS     |
 | 02-interrupts         | Fails    |
 | 03-op sp,hl           | Fails    |
 | 04-op r,imm           | PASS     |
