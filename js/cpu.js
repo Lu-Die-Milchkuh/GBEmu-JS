@@ -790,18 +790,29 @@ cpu.DAA = () => {
     let A = cpu.A
     let adjust = cpu.flags.C ? 0x60 : 0
 
+    if(cpu.flags.HC) {
+        adjust |= 0x06
+    }
+
     if(!cpu.flags.N) {
         if((A & 0x0F) > 0x09) {
-            A = ((A + adjust) >>> 0) % 256
+            adjust |= 0x06
         }
+
+        if(A > 0x99) {
+            adjust |= 0x60
+        }
+
+        A = (A + adjust) & 0xFF
+
     } else {
-        A = ((A - adjust) >>> 0) % 256
+        A = ((A - adjust) >>> 0) & 0xFF
     }
 
     cpu.flags.C = (adjust >= 0x60)
     cpu.flags.HC = false
     cpu.flags.Z = (A === 0)
-    cpu.A = A
+    cpu.A = A & 0xFF
 
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 4
