@@ -43,6 +43,7 @@ A Game Boy Emulator written in Javascript
     - [Gbops - Opcode Table](https://izik1.github.io/gbops/)
     - ~~[pastreizer Opcode Table](https://www.pastraiser.com/cpu/gameboy/gameboy_opcodes.html)~~ <- Some Flags are wrong
     - [CTurts Blog about his Emulator Cinoop](https://cturt.github.io/cinoop.html)
+    - [game-boy-opcodes by immendes](https://github.com/lmmendes/game-boy-opcodes)
 
 
 - Reference Emulator
