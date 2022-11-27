@@ -116,7 +116,7 @@ gpu.update = function (cycles) {
     this.clock.scanline_cycles += cycles
 
     let old_mode = this.get_mode()
-    this.vblank = false
+    //this.vblank = false
 
     if (this.clock.frame_cycles > FRAME_PERIOD) {
         //this.vblank = true
@@ -130,6 +130,7 @@ gpu.update = function (cycles) {
             this.clock.scanline_cycles = 0
             this.clock.frame_cycles = 0
             this.write(0x0, LY)   // Clear LY
+            this.line_compare()
             this.setMode(2)  // Searching OAM
         }
     } else {
@@ -140,14 +141,14 @@ gpu.update = function (cycles) {
                 request = (this.read(STAT) & (1 << 5))
             }
 
-        } else if (this.clock.scanline_cycles >= OAM_PERIOD && this.clock.scanline_cycles <= TRANSFER_PERIOD) {
+        } else if (this.clock.scanline_cycles > OAM_PERIOD && this.clock.scanline_cycles <= TRANSFER_PERIOD) {
             if (old_mode !== 3) {
                 this.setMode(3)  // Transfer Data to LCD
                 //console.log("Update Scanline")
                 this.update_scanline()
             }
 
-        } else if (this.clock.scanline_cycles >= TRANSFER_PERIOD && this.clock.scanline_cycles <= HBLANK_PERIOD) {
+        } else if (this.clock.scanline_cycles > TRANSFER_PERIOD && this.clock.scanline_cycles <= HBLANK_PERIOD) {
             if (old_mode !== 0) {
                 this.setMode(0)  // HBLANK
                 request = this.read(STAT) & (1 << 3)
@@ -253,11 +254,13 @@ gpu.draw_background = function (bg_priority) {
         let vram_location = 0
 
         if (LCDC & (1 << 4)) {
+            vram_location = (tile_pattern * 16) + tile_data_location
+        } else {
+            if(tile_pattern > 127) {
+                tile_pattern = tile_pattern - 256
+            }
             let adjusted = tile_pattern * 16
             vram_location = tile_data_location + adjusted
-
-        } else {
-            vram_location = tile_pattern + tile_data_location
         }
 
         let tile_id = this.address_to_tile_id(vram_location)
@@ -268,7 +271,7 @@ gpu.draw_background = function (bg_priority) {
 
 
         let tile = this.tile_cache[tile_id]
-
+        //console.log(tile)
         let pixel_x = x % 8
         let pixel_y = y % 8
         let pixel = tile.pixels[(pixel_y * 8) + pixel_x]
@@ -281,7 +284,7 @@ gpu.draw_background = function (bg_priority) {
 
 gpu.draw_window = function (bg_priority) {
     let window_y = mmu.read(WINY)
-    let window_x = (mmu.read(WINX) + 7) % 256
+    let window_x = ((mmu.read(WINX) - 7) >>> 0) % 256
     let y = mmu.read(LY)
     let palette = mmu.read(BGP)
     let LCDC = mmu.read(0xFF40)
@@ -309,8 +312,11 @@ gpu.draw_window = function (bg_priority) {
         if(LCDC & (1<<4)) {
             vram_location = (tile_pattern * 16) + tile_data_location
         } else {
-            let adjusted = ((tile_pattern)) * 16
-            vram_location = (tile_data_location) + adjusted
+            if(tile_pattern > 127) {
+                tile_pattern = tile_pattern - 256
+            }
+            let adjusted = tile_pattern * 16
+            vram_location = tile_data_location + adjusted
         }
 
         let tile_id = this.address_to_tile_id(vram_location)
@@ -346,7 +352,7 @@ gpu.draw_sprites = function (bg_priority) {
         sprite_y_max = 7
     }
 
-    for(let i = 0; i < 10;i++) {    //this.sprite_table.length
+    for(let i = 0; i < 40;i++) {    //this.sprite_table.length
 
         let sprite = this.sprite_table[i]
         if(scanline_y >= sprite.y_pos && scanline_y <= (sprite.y_pos + sprite_y_max)
@@ -539,7 +545,7 @@ gpu.update_sprite = function(data,address) {
 }
 
 gpu.refresh_tile = function (id) {
-    let offset = 0x8000 + (id * 16)
+    let offset = (0x8000 + (id * 16)) & 0xFFFF
 
     let tile = new Array(64)
     tile.fill(0)
@@ -576,12 +582,13 @@ gpu.update_lcdc = function (data) {
     if(!(data & (1<<7)) && LCDC & (1 << 7)) {
 
         if(this.get_mode() !== 1) {
-
+            console.error(`LCD off, but not in VBlank`)
         }
         this.write(0,LY)
         this.setMode(0)
     }
-    this.write(data,0xFF40)
+    mmu.io_reg[0xFF40 - 0xFF00] = data
+    //this.write(data,0xFF40)
 }
 
 gpu.get_mode = function () {

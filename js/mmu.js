@@ -68,10 +68,12 @@ mmu.read = function(address) {
         data = this.io_reg[address - 0xFF00]
     } else if (address >= 0xFF80 && address <= 0xFFFE) {    // High RAM
         data = this.hram[address - 0xFF80]
-    } else {
+    } else if(address === 0xFFFF) {
         data = cpu.IE
+    } else {
+        console.error(`Invalid Address (mmu.read) ${address.toString(16)}`)
     }
-    //if(data === undefined) console.error(`Read "undefined" data at ${address.toString(16)}`)
+
     return data
 }
 
@@ -122,7 +124,9 @@ mmu.write = function(data, address) {
 
     } else if (address >= 0xFF80 && address <= 0xFFFE) {    // High RAM
         this.hram[address - 0xFF80] = data
-    } else {
+    } else if(address === 0xFFFF) {
         cpu.IE = data
+    } else {
+        console.error(`Invalid Address (mmu.write) ${address.toString(16)}, data = ${data.toString(16)}`)
     }
 }

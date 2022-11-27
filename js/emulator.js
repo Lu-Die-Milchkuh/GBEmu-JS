@@ -76,7 +76,7 @@ export async function run() {
                 // Opcodes are the Bytes that tell the cpu which instruction it should execute
                 let opcode = mmu.read(cpu.PC)
                 cpu.clock.cycles += 4
-                //console.log(`Executing: ${opcode.toString(16)} @ ${cpu.PC.toString(16)} Counter: ${counter}`)
+                //console.log(`Executing: ${opcode.toString(16)} @ ${cpu.PC.toString(16)}`)
                 //counter++
 
                 if (opcode === 0xCB) {

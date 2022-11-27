@@ -1023,12 +1023,12 @@ export const lookup = {
 
         cpu.flags.Z = false
         cpu.flags.N = false
-        cpu.flags.HC = ((cpu.SP & 0XFF ) + byte) > 0xFF //(SP & 0xF) < (cpu.SP & 0xF)
-        cpu.flags.C = (SP > 0xFFFF)
+        cpu.flags.HC = (SP & 0xF) < (cpu.SP & 0xF)
+        cpu.flags.C = (SP & 0xFF) < (cpu.SP & 0xF)
 
-        cpu.SP = SP & 0xFFFF
+        SP = SP & 0xFFFF
 
-        cpu.LDR16("HL", cpu.SP)
+        cpu.LDR16("HL", SP)
         //cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     },
     0xf9: () => {

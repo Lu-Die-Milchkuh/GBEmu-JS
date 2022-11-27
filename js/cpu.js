@@ -53,7 +53,7 @@ export let cpu = {
     },
 
     // Interrupt Master Enable Register
-    IME: true,
+    IME: false,
     // Interrupt Enable
     IE: 0,
 
@@ -171,10 +171,10 @@ cpu.reset = function() {
     mmu.write(0xF3, 0xFF25)
     mmu.write(0xF1, 0xFF26)
     mmu.write(0x91, 0xFF40)   // LCDC
-    mmu.write(0x85,0xFF41)
+    mmu.write(0x85,0xFF41)    // STAT
     mmu.write(0x00, 0xFF42)   // SCY
     mmu.write(0x00, 0xFF43)   // SCX
-    mmu.write(0x00,0xFF44)
+    mmu.write(0x00,0xFF44)    // LY
     mmu.write(0x00, 0xFF45)   // LYC
     mmu.write(0xFF,0xFF46)    // OAM
     mmu.write(0xFC, 0xFF47)   // BGP
@@ -1236,13 +1236,12 @@ cpu.ADDR16 = (dest_reg16, src_reg16) => {
 }
 
 cpu.ADD_HL = (data) => {
-    let result = cpu.HL() + data
+    let result = (cpu.HL() + data) & 0xFFFF
 
-    cpu.flags.C = (result > 0xFFFF)
-    cpu.flags.HC = (((cpu.HL() & 0xFF) + (data & 0xFF))  > 0xFF)
+    cpu.flags.C = (cpu.HL() > (0xFFFF - data))
+    cpu.flags.HC = (((cpu.HL() & 0xFFF) + (data & 0xFFF))  & 0x1000) !== 0
     cpu.flags.N = false
 
-    result = result & 0xFFFF
     cpu.setHL(result)
 
     cpu.clock.cycles += 8
@@ -1252,8 +1251,8 @@ cpu.ADD_HL = (data) => {
 cpu.ADD_SP = (data) => {
     let result = cpu.SP + data
 
-    cpu.flags.C = result > 0xFFFF
-    cpu.flags.HC = (((cpu.SP & 0xFF) + data) > 0xFF)
+    cpu.flags.C = ((result & 0xFF) < (cpu.SP < 0xFF))
+    cpu.flags.HC = ((result & 0xF) < (cpu.SP & 0xF))
 
     cpu.flags.Z = false
     cpu.flags.N = false
