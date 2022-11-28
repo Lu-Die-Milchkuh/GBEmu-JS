@@ -1028,8 +1028,9 @@ export const lookup = {
 
         SP = SP & 0xFFFF
 
+
         cpu.LDR16("HL", SP)
-        //cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
+
     },
     0xf9: () => {
         // LD SP,HL

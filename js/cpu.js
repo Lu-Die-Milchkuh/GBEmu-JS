@@ -778,10 +778,19 @@ cpu.STOP = () => {
     cpu.clock.cycles += 4
     //cpu.PC = (cpu.PC + 2) % 0x10000
     cpu.isStop = true
+    if(cpu.isStop) {
+        cpu.PC = (cpu.PC + 2) % 0x10000
+    }
 }
 
 cpu.HALT = () => {
-    cpu.isHalt = !(cpu.IE !== 0 && mmu.read(0xFF00) !== 0)
+    cpu.isHalt = !(cpu.IE !== 0 && mmu.read(0xFF0F) !== 0)
+    /*cpu.isHalt = true
+    for(let i = 0; i < 5;i++) {
+        if(cpu.IE & (1<<i) && mmu.read(0xFF0F) & (1 <<i)) {
+            cpu.isHalt = false
+        }
+    }*/
     cpu.clock.cycles += 4
 }
 
@@ -1249,6 +1258,10 @@ cpu.ADD_HL = (data) => {
 }
 
 cpu.ADD_SP = (data) => {
+    if(data > 127) {
+        data -= 256
+    }
+
     let result = cpu.SP + data
 
     cpu.flags.C = ((result & 0xFF) < (cpu.SP < 0xFF))

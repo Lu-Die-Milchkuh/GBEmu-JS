@@ -70,14 +70,10 @@ export let gpu = {
         frame_cycles: 0,
         scanline_cycles: 0
     },
-    //mode: 2,
     line: 0,
-    //vblank: false,
     tile_cache: [],
     sprite_table: [],
-    frame_buffer: [], //new Array(160 * 144),
-    //drawFlag: false
-    //bg_buffer: new Array(256 * 256),
+    frame_buffer: [],
 }
 
 
@@ -116,7 +112,7 @@ gpu.update = function (cycles) {
     this.clock.scanline_cycles += cycles
 
     let old_mode = this.get_mode()
-    //this.vblank = false
+
 
     if (this.clock.frame_cycles > FRAME_PERIOD) {
         //this.vblank = true
@@ -191,7 +187,7 @@ gpu.setMode = function (mode) {
 }
 
 gpu.update_scanline = function () {
-    let LCDC = this.read(0xFF40)
+    let LCDC = mmu.io_reg[0xFF40 - 0xFF00]
 
     let bg_priority = new Array(160).fill(false)
 
@@ -214,7 +210,7 @@ gpu.update_scanline = function () {
 
 
 gpu.draw_background = function (bg_priority) {
-
+    //console.log("Drawing Background")
     /* Tile Data: 0x8000 - 0x97FF (Contains actual Tile Data)
             Block 0 -> 0x8000 - 0x87FF
             Block 1 -> 0x8800 - 0x8FFF
@@ -231,7 +227,7 @@ gpu.draw_background = function (bg_priority) {
         -> 2 x 64 = 128 Bits -> 16 Bytes
     */
 
-    let LCDC = this.read(0xFF40)
+    let LCDC = mmu.io_reg[0xFF40 - 0xFF00]
 
     let tile_map_location = (LCDC & (1 << 3)) ? 0x9C00 : 0x9800
     let tile_data_location = (LCDC & (1 << 4)) ? 0x8000 : 0x8800
@@ -239,14 +235,14 @@ gpu.draw_background = function (bg_priority) {
     //let signed = tile_data_location === 0x8800
 
     let display_y = this.read(LY)
-    let y = (display_y + this.read(SCY)) % 256
-    let row = (y / 8) >>> 0
+    let y = (display_y + this.read(SCY))
+    let row = y / 8
     let buffer_start = display_y * 160
     let palette = this.read(BGP)  // Background Palette
 
     for (let i = 0; i < 160; i++) {
         let x = (i + this.read(SCX)) % 256
-        let column = x / 8
+        let column = Math.floor(x / 8)
         let tile_map_index = (row * 32) + column
         let lookup = tile_map_index + tile_map_location
         let tile_pattern = this.read_raw(lookup)
@@ -262,7 +258,7 @@ gpu.draw_background = function (bg_priority) {
             let adjusted = tile_pattern * 16
             vram_location = tile_data_location + adjusted
         }
-
+        console.log(`Draw BG -> ${vram_location.toString(16)}`)
         let tile_id = this.address_to_tile_id(vram_location)
         //console.log(tile_id)
         if (this.tile_cache[tile_id].dirty) {
@@ -276,8 +272,12 @@ gpu.draw_background = function (bg_priority) {
         let pixel_y = y % 8
         let pixel = tile.pixels[(pixel_y * 8) + pixel_x]
         let color = this.colorize(pixel, palette)
+        //console.log(`BG Color ${pixel} ${color.toString()}`)
         let offset = buffer_start + i
-        if(pixel !== 0) bg_priority[i] = true
+
+        if(pixel !== 0) {
+            bg_priority[i] = true
+        }
         this.frame_buffer[offset] = color
     }
 }
@@ -301,7 +301,7 @@ gpu.draw_window = function (bg_priority) {
     let row = (y - window_y) / 8
 
     for(let i = 0; i < 160; i++) {
-        let display_x = (i + window_x ) % 256
+        //let display_x = (i + window_x ) % 256
         let column  = (i / 8) >>> 0
         let tile_map_index = (row * 32) + column
         let offset = tile_map_location + tile_map_index
@@ -362,7 +362,7 @@ gpu.draw_sprites = function (bg_priority) {
             let sprite_y = sprite.y_pos
 
             let pixel_y = ((scanline_y - 1) >>> 0) % 8
-            let lookup_y = sprite.x_flip ? ((pixel_y - 7) * -1) % 256 : pixel_y
+            let lookup_y = sprite.x_flip ? ((((pixel_y - 7) * -1)) >>> 0) % 256 : pixel_y
 
             let tile_id = 0
 
@@ -485,13 +485,13 @@ gpu.write = function (data, address) {
     if (address >= 0x8000 && address <= 0x97FF) {
         if (this.get_mode() === 3) return
 
-        let index = address - 0x8000
+        let index = (address - 0x8000)
         this.vram[index] = data
-        if(address <= 0x97FF) {
-            let tile_id = (index / 16) >>> 0
+        //if(address <= 0x97FF) {
+        let tile_id = (index / 16) >>> 0
             //console.log(tile_id)
-            this.tile_cache[tile_id].dirty = true
-        }
+        this.tile_cache[tile_id].dirty = true
+        //}
 
     }
     else if(address >= 0xFE00 && address <= 0xFE9F) {
@@ -546,7 +546,7 @@ gpu.update_sprite = function(data,address) {
 
 gpu.refresh_tile = function (id) {
     let offset = (0x8000 + (id * 16)) & 0xFFFF
-
+    console.log(`Refreshing Tile ${id}`)
     let tile = new Array(64)
     tile.fill(0)
 
@@ -560,7 +560,7 @@ gpu.refresh_tile = function (id) {
             let high_bit = (highByte >>> x) & 1
 
             tile[((y * 8) + flip_x)] = (high_bit << 1) | low_bit
-
+            console.log(`${tile.toString()}`)
             x -= 1
         }
     }
@@ -569,10 +569,12 @@ gpu.refresh_tile = function (id) {
 }
 
 gpu.address_to_tile_id = function (address) {
+    console.log(`Addr ORG ${address.toString(16)} -> ${((address - 0x8000) / 16)}`)
     return ((address - 0x8000) / 16) >>> 0
 }
 
 gpu.read_raw = function (address) {
+    console.log(`Read Raw ${this.vram[address - 0x8000]} @ ${address.toString(16)}`)
     return this.vram[address - 0x8000]
 }
 
