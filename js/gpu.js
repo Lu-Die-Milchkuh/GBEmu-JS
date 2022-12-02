@@ -22,7 +22,7 @@
 
 import {mmu} from "./mmu.js"
 import {cpu} from "./cpu.js"
-import {screen} from "./screen.js"
+//import {screen} from "./screen.js"
 
 
 /*

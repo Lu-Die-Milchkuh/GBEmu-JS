@@ -45,24 +45,50 @@ cartridge.write = function (data, address) {
 
 export function read_rom_info() {
     const info = {
-        "title": [],
-        "type": 0,
-        "rom size": 0,
-        "ram size": 0,
+        "Title": [],
+        "Type": 0,
+        "ROM Size": 0,
+        "RAM Size": 0,
+        "Japanese": 0,
     }
 
     const ram_size_lookup = [0, 2048, 8192, 32768]
 
     for (let i = 0x134; i < 0x143; i++) {
         let data = cartridge.rom[i]
-        info.title.push(data)
+        info.Title.push(data)
     }
 
-    info.title = String.fromCharCode.apply(null, info.title)
-    info.type = cartridge.rom[0x147]
-    cartridge.mbc = info.type
-    info["rom size"] = 32768 << cartridge.rom[0x148]
-    info["ram size"] = ram_size_lookup[cartridge.rom[0x149]]
+    info.Title = String.fromCharCode.apply(null, info.Title)
 
-    console.table(info)
+    info.Type = cartridge.rom[0x147]
+    cartridge.mbc = info.Type
+    info["ROM Size"] = 32768 << cartridge.rom[0x148]
+    info["RAM Size"] = ram_size_lookup[cartridge.rom[0x149]]
+    info.Japanese = !!cartridge.rom[0x14A]
+
+
+    let table = document.createElement("table")
+    let caption = document.createElement("caption")
+    caption.innerHTML = "ROM Information"
+
+    let tb = table.createTBody()
+
+    for(const el in info) {
+        let tr = tb.insertRow()
+        let th = document.createElement("th")
+        let td = document.createElement("td")
+
+        th.innerHTML = el
+        td.innerHTML = info[el]
+
+        tr.append(th)
+        tr.append(td)
+        tb.append(tr)
+    }
+
+    table.append(caption)
+    table.append(tb)
+    document.querySelector("#info-block").append(table)
+
 }
