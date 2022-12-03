@@ -175,8 +175,32 @@ form[id="speed-control"] {
     border-radius: 10px;
 }
 
-input[id="#speed-slider"] {
+#speed-slider {
 
+    appearance: none;
+    background-color: white;
+    outline: none;
+
+}
+#speed-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    box-shadow: 1px 1px 1px #000000, 0 0 1px #0d0d0d;
+    border: 1px solid #000000;
+    height: 20px;
+    width: 10px;
+    border-radius: 3px;
+    background: #ffffff;
+    cursor: pointer;
+}
+
+#speed-slider::-moz-range-thumb {
+    box-shadow: 1px 1px 1px #000000, 0 0 1px #0d0d0d;
+    border: 1px solid #000000;
+    height: 20px;
+    width: 10px;
+    border-radius: 3px;
+    background: #ffffff;
+    cursor: pointer;
 }
 
 label[for="speed-slider"] {
