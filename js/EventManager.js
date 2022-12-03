@@ -102,3 +102,11 @@ window.addEventListener("gamepaddisconnected", (e) => {
 })
 
 //window.addEventListener("ongamepadconnected",gamepad_update)
+
+window.addEventListener("load",() => {
+    let canvas = document.querySelector("canvas")
+    let ctx = canvas.getContext('2d')
+    ctx.font = '20px sans-serif'
+    ctx.textAlign = "center"
+    ctx.fillText("No ROM loaded",canvas.width/2,canvas.height/2)
+})

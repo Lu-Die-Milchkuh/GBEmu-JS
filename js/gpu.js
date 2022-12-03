@@ -429,12 +429,20 @@ gpu.draw_sprites = function (bg_priority) {
 
 
 gpu.colorize = (shade, palette) => {
-    let colors = [
+    /*let colors = [
         //rr    gg    bb
         [0xFF, 0xFF, 0xFF], // White
         [0xAA, 0xAA, 0xAA], // Light Grey
         [0x55, 0x55, 0x55], // Grey
         [0x00, 0x00, 0x00], // Black
+    ]*/
+
+    let colors = [
+        //rr    gg    bb
+        [0x9B, 0xBC, 0x0F], // Lightest Green
+        [0x8B, 0xAC, 0x0F], // Light Green
+        [0x30, 0x62, 0x30], // Dark Green
+        [0x0F, 0x38, 0x0F], // Darkest Green
     ]
 
     let real = 0
