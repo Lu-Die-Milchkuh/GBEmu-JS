@@ -1230,6 +1230,7 @@ cpu.DEC_SP = () => {
     cpu.clock.cycles += 8
 }
 
+// TODO Needs checking!
 cpu.ADDR16 = (dest_reg16, src_reg16) => {
     let result = cpu[dest_reg16]() + cpu[src_reg16]()
 
