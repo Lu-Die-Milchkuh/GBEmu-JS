@@ -1230,6 +1230,7 @@ cpu.DEC_SP = () => {
     cpu.clock.cycles += 8
 }
 
+/*
 // TODO Needs checking!
 cpu.ADDR16 = (dest_reg16, src_reg16) => {
     let result = cpu[dest_reg16]() + cpu[src_reg16]()
@@ -1244,6 +1245,7 @@ cpu.ADDR16 = (dest_reg16, src_reg16) => {
     cpu.clock.cycles += 8
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
 }
+*/
 
 cpu.ADD_HL = (data) => {
     let result = (cpu.HL() + data) & 0xFFFF
