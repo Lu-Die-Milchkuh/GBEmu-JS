@@ -88,7 +88,7 @@ gpu.reset = function () {
         this.tile_cache.push(tile)
     }
 
-    for(let i = 0; i < 40; i++) {
+    for (let i = 0; i < 40; i++) {
         let sprite = new SpriteEntry()
         this.sprite_table.push(sprite)
     }
@@ -158,7 +158,7 @@ gpu.update = function (cycles) {
 
     if (this.clock.scanline_cycles > HBLANK_PERIOD) {
         let newLY = this.read(LY)
-        newLY = ((newLY + 1) >>> 0 ) % 256
+        newLY = ((newLY + 1) >>> 0) % 256
         this.write(newLY, LY)
         this.clock.scanline_cycles = 0
         this.line_compare()
@@ -232,8 +232,6 @@ gpu.draw_background = function (bg_priority) {
     let tile_map_location = (LCDC & (1 << 3)) ? 0x9C00 : 0x9800
     let tile_data_location = (LCDC & (1 << 4)) ? 0x8000 : 0x8800
 
-    //let signed = tile_data_location === 0x8800
-
     let display_y = this.read(LY)
     let y = (display_y + this.read(SCY)) & 0xFF
     let row = Math.floor(y / 8)
@@ -243,21 +241,21 @@ gpu.draw_background = function (bg_priority) {
     for (let i = 0; i < 160; i++) {
         let x = (i + this.read(SCX)) & 0xFF
         let column = Math.floor(x / 8)
-        let tile_map_index = (row * 32) + column
+        let tile_map_index = ((row * 32) + column) & 0xFFFF
         let lookup = tile_map_index + tile_map_location
+        //console.log(`Raw Address -> ${lookup.toString(16)}`)
         let tile_pattern = this.read_raw(lookup)
-
+        //console.log(`Tile Pattern -> ${tile_pattern.toString(16)}`)
         let vram_location = 0
 
         if (LCDC & (1 << 4)) {
-            vram_location = (tile_pattern * 16) + tile_data_location
-        }
-        else {
-            if(tile_pattern > 127) {
+            vram_location = ((tile_pattern * 16) + tile_data_location) & 0xFFFF
+        } else {
+            if (tile_pattern > 127) {
                 tile_pattern = tile_pattern - 256
             }
             let adjusted = tile_pattern * 16
-            vram_location = tile_data_location + adjusted
+            vram_location = (tile_data_location + adjusted) & 0xFFFF
         }
         //console.log(`Draw BG -> ${vram_location.toString(16)}`)
         let tile_id = this.address_to_tile_id(vram_location)
@@ -271,12 +269,12 @@ gpu.draw_background = function (bg_priority) {
         //console.log(tile)
         let pixel_x = x % 8
         let pixel_y = y % 8
-        let pixel = tile.pixels[(pixel_y * 8) + pixel_x]
+        let pixel = tile.pixels[((pixel_y * 8) + pixel_x) & 0xFFFF]
         let color = this.colorize(pixel, palette)
         //console.log(`BG Color ${pixel} ${color.toString()}`)
-        let offset = buffer_start + i
+        let offset = (buffer_start + i) & 0xFFFF
 
-        if(pixel !== 0) {
+        if (pixel !== 0) {
             bg_priority[i] = true
         }
         this.frame_buffer[offset] = color
@@ -285,7 +283,7 @@ gpu.draw_background = function (bg_priority) {
 
 gpu.draw_window = function (bg_priority) {
     let window_y = mmu.read(WINY)
-    //let window_x = ((mmu.read(WINX) - 7) >>> 0) % 256
+    let window_x = ((mmu.read(WINX) - 7) >>> 0) % 256
     let y = mmu.read(LY)
     let palette = mmu.read(BGP)
     let LCDC = mmu.read(0xFF40)
@@ -301,19 +299,19 @@ gpu.draw_window = function (bg_priority) {
 
     let row = Math.floor((y - window_y) / 8)
 
-    for(let i = 0; i < 160; i++) {
-        //let display_x = (i + window_x ) % 256
-        let column  = Math.floor(i / 8)
+    for (let i = 0; i < 160; i++) {
+        let display_x = (i + window_x) & 0xFF
+        let column = Math.floor(i / 8)
         let tile_map_index = (row * 32) + column
         let offset = tile_map_location + tile_map_index
         let tile_pattern = this.read_raw(offset)
 
         let vram_location
 
-        if(LCDC & (1<<4)) {
+        if (LCDC & (1 << 4)) {
             vram_location = (tile_pattern * 16) + tile_data_location
         } else {
-            if(tile_pattern > 127) {
+            if (tile_pattern > 127) {
                 tile_pattern = tile_pattern - 256
             }
             let adjusted = tile_pattern * 16
@@ -322,16 +320,16 @@ gpu.draw_window = function (bg_priority) {
 
         let tile_id = this.address_to_tile_id(vram_location)
 
-        if(this.tile_cache[tile_id].dirty) {
+        if (this.tile_cache[tile_id].dirty) {
             this.refresh_tile(tile_id)
         }
 
         let pixel_x = i % 8
         let tile = this.tile_cache[tile_id]
         let pixel = tile.pixels[(pixel_y * 8) + pixel_x]
-        let color = this.colorize(pixel,palette)
+        let color = this.colorize(pixel, palette)
         let buffer_offset = buffer_start + i
-        if(pixel !== 0) {
+        if (pixel !== 0) {
             bg_priority[i] = true
         }
 
@@ -347,35 +345,34 @@ gpu.draw_sprites = function (bg_priority) {
     let tall_sprite_mode = !!(LCDC & (1 << 2))
     let sprite_y_max = 0
 
-    if(tall_sprite_mode) {
+    if (tall_sprite_mode) {
         sprite_y_max = 15
     } else {
         sprite_y_max = 7
     }
 
-    for(let i = 0; i < 40;i++) {    //this.sprite_table.length
+    for (let i = 0; i < 40; i++) {    //this.sprite_table.length
 
         let sprite = this.sprite_table[i]
-        if(scanline_y >= sprite.y_pos && scanline_y <= (sprite.y_pos + sprite_y_max)
-            && (sprite.x_pos + 8) >= 0 && sprite.x_pos < 160)
-        {
+        if (scanline_y >= sprite.y_pos && scanline_y <= (sprite.y_pos + sprite_y_max)
+            && (sprite.x_pos + 8) >= 0 && sprite.x_pos < 160) {
             let sprite_x = sprite.x_pos
             let sprite_y = sprite.y_pos
 
             let pixel_y = ((scanline_y - 1) >>> 0) % 8
-            let lookup_y = sprite.x_flip ? ((((pixel_y - 7) * -1)) >>> 0) % 256 : pixel_y
+            let lookup_y = sprite.x_flip ? ((((pixel_y - 7) * -1)) >>> 0) : pixel_y
 
             let tile_id = 0
 
-            if(tall_sprite_mode) {
-                if((scanline_y - sprite_y) < 8) {
-                    if(sprite.y_flip) {
+            if (tall_sprite_mode) {
+                if ((scanline_y - sprite_y) < 8) {
+                    if (sprite.y_flip) {
                         tile_id = sprite.tile_id | 1
                     } else {
                         tile_id = sprite.tile_id & 0xFE
                     }
                 } else {
-                    if(sprite.y_flip) {
+                    if (sprite.y_flip) {
                         tile_id = sprite.tile_id & 0xFE
                     } else {
                         tile_id = sprite.tile_id | 1
@@ -385,7 +382,7 @@ gpu.draw_sprites = function (bg_priority) {
                 tile_id = sprite.tile_id
             }
 
-            if(this.tile_cache[tile_id].dirty) {
+            if (this.tile_cache[tile_id].dirty) {
                 this.refresh_tile(tile_id)
             }
 
@@ -395,25 +392,29 @@ gpu.draw_sprites = function (bg_priority) {
             let palette = sprite.use_palette_one ? mmu.io_reg[0xFF49 - 0xFF00] : mmu.io_reg[0xFF48 - 0xFF00]
 
 
-            for(let pixel_x = 0; i < 8;pixel_x++) {
+            for (let pixel_x = 0; i < 8; pixel_x++) {
                 let adjust_x = ((sprite_x + pixel_x) >>> 0) % 256
 
-                if(adjust_x >= 160) {continue}
+                if (adjust_x >= 160) {
+                    continue
+                }
 
                 let lookup_x = sprite.x_flip ? ((pixel_x - 7) * -1) % 256 : pixel_x
 
                 let pixel = tile.pixels[(lookup_y * 8) + lookup_x]
 //                if( pixel === undefined) console.log((lookup_y * 8) + lookup_x)
-                if(pixel === 0) {continue}
+                if (pixel === 0) {
+                    continue
+                }
 
                 // TODO Fix this
-                if(sprite.behind_background) {
-                    if(bg_priority[adjust_x]) {
+                if (sprite.behind_background) {
+                    if (bg_priority[adjust_x]) {
                         continue
                     }
                 }
 
-                let color = this.colorize(pixel,palette)
+                let color = this.colorize(pixel, palette)
                 let offset_x = adjust_x
                 let offset_y = scanline_y * 160
                 let offset = offset_x + offset_y
@@ -469,14 +470,14 @@ gpu.colorize = (shade, palette) => {
 gpu.read = function (address) {
     let data = 0
     if (address >= 0x8000 && address <= 0x9FFF) { // VRAM
-        if(this.get_mode() === 3) {
+        if (this.get_mode() === 3) {
             data = 0xFF
         } else {
             data = this.vram[address - 0x8000]
         }
 
     } else if (address >= 0xFE00 && address <= 0xFE9F) {
-        if(this.get_mode() === 3 || this.get_mode() === 2) {
+        if (this.get_mode() === 3 || this.get_mode() === 2) {
             data = 0xFF
         } else {
             data = this.oam[address - 0xFE00]
@@ -490,10 +491,10 @@ gpu.read = function (address) {
 
 gpu.write = function (data, address) {
     //console.warn(`GPU -> Writing ${data.toString(16)} to ${address.toString(16)}`)
-    if(data === undefined) console.error(`GPU -> Data undefined!`)
+    if (data === undefined) console.error(`GPU -> Data undefined!`)
     if (address >= 0x8000 && address <= 0x97FF) {
         if (this.get_mode() === 3) return
-
+        console.warn(`GPU -> Writing ${data.toString(16)} to ${address.toString(16)}`)
         let index = (address - 0x8000)
         this.vram[index] = data
         //if(address <= 0x97FF) {
@@ -502,32 +503,29 @@ gpu.write = function (data, address) {
         this.tile_cache[tile_id].dirty = true
         //}
 
-    }
-    else if(address >= 0xFE00 && address <= 0xFE9F) {
-        if(this.get_mode() === 2 || this.get_mode() === 3 ) {
+    } else if (address >= 0xFE00 && address <= 0xFE9F) {
+        if (this.get_mode() === 2 || this.get_mode() === 3) {
             return
         }
         this.oam[address - 0xFE00] = data
         //console.log(`Update Sprite  ${address.toString(16)} ${data.toString(16)}`)
-        this.update_sprite(data,address)
-    }
-    else if (address >= 0xFF00 && address <= 0xFF7F) {
-        if(address === 0xFF40) {
+        this.update_sprite(data, address)
+    } else if (address >= 0xFF00 && address <= 0xFF7F) {
+        if (address === 0xFF40) {
             this.update_lcdc(data)
-        } else if(address === 0xFF41) {
+        } else if (address === 0xFF41) {
             let stat = mmu.read(STAT)
             let high = data & 0xF8
             let low = stat & 0x7
             mmu.io_reg[address - 0xFF00] = high | low
-        }
-        else {
+        } else {
             mmu.io_reg[address - 0xFF00] = data
         }
 
     }
 }
 
-gpu.update_sprite = function(data,address) {
+gpu.update_sprite = function (data, address) {
     let sprite_id = Math.floor((address - 0xFE00) / 4)
     let sprite = this.sprite_table[sprite_id]
     let data_type = address % 4
@@ -543,10 +541,10 @@ gpu.update_sprite = function(data,address) {
             sprite.tile_id = data
             break
         case 3:
-            sprite.background = (data & (1 << 7))  > 0
-            sprite.y_flip = (data & (1<<6)) > 0
-            sprite.x_flip = (data & (1<<5)) > 0
-            sprite.use_palette_one = (data & (1<<4)) > 0
+            sprite.background = (data & (1 << 7)) > 0
+            sprite.y_flip = (data & (1 << 6)) > 0
+            sprite.x_flip = (data & (1 << 5)) > 0
+            sprite.use_palette_one = (data & (1 << 4)) > 0
             break
         default:
             console.error(`Error in gpu.update_sprite -> data_type ${data_type}`)
@@ -568,7 +566,7 @@ gpu.refresh_tile = function (id) {
             let low_bit = (lowByte >>> x) & 1
             let high_bit = (highByte >>> x) & 1
 
-            tile[((y * 8) + flip_x)] = (high_bit << 1) | low_bit
+            tile[((y * 8) + flip_x) & 0xFFFF] = (high_bit << 1) | low_bit
             //console.log(`${tile.toString()}`)
             x -= 1
         }
@@ -579,7 +577,7 @@ gpu.refresh_tile = function (id) {
 
 gpu.address_to_tile_id = function (address) {
     //console.log(`Addr ORG ${address.toString(16)} -> ${((address - 0x8000) / 16)}`)
-    return Math.floor((address - 0x8000) / 16)
+    return Math.floor((address - 0x8000) / 16) & 0xFFFF
 }
 
 gpu.read_raw = function (address) {
@@ -590,12 +588,12 @@ gpu.read_raw = function (address) {
 gpu.update_lcdc = function (data) {
     let LCDC = this.read(0xFF40)
 
-    if(!(data & (1<<7)) && LCDC & (1 << 7)) {
+    if (!(data & (1 << 7)) && LCDC & (1 << 7)) {
 
-        if(this.get_mode() !== 1) {
+        if (this.get_mode() !== 1) {
             console.error(`LCD off, but not in VBlank`)
         }
-        this.write(0,LY)
+        this.write(0, LY)
         this.setMode(0)
     }
     mmu.io_reg[0xFF40 - 0xFF00] = data

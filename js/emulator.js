@@ -83,7 +83,7 @@ export async function run() {
                     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
                     opcode = mmu.read(cpu.PC)
                     //console.warn(`Prefix CB Instruction: ${opcode.toString(16)}`)
-                    cpu.clock.cycles += 4
+                    //cpu.clock.cycles += 4
                     prefix_lookup[opcode]()
                 } else {
                     lookup[opcode]()

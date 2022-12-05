@@ -178,8 +178,8 @@ cpu.reset = function() {
     mmu.write(0x00, 0xFF45)   // LYC
     mmu.write(0xFF,0xFF46)    // OAM
     mmu.write(0xFC, 0xFF47)   // BGP
-    mmu.write(0xFF, 0xFF48)   // OBP0
-    mmu.write(0xFF, 0xFF49)   // OBP1
+    mmu.write(0x00, 0xFF48)   // OBP0
+    mmu.write(0x00, 0xFF49)   // OBP1
     mmu.write(0x00, 0xFF4A)   // WY
     mmu.write(0x00, 0xFF4B)   // WX
     mmu.write(0xFF,0xFF4D)
@@ -1224,7 +1224,7 @@ cpu.DECR16 = (reg16) => {
 }
 
 cpu.DEC_SP = () => {
-    cpu.SP = ((cpu.SP - 1) >>> 0) & 0xFFFF
+    cpu.SP = ((cpu.SP - 1) >>> 0) % 0x10000
 
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 8

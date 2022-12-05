@@ -63,7 +63,8 @@ oam.update = function(cycles) {
         for(let offset = 0; offset < bytes; offset++) {
             let value = mmu.read((from + offset) & 0xFFFF)
             console.log(`OAM Val ${value} from ${(from+offset).toString(16)}`)
-            mmu.write(value,(to + offset) & 0xFFFF)
+            gpu.oam[(to + offset) & 0xFFFF] = value
+            //mmu.write(value,(to + offset) & 0xFFFF)
             console.log(`OAM Val ${value} to ${(to + offset).toString(16)}`)
             //gpu.sprite_table[(to + offset) - 0xFE00] = value
             //gpu.write(value,(to + offset) & 0xFFFF) // TODO Check this
