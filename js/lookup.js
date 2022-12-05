@@ -76,7 +76,8 @@ export const lookup = {
         cpu.clock.cycles += 20
     },
     0x09: () => {
-        cpu.ADDR16("HL", "BC")
+        //cpu.ADDR16("HL", "BC")
+        cpu.ADD_HL(cpu.BC())
     },
     0x0a: () => {
         let byte = mmu.read(cpu.BC())
@@ -141,7 +142,8 @@ export const lookup = {
         cpu.JR(offset)
     },
     0x19: () => {
-        cpu.ADDR16("HL", "DE")
+        //cpu.ADDR16("HL", "DE")
+        cpu.ADD_HL(cpu.DE())
     },
     0x1a: () => {
         let byte = mmu.read(cpu.DE())
@@ -211,7 +213,8 @@ export const lookup = {
         cpu.JRC(offset, cpu.flags.Z === true)
     },
     0x29: () => {
-        cpu.ADDR16("HL", "HL")
+        //cpu.ADDR16("HL", "HL")
+        cpu.ADD_HL(cpu.HL())
     },
     0x2a: () => {
         let byte = mmu.read(cpu.HL())
