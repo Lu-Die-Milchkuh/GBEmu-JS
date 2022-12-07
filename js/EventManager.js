@@ -24,7 +24,7 @@ import {setPaused, setRunning, setRatio, run, paused} from "./emulator.js"
 import {keyboard_update} from "./keyboard.js"
 import {cartridge, read_rom_info} from "./cartridge.js"
 import {cpu} from "./cpu.js"
-import {gamepad_update} from "./controller.js";
+import {gamepad_update} from "./controller.js"
 
 // File Input
 document.querySelector("#file-input").addEventListener("change", (event) => {
@@ -90,8 +90,8 @@ window.addEventListener("gamepadconnected", (e) => {
     console.log(`Gamepad: ${e.gamepad.id} connected at index ${e.gamepad.index}`)
     console.log(`Mapping: ${e.gamepad.mapping}`)
 
-    if(navigator.userAgent.includes("Chrome")) {
-        setInterval(gamepad_update,10)
+    if (navigator.userAgent.includes("Chrome")) {
+        setInterval(gamepad_update, 10)
     }
 
 })
@@ -103,10 +103,10 @@ window.addEventListener("gamepaddisconnected", (e) => {
 
 //window.addEventListener("ongamepadconnected",gamepad_update)
 
-window.addEventListener("load",() => {
+window.addEventListener("load", () => {
     let canvas = document.querySelector("canvas")
     let ctx = canvas.getContext('2d')
     ctx.font = '20px sans-serif'
     ctx.textAlign = "center"
-    ctx.fillText("No ROM loaded",canvas.width/2,canvas.height/2)
+    ctx.fillText("No ROM loaded", canvas.width / 2, canvas.height / 2)
 })

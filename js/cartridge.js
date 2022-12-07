@@ -74,7 +74,7 @@ export function read_rom_info() {
 
     let tb = table.createTBody()
 
-    for(const el in info) {
+    for (const el in info) {
         let tr = tb.insertRow()
         let th = document.createElement("th")
         let td = document.createElement("td")

@@ -123,7 +123,7 @@ cpu.update_F = function () {
     this.F = F
 }
 
-cpu.update_Flags = function() {
+cpu.update_Flags = function () {
     this.F &= 0xF0
     this.flags.C = !!(this.F & (1 << 4))
     this.flags.N = !!(this.F & (1 << 6))
@@ -132,7 +132,7 @@ cpu.update_Flags = function() {
 }
 
 // At Startup the Game Boy expects certain Registers and Memory Location to contain the following data
-cpu.reset = function() {
+cpu.reset = function () {
     mmu.reset()
     this.setAF(0x0180)
     this.setBC(0x0013)
@@ -141,10 +141,10 @@ cpu.reset = function() {
     this.SP = 0xFFFE
     this.PC = 0x0100
     this.update_Flags()
-    mmu.write(0xCF,0xFF00)
-    mmu.write(0x00,0xFF01)
-    mmu.write(0x7E,0xFF02)
-    mmu.write(0xAB,0xFF04)
+    mmu.write(0xCF, 0xFF00)
+    mmu.write(0x00, 0xFF01)
+    mmu.write(0x7E, 0xFF02)
+    mmu.write(0xAB, 0xFF04)
     mmu.write(0x00, 0xFF05)   // TIMA
     mmu.write(0x00, 0xFF06)   // TMA
     mmu.write(0xF8, 0xFF07)   // TAC
@@ -152,11 +152,11 @@ cpu.reset = function() {
     mmu.write(0x80, 0xFF10)
     mmu.write(0xBF, 0xFF11)
     mmu.write(0xF3, 0xFF12)
-    mmu.write(0xFF,0xFF13)
+    mmu.write(0xFF, 0xFF13)
     mmu.write(0xBF, 0xFF14)
     mmu.write(0x3F, 0xFF16)
     mmu.write(0x00, 0xFF17)
-    mmu.write(0xFF,0xFF18)
+    mmu.write(0xFF, 0xFF18)
     mmu.write(0xBF, 0xFF19)
     mmu.write(0x7F, 0xFF1A)
     mmu.write(0xFF, 0xFF1B)
@@ -171,30 +171,30 @@ cpu.reset = function() {
     mmu.write(0xF3, 0xFF25)
     mmu.write(0xF1, 0xFF26)
     mmu.write(0x91, 0xFF40)   // LCDC
-    mmu.write(0x85,0xFF41)    // STAT
+    mmu.write(0x85, 0xFF41)    // STAT
     mmu.write(0x00, 0xFF42)   // SCY
     mmu.write(0x00, 0xFF43)   // SCX
-    mmu.write(0x00,0xFF44)    // LY
+    mmu.write(0x00, 0xFF44)    // LY
     mmu.write(0x00, 0xFF45)   // LYC
-    mmu.write(0xFF,0xFF46)    // OAM
+    mmu.write(0xFF, 0xFF46)    // OAM
     mmu.write(0xFC, 0xFF47)   // BGP
     mmu.write(0x00, 0xFF48)   // OBP0
     mmu.write(0x00, 0xFF49)   // OBP1
     mmu.write(0x00, 0xFF4A)   // WY
     mmu.write(0x00, 0xFF4B)   // WX
-    mmu.write(0xFF,0xFF4D)
-    mmu.write(0xFF,0xFF4F)
-    mmu.write(0xFF,0xFF51)
-    mmu.write(0xFF,0xFF52)
-    mmu.write(0xFF,0xFF53)
-    mmu.write(0xFF,0xFF54)
-    mmu.write(0xFF,0xFF55)
-    mmu.write(0xFF,0xFF56)
-    mmu.write(0xFF,0xFF68)
-    mmu.write(0xFF,0xFF69)
-    mmu.write(0xFF,0xFF6A)
-    mmu.write(0xFF,0xFF6B)
-    mmu.write(0xFF,0xFF70)
+    mmu.write(0xFF, 0xFF4D)
+    mmu.write(0xFF, 0xFF4F)
+    mmu.write(0xFF, 0xFF51)
+    mmu.write(0xFF, 0xFF52)
+    mmu.write(0xFF, 0xFF53)
+    mmu.write(0xFF, 0xFF54)
+    mmu.write(0xFF, 0xFF55)
+    mmu.write(0xFF, 0xFF56)
+    mmu.write(0xFF, 0xFF68)
+    mmu.write(0xFF, 0xFF69)
+    mmu.write(0xFF, 0xFF6A)
+    mmu.write(0xFF, 0xFF6B)
+    mmu.write(0xFF, 0xFF70)
     mmu.write(0x00, 0xFFFF)   // IE
 }
 
@@ -237,7 +237,7 @@ cpu.checkInterrupt = () => {
     }
 }
 
-cpu.requestInterrupt = function(int) {
+cpu.requestInterrupt = function (int) {
     // Interrupt Register is stored at 0xFF0F
     let byte = mmu.read(0xFF0F)
     byte |= (1 << int)
@@ -250,7 +250,7 @@ cpu.requestInterrupt = function(int) {
  */
 
 // Increment a 8-Bit Register
-cpu.INCR8 = function(reg8) {
+cpu.INCR8 = function (reg8) {
     cpu.flags.HC = (((cpu[reg8] & 0xF) + 1) > 0xF)
     //cpu.flags.C = (cpu[reg8] + 1) > 0xFF    // Doc. says this is not affected but some Emulators do it anyway
 
@@ -281,7 +281,7 @@ cpu.INCM8 = () => {
 
 // Decrement a 8-Bit Register
 cpu.DECR8 = (reg8) => {
-    cpu.flags.HC = ((cpu[reg8] & 0xF) - 1)  < 0
+    cpu.flags.HC = ((cpu[reg8] & 0xF) - 1) < 0
 
     cpu[reg8] = ((cpu[reg8] - 1) >>> 0) % 256 // Needs to stay in range of an 8-Bit Integer
 
@@ -312,7 +312,7 @@ cpu.DECM8 = () => {
 
 // Bitwise XOR  A with register
 cpu.XORR = (reg8) => {
-    cpu.A = ((cpu.A ^ cpu[reg8]) >>> 0 ) % 256
+    cpu.A = ((cpu.A ^ cpu[reg8]) >>> 0) % 256
 
     cpu.flags.Z = (cpu.A === 0)
     cpu.flags.C = false
@@ -325,7 +325,7 @@ cpu.XORR = (reg8) => {
 
 // Bitwise XOR A with mmu
 cpu.XORM = (data) => {
-    cpu.A = ((cpu.A ^ data) >>> 0 ) % 256
+    cpu.A = ((cpu.A ^ data) >>> 0) % 256
 
     cpu.flags.Z = (cpu.A === 0)
     cpu.flags.C = false
@@ -667,9 +667,9 @@ cpu.RST = (address) => {
     let highByte = (cpu.PC & 0xFF00) >>> 8
     let lowByte = cpu.PC & 0x00FF
 
-    cpu.SP = ((cpu.SP - 1 ) >>> 0) % 0x10000
+    cpu.SP = ((cpu.SP - 1) >>> 0) % 0x10000
     mmu.write(highByte, cpu.SP)
-    cpu.SP = ((cpu.SP - 1 ) >>> 0) % 0x10000
+    cpu.SP = ((cpu.SP - 1) >>> 0) % 0x10000
     mmu.write(lowByte, cpu.SP)
     cpu.PC = address
     cpu.clock.cycles += 16
@@ -778,7 +778,7 @@ cpu.STOP = () => {
     cpu.clock.cycles += 4
     //cpu.PC = (cpu.PC + 2) % 0x10000
     cpu.isStop = true
-    if(cpu.isStop) {
+    if (cpu.isStop) {
         cpu.PC = (cpu.PC + 2) % 0x10000
     }
 }
@@ -800,16 +800,16 @@ cpu.DAA = () => {
     let A = cpu.A
     let adjust = cpu.flags.C ? 0x60 : 0
 
-    if(cpu.flags.HC) {
+    if (cpu.flags.HC) {
         adjust |= 0x06
     }
 
-    if(!cpu.flags.N) {
-        if((A & 0x0F) > 0x09) {
+    if (!cpu.flags.N) {
+        if ((A & 0x0F) > 0x09) {
             adjust |= 0x06
         }
 
-        if(A > 0x99) {
+        if (A > 0x99) {
             adjust |= 0x60
         }
 
@@ -891,7 +891,7 @@ cpu.SRLM = () => {
     byte = byte >>> 1
 
     cpu.flags.Z = (byte === 0)
-    mmu.write(byte,cpu.HL())
+    mmu.write(byte, cpu.HL())
 
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 8
@@ -937,7 +937,7 @@ cpu.RLCM = () => {
     cpu.flags.Z = (byte === 0)
     cpu.flags.HC = false
     cpu.flags.N = false
-    mmu.write(byte,cpu.HL())
+    mmu.write(byte, cpu.HL())
 
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 16
@@ -1042,7 +1042,7 @@ cpu.RLA = () => {
     let bit7 = cpu.A >>> 7
     let carry = cpu.flags.C ? 1 : 0
 
-    cpu.A = ((cpu.A << 1) + carry ) & 0xFF
+    cpu.A = ((cpu.A << 1) + carry) & 0xFF
 
     cpu.flags.Z = false
     cpu.flags.N = false
@@ -1117,7 +1117,7 @@ cpu.SLAM = () => {
 
     cpu.clock.cycles += 16
     cpu.PC = (cpu.PC + 1) & 0xFFFF
-    mmu.write(data,cpu.HL())
+    mmu.write(data, cpu.HL())
 
 }
 
@@ -1150,7 +1150,7 @@ cpu.SRAM = () => {
     cpu.flags.HC = false
     cpu.flags.Z = (byte === 0)
 
-    mmu.write(byte,cpu.HL())
+    mmu.write(byte, cpu.HL())
 
     cpu.clock.cycles += 16
     cpu.PC = (cpu.PC + 1) & 0xFFFF
@@ -1210,7 +1210,7 @@ cpu.INCR16 = (reg16) => {
 }
 
 cpu.INCR_SP = () => {
-    cpu.SP = ((cpu.SP + 1) >>> 0 ) % 0x10000
+    cpu.SP = ((cpu.SP + 1) >>> 0) % 0x10000
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
     cpu.clock.cycles += 8
 }
@@ -1251,7 +1251,7 @@ cpu.ADD_HL = (data) => {
     let result = (cpu.HL() + data) & 0xFFFF
 
     cpu.flags.C = (cpu.HL() > (0xFFFF - data))
-    cpu.flags.HC = (((cpu.HL() & 0xFFF) + (data & 0xFFF))  & 0x1000) !== 0
+    cpu.flags.HC = (((cpu.HL() & 0xFFF) + (data & 0xFFF)) & 0x1000) !== 0
     cpu.flags.N = false
 
     cpu.setHL(result)
@@ -1261,7 +1261,7 @@ cpu.ADD_HL = (data) => {
 }
 
 cpu.ADD_SP = (data) => {
-    if(data > 127) {
+    if (data > 127) {
         data -= 256
     }
 
