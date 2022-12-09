@@ -32,7 +32,7 @@ export let oam = {
 
 oam.request = function(src) {
     this.active = true
-    this.source = (src * 0x100) & 0xFFFF   // Check this
+    this.source = (src << 8) & 0xFFFF   // Byte written to 0xFF46 is the high byte of the starting address
     this.destination = 0xFE00
 
 }
@@ -61,13 +61,14 @@ oam.update = function(cycles) {
 
         console.log(`OAM write Bytes: ${bytes}`)
         for(let offset = 0; offset < bytes; offset++) {
+
             let value = mmu.read((from + offset) & 0xFFFF)
-            console.log(`OAM Val ${value} from ${(from+offset).toString(16)}`)
-            gpu.oam[(to + offset) & 0xFFFF] = value
-            //mmu.write(value,(to + offset) & 0xFFFF)
-            console.log(`OAM Val ${value} to ${(to + offset).toString(16)}`)
-            //gpu.sprite_table[(to + offset) - 0xFE00] = value
-            //gpu.write(value,(to + offset) & 0xFFFF) // TODO Check this
+
+            console.log(`OAM Val ${value} from ${((from + offset) & 0xFFFF).toString(16)}`)
+
+            gpu.oam[(((to + offset)) & 0xFFFF)  - 0xFE00 ] = value
+
+            console.log(`OAM Val ${value} to ${((to + offset) & 0xFFFF).toString(16)}`)
         }
    }
 }
