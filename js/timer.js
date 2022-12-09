@@ -22,7 +22,7 @@
 
 import {mmu} from "./mmu.js"
 import {cpu} from "./cpu.js"
-import  {paused,running} from "./emulator.js"
+import {paused, running} from "./emulator.js"
 
 /*
     Macros
@@ -47,31 +47,29 @@ timer.cycles = (cycles) => {
 
     let newFreq = timer.getFreq()
 
-    if(timer.frequency !== newFreq) {
+    if (timer.frequency !== newFreq) {
         timer.frequency = newFreq
     }
 
-    if(timer.isEnabled()) {
+    if (timer.isEnabled()) {
         timer.timer_counter -= cycles
-        if(timer.timer_counter <= 0) {
+        if (timer.timer_counter <= 0) {
             let timer_value = mmu.read(TIMA)
             timer.setFreq(newFreq)
 
-            if(timer_value === 0xFF) { // Timer will overflow
+            if (timer_value === 0xFF) { // Timer will overflow
                 let byte = mmu.read(TMA)
-                mmu.write(byte,TIMA)
+                mmu.write(byte, TIMA)
                 cpu.requestInterrupt(2)
             } else {
                 timer_value++
-                mmu.write(timer_value,TIMA)
+                mmu.write(timer_value, TIMA)
             }
         }
     }
 
 
 }
-
-
 
 timer.updateDivTimer = (cycles) => {
     timer.divider_counter += cycles
@@ -113,10 +111,10 @@ timer.getFreq = () => {
 
 timer.isEnabled = () => {
     let byte = mmu.read(TAC)
-    return (byte & (1<<2))
+    return (byte & (1 << 2))
 }
 
 timer.resetDiv = () => {
     timer.divTime = 0
-    mmu.write(0x0,0xFF04)
+    mmu.write(0x0, 0xFF04)
 }

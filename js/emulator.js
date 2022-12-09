@@ -136,39 +136,3 @@ export async function run() {
 }
 
 let serial = []
-
-/*let gg = ""
-function printCPUState() {
-    /*console.warn(`CPU State`)
-    console.log(`A -> ${cpu.A.toString(16)}`)
-    console.log(`F -> ${cpu.F.toString(16)}`)
-    console.log(`B -> ${cpu.B.toString(16)}`)
-    console.log(`C -> ${cpu.C.toString(16)}`)
-    console.log(`D -> ${cpu.D.toString(16)}`)
-    console.log(`E -> ${cpu.E.toString(16)}`)
-    console.log(`H -> ${cpu.H.toString(16)}`)
-    console.log(`L -> ${cpu.L.toString(16)}`)
-    console.log(`SP -> ${cpu.SP.toString(16)}`)
-    console.log(`PC -> ${cpu.PC.toString(16)}`)
-    console.log("Flags ->")
-    console.log(`Z: ${cpu.flags.Z}`)
-    console.log(`N: ${cpu.flags.N}`)
-    console.log(`N: ${cpu.flags.N}`)
-    console.log(`C: ${cpu.flags.C}`)
-    gg += `A -> ${cpu.A.toString(16)} <br>`
-            +`F -> ${cpu.F.toString(16)} <br>`
-            +`B -> ${cpu.B.toString(16)} <br>`
-            + `C -> ${cpu.C.toString(16)} <br>`
-            + `D -> ${cpu.D.toString(16)} <br>`
-            + `E -> ${cpu.E.toString(16)} <br>`
-            +`H -> ${cpu.H.toString(16)}<br>`
-    +`L -> ${cpu.L.toString(16)}<br>`
-    +`SP -> ${cpu.SP.toString(16)}<br>`
-    +"Flags -><br>"
-    +`Z: ${cpu.flags.Z}<br>`
-    +`N: ${cpu.flags.N}<br>`
-    +`hc: ${cpu.flags.HC}<br>`
-    +`C: ${cpu.flags.C}<br>`
-
-
-}*/

@@ -30,21 +30,21 @@ export let oam = {
     cycles: 20
 }
 
-oam.request = function(src) {
+oam.request = function (src) {
     this.active = true
     this.source = (src << 8) & 0xFFFF   // Byte written to 0xFF46 is the high byte of the starting address
     this.destination = 0xFE00
 
 }
 
-oam.update = function(cycles) {
+oam.update = function (cycles) {
 
-    if(this.active) {
+    if (this.active) {
         let from = this.source
         let to = this.destination
         let adjusted_cycles = cycles
 
-        if((this.cycles - adjusted_cycles) < 0) {
+        if ((this.cycles - adjusted_cycles) < 0) {
             adjusted_cycles = this.cycles
         }
 
@@ -54,21 +54,21 @@ oam.update = function(cycles) {
         this.destination = (this.destination + bytes) & 0xFFFF
         this.cycles -= adjusted_cycles
 
-        if(this.cycles <= 0) {
+        if (this.cycles <= 0) {
             this.active = false
             this.cycles = 20
         }
 
-        console.log(`OAM write Bytes: ${bytes}`)
-        for(let offset = 0; offset < bytes; offset++) {
+        //console.log(`OAM write Bytes: ${bytes}`)
+        for (let offset = 0; offset < bytes; offset++) {
 
             let value = mmu.read((from + offset) & 0xFFFF)
 
-            console.log(`OAM Val ${value} from ${((from + offset) & 0xFFFF).toString(16)}`)
+            //console.log(`OAM Val ${value} from ${((from + offset) & 0xFFFF).toString(16)}`)
 
-            gpu.oam[(((to + offset)) & 0xFFFF)  - 0xFE00 ] = value
+            gpu.oam[(((to + offset)) & 0xFFFF) - 0xFE00] = value
 
-            console.log(`OAM Val ${value} to ${((to + offset) & 0xFFFF).toString(16)}`)
+            //console.log(`OAM Val ${value} to ${((to + offset) & 0xFFFF).toString(16)}`)
         }
-   }
+    }
 }

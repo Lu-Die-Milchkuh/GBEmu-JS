@@ -250,8 +250,7 @@ gpu.draw_background = function (bg_priority) {
 
         if (LCDC & (1 << 4)) {  // Tile Data Area: 8000 - 8FFFF, tile pattern as u8
             vram_location = ((tile_pattern * 16) + tile_data_location) & 0xFFFF
-        }
-        else {    // Tile Data Area: 8800 - 97FF, tile_pattern as i8
+        } else {    // Tile Data Area: 8800 - 97FF, tile_pattern as i8
 
             if (tile_pattern > 127) {
                 tile_pattern = tile_pattern - 256
@@ -494,17 +493,17 @@ gpu.read = function (address) {
 
 gpu.write = function (data, address) {
     //console.warn(`GPU -> Writing ${data.toString(16)} to ${address.toString(16)}`)
-    if (data === undefined) console.error(`GPU -> Data undefined!`)
+    //if (data === undefined) console.error(`GPU -> Data undefined!`)
 
     if (address >= 0x8000 && address <= 0x9FFF) {   // VRAM
         if (this.get_mode() === 3) return
-        console.warn(`GPU -> Writing ${data.toString(16)} to ${address.toString(16)}`)
+        //console.warn(`GPU -> Writing ${data.toString(16)} to ${address.toString(16)}`)
         let index = (address - 0x8000)
         this.vram[index] = data
 
-        if(address <= 0x97FF) {
+        if (address <= 0x97FF) {
             let tile_id = Math.round(index / 16)
-            console.log(tile_id)
+            //console.log(tile_id)
             this.tile_cache[tile_id].dirty = true
         }
 
@@ -536,7 +535,7 @@ gpu.write = function (data, address) {
 gpu.update_sprite = function (data, address) {
     let sprite_id = Math.round((address - 0xFE00) / 4)
     let sprite = this.sprite_table[sprite_id]
-    if(sprite === undefined) console.error(`Undefined Sprite -> ${sprite_id}`)
+    if (sprite === undefined) console.error(`Undefined Sprite -> ${sprite_id}`)
     let data_type = address % 4
 
     switch (data_type) {
@@ -619,6 +618,3 @@ gpu.get_mode = function () {
      */
     return stat & 0x3
 }
-
-
-

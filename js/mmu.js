@@ -31,21 +31,21 @@ export let mmu = {
     io_reg: new Array(0x80)
 }
 
-mmu.reset = function() {
+mmu.reset = function () {
     this.wram.fill(0x0)
     this.hram.fill(0x0)
     this.io_reg.fill(0x0)
 
 }
 
-mmu.read = function(address) {
+mmu.read = function (address) {
     let data = 0x0
 
     if (address <= 0x7FFF) {    // ROM
         data = cartridge.read(address)
     } else if (address >= 0x8000 && address <= 0x9FFF) {    // VRAM
         //if(!gpu.vblank) {
-            data = gpu.read(address)//gpu.vram[address - 0x8000]
+        data = gpu.read(address)//gpu.vram[address - 0x8000]
         //} else {
         //    console.warn(`Tried to read from VRAM at ${address.toString(16)} during VBLANK!`)
         //    data = 0xFF
@@ -57,18 +57,17 @@ mmu.read = function(address) {
         data = this.wram[address - 0xC000]
     } else if (address >= 0xE000 && address <= 0xFDFF) {    // Echo RAM
         data = this.wram[address - 0xE000]
-    } else if(address >= 0xFE00 && address <= 0xFE9F) {
+    } else if (address >= 0xFE00 && address <= 0xFE9F) {
         data = gpu.read(address)
-    } else if(address >= 0xFEA0 && address <= 0xFEFF) {
+    } else if (address >= 0xFEA0 && address <= 0xFEFF) {
         // unused memory region
         console.error(`Tried to read from unused memory region (${address.toString(16)})`)
         data = 0xFF
-    }
-    else if (address >= 0xFF00 && address <= 0xFF7F) {     // IO Register
+    } else if (address >= 0xFF00 && address <= 0xFF7F) {     // IO Register
         data = this.io_reg[address - 0xFF00]
     } else if (address >= 0xFF80 && address <= 0xFFFE) {    // High RAM
         data = this.hram[address - 0xFF80]
-    } else if(address === 0xFFFF) {
+    } else if (address === 0xFFFF) {
         data = cpu.IE
     } else {
         console.error(`Invalid Address (mmu.read) ${address.toString(16)}`)
@@ -77,42 +76,37 @@ mmu.read = function(address) {
     return data
 }
 
-mmu.write = function(data, address) {
+mmu.write = function (data, address) {
     //console.warn(`CPU -> Writing ${data.toString(16)} to ${address.toString(16)}`)
     if (address >= 0 && address <= 0x7FFF) {   // ROM 0x014F
         //console.warn(`Tried to write ${data.toString(16)} into ROM at address ${address.toString(16)}`)
         //mmu.rom[address] = data
-        cartridge.write(data,address)
+        cartridge.write(data, address)
     } else if (address >= 0x8000 && address <= 0x9FFF) {    // VRAM
-        //if (!gpu.vblank) {
-            //gpu.vram[address - 0x8000] = data
-            gpu.write(data,address)
-        //} else {
-        //    console.warn(`Tried to write ${data.toString(16)} to VRAM at ${address.toString(16)} during VBLANK!`)
-        //}
+
+        gpu.write(data, address)
+
     } else if (address >= 0xA000 && address <= 0xBFFF) {     // External RAM
-        //this.extram[address - 0xA000] = data
-        cartridge.write(data,address)
+
+        cartridge.write(data, address)
 
     } else if (address >= 0xC000 && address <= 0xDFFF) {    // Work RAM
         this.wram[address - 0xC000] = data
 
-    } else if(address >= 0xE000 && address <= 0xFDFF) { // Echo RAM
+    } else if (address >= 0xE000 && address <= 0xFDFF) { // Echo RAM
         this.wram[address - 0xE000] = data
-    }
-    else if(address >= 0xFE00 && address <= 0xFE9F) {   // OAM
-        gpu.write(data,address)
-        //gpu.oam[address - 0xFE00] = data
-    }
-    else if(address >= 0xFEA0 && address <= 0xFEFF) {
-        // unused memory region
-        console.error(`Tried to write ${data.toString(16)} to unused memory region (${address.toString(16)})`)
-        //gpu.write(data,address)
-    }
-    else if (address >= 0xFF00 && address <= 0xFF7F) {     // IO Register
+    } else if (address >= 0xFE00 && address <= 0xFE9F) {   // OAM
+        gpu.write(data, address)
 
-        if(address !== 0xFF04) {
-            if(address === 0xFF46) {
+    } else if (address >= 0xFEA0 && address <= 0xFEFF) {
+        // unused memory region
+        // Writing to this memory region does nothing. Some games do it,it is not considered as an "error,failure"
+        console.error(`Tried to write ${data.toString(16)} to unused memory region (${address.toString(16)})`)
+
+    } else if (address >= 0xFF00 && address <= 0xFF7F) {     // IO Register
+
+        if (address !== 0xFF04) {
+            if (address === 0xFF46) {
                 console.log(`Requested OAM transfer: ${data.toString()}`)
                 oam.request(data)
             } else {
@@ -124,7 +118,7 @@ mmu.write = function(data, address) {
 
     } else if (address >= 0xFF80 && address <= 0xFFFE) {    // High RAM
         this.hram[address - 0xFF80] = data
-    } else if(address === 0xFFFF) {
+    } else if (address === 0xFFFF) {
         cpu.IE = data
     } else {
         console.error(`Invalid Address (mmu.write) ${address.toString(16)}, data = ${data.toString(16)}`)

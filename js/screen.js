@@ -34,7 +34,7 @@ export let screen = {
 screen.init = () => {
     screen.canvas = document.querySelector("#game-screen")
     screen.context = screen.canvas.getContext('2d')
-    screen.content = screen.context.createImageData(320,288)
+    screen.content = screen.context.createImageData(320, 288)
 
 }
 
@@ -57,6 +57,6 @@ screen.update = () => {
         }
     }
 
-    screen.context.putImageData(screen.content,0,0)
+    screen.context.putImageData(screen.content, 0, 0)
 
 }
