@@ -22,7 +22,6 @@
 
 import {mmu} from "./mmu.js"
 import {cpu} from "./cpu.js"
-//import {screen} from "./screen.js"
 
 
 /*
@@ -259,9 +258,9 @@ gpu.draw_background = function (bg_priority) {
             vram_location = (tile_data_location + adjusted) & 0xFFFF
         }
 
-        //console.log(`Draw BG -> ${vram_location.toString(16)}`) TODO -> Reads from 8000???
+        //console.log(`Draw BG -> ${vram_location.toString(16)}`)
         let tile_id = this.address_to_tile_id(vram_location)
-        //console.log(tile_id)  TODO -> Always id 0 ???
+        //console.log(tile_id)
         if (this.tile_cache[tile_id].dirty) {
             this.refresh_tile(tile_id)
         }
@@ -285,7 +284,7 @@ gpu.draw_background = function (bg_priority) {
 
 gpu.draw_window = function (bg_priority) {
     let window_y = mmu.read(WINY)
-    let window_x = ((mmu.read(WINX) - 7) >>> 0) % 256
+    //let window_x = ((mmu.read(WINX) - 7) >>> 0) % 256
     let y = mmu.read(LY)
     let palette = mmu.read(BGP)
     let LCDC = mmu.read(0xFF40)
@@ -302,7 +301,7 @@ gpu.draw_window = function (bg_priority) {
     let row = Math.round((y - window_y) / 8)
 
     for (let i = 0; i < 160; i++) {
-        let display_x = (i + window_x) & 0xFF
+        //let display_x = (i + window_x) & 0xFF
         let column = Math.round(i / 8)
         let tile_map_index = (row * 32) + column
         let offset = tile_map_location + tile_map_index

@@ -38,25 +38,49 @@ screen.init = () => {
 
 }
 
+screen.reset = () => {
+    //screen.context.fillStyle = "#FFF"
+    //screen.context.fillRect(0,0,320,288)
+
+}
+
 screen.update = () => {
 
-    for (let y = 0; y < 144; y++) {
-        for (let py = 0; py < 2; py++) {
-            let yOffset = (y * 2 + py) * 320
-            for (let x = 0; x < 160; x++) {
-                for (let px = 0; px < 2; px++) {
-                    let offset = yOffset + (x * 2 + px)
-                    let v = gpu.frame_buffer[y * 160 + x | 0]
-                    // set RGB values
-                    screen.content.data[offset * 4] = v[0]
-                    screen.content.data[offset * 4 + 1] = v[1]
-                    screen.content.data[offset * 4 + 2] = v[2]
-                    screen.content.data[offset * 4 + 3] = 255
-                }
-            }
-        }
+    // for (let y = 0; y < 144; y++) {
+    //     for (let py = 0; py < 2; py++) {
+    //         let yOffset = (y * 2 + py) * 320
+    //         for (let x = 0; x < 160; x++) {
+    //             for (let px = 0; px < 2; px++) {
+    //                 let offset = yOffset + (x * 2 + px)
+    //                 let v = gpu.frame_buffer[y * 160 + x | 0]
+    //                 // set RGB values
+    //                 screen.content.data[offset * 4] = v[0]
+    //                 screen.content.data[offset * 4 + 1] = v[1]
+    //                 screen.content.data[offset * 4 + 2] = v[2]
+    //                 screen.content.data[offset * 4 + 3] = 255
+    //             }
+    //         }
+    //     }
+    // }
+
+    let j = 0
+    for (let i = 0; i < (160 * 144); i++) {
+
+        let v = gpu.frame_buffer[i]
+
+        //set RGB values
+        screen.content.data[j] = v[0]
+        screen.content.data[j + 1] = v[1]
+        screen.content.data[j + 2] = v[2]
+        screen.content.data[j + 3] = 255
+
+        screen.content.data[j + 4] = v[0]
+        screen.content.data[j + 5] = v[1]
+        screen.content.data[j + 6] = v[2]
+        screen.content.data[j + 7] = 255
+
+        j += 8
     }
 
     screen.context.putImageData(screen.content, 0, 0)
-
 }

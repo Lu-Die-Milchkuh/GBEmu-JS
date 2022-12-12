@@ -34,6 +34,11 @@ const mbc_lookup = [
     mbc1
 ]
 
+cartridge.reset = function() {
+    this.rom = []
+    this.mbc = 0
+}
+
 cartridge.read = function (address) {
     return mbc_lookup[this.mbc].read(address)
 }
