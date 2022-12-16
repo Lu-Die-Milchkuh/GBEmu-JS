@@ -25,7 +25,6 @@ import {mbc1} from "./mbc/mbc1.js"
 
 export let cartridge = {
     rom: [],     // Array to Store ROM Content
-    //extram: new Array(0x1FFF),   // External RAM
     mbc: 0
 }
 

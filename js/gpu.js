@@ -247,7 +247,7 @@ gpu.draw_background = function (bg_priority) {
         //console.log(`Tile Pattern -> ${tile_pattern.toString(16)} ${lookup.toString(16)}`)
         let vram_location = 0
 
-        if (LCDC & (1 << 4)) {  // Tile Data Area: 8000 - 8FFFF, tile pattern as u8
+        if (LCDC & (1 << 4)) {  // Tile Data Area: 8000 - 8FFF, tile pattern as u8
             vram_location = ((tile_pattern * 16) + tile_data_location) & 0xFFFF
         } else {    // Tile Data Area: 8800 - 97FF, tile_pattern as i8
 
@@ -344,13 +344,7 @@ gpu.draw_sprites = function (bg_priority) {
     //console.log("Sprite Draw")
 
     let tall_sprite_mode = !!(LCDC & (1 << 2))
-    let sprite_y_max = 0
-
-    if (tall_sprite_mode) {
-        sprite_y_max = 15
-    } else {
-        sprite_y_max = 7
-    }
+    let sprite_y_max = tall_sprite_mode ? 15 : 7
 
     for (let i = 0; i < 40; i++) {    //this.sprite_table.length
 
@@ -389,9 +383,7 @@ gpu.draw_sprites = function (bg_priority) {
 
             let tile = this.tile_cache[tile_id]
 
-            // TODO -> Palette
             let palette = sprite.use_palette_one ? mmu.io_reg[0xFF49 - 0xFF00] : mmu.io_reg[0xFF48 - 0xFF00]
-
 
             for (let pixel_x = 0; i < 8; pixel_x++) {
                 let adjust_x = ((sprite_x + pixel_x) >>> 0) % 256
@@ -408,7 +400,7 @@ gpu.draw_sprites = function (bg_priority) {
                     continue
                 }
 
-                // TODO Fix this
+
                 if (sprite.behind_background) {
                     if (bg_priority[adjust_x]) {
                         continue

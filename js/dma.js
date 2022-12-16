@@ -62,13 +62,8 @@ oam.update = function (cycles) {
         //console.log(`OAM write Bytes: ${bytes}`)
         for (let offset = 0; offset < bytes; offset++) {
 
-            let value = mmu.read((from + offset) & 0xFFFF)
+            gpu.oam[(((to + offset)) & 0xFFFF) - 0xFE00] = mmu.read((from + offset) & 0xFFFF)
 
-            //console.log(`OAM Val ${value} from ${((from + offset) & 0xFFFF).toString(16)}`)
-
-            gpu.oam[(((to + offset)) & 0xFFFF) - 0xFE00] = value
-
-            //console.log(`OAM Val ${value} to ${((to + offset) & 0xFFFF).toString(16)}`)
         }
     }
 }

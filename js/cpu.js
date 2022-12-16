@@ -660,7 +660,7 @@ cpu.RETI = () => {
     cpu.clock.cycles += 16
 }
 
-// Jump to 8 Byte Address
+// Jump to 8-Bit Address
 cpu.RST = (address) => {
     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
 

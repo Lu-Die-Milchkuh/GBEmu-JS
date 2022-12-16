@@ -22,7 +22,6 @@
 
 import {mmu} from "./mmu.js"
 import {cpu} from "./cpu.js"
-import {paused, running} from "./emulator.js"
 
 /*
     Macros
