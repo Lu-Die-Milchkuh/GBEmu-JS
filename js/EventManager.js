@@ -36,16 +36,14 @@ document.querySelector("#file-input").addEventListener("change", (event) => {
         reader.readAsArrayBuffer(files[0])
         reader.onload = () => {
             cartridge.reset()
-            screen.reset()
+            //screen.reset()
 
             let buffer = reader.result
             let tempArray = new Uint8Array(buffer)
             cartridge.rom = Array.from(tempArray)
             read_rom_info()
-            //running = true
             setRunning(true)
             setPaused(false)
-            //paused = false
             run().then(() => console.log("Emulation Stopped")).catch(err => console.log(err))
         }
     }
@@ -62,11 +60,10 @@ document.querySelector("#speed-slider").addEventListener("input", () => {
 
 // Stop Button
 document.querySelector("#stop-button").addEventListener("click", () => {
-    //running = false
-    //paused = false
     setRunning(false)
     setPaused(false)
-    //console.log("Stopped Emulation")
+    cartridge.reset()
+    screen.reset()
 })
 
 // Reset Button

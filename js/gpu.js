@@ -38,7 +38,7 @@ const STAT = 0xFF41
 // Viewport Addresses
 const SCX = 0xFF43    // X Pos of BG
 const SCY = 0xFF42    // Y Pos of BG
-const WINX = 0xFF4B   // X Pos of Viewing Area, BG + 7 !
+//const WINX = 0xFF4B   // X Pos of Viewing Area, BG + 7 !
 const WINY = 0xFF4A   // Y Pos of Viewing Area
 const LY = 0xFF44
 const LYC = 0xFF45
@@ -272,7 +272,7 @@ gpu.draw_background = function (bg_priority) {
         let pixel_y = y % 8
         let pixel = tile.pixels[((pixel_y * 8) + pixel_x) & 0xFFFF]
         let color = this.colorize(pixel, palette)
-        //console.log(`BG Color ${pixel} ${color.toString()}`)
+        //console.log(`BG Color ${pixel.toString(2)} ${color.toString()}`)
         let offset = (buffer_start + i) & 0xFFFF
 
         if (pixel !== 0) {
@@ -403,7 +403,7 @@ gpu.draw_sprites = function (bg_priority) {
                 let lookup_x = sprite.x_flip ? ((pixel_x - 7) * -1) % 256 : pixel_x
 
                 let pixel = tile.pixels[(lookup_y * 8) + lookup_x]
-//                if( pixel === undefined) console.log((lookup_y * 8) + lookup_x)
+
                 if (pixel === 0) {
                     continue
                 }
@@ -566,18 +566,19 @@ gpu.refresh_tile = function (id) {
 
     for (let y = 0; y < 8; y++) {
         let lowByte = this.read_raw(offset + (y * 2))
-        let highByte = this.read_raw(offset + (y + 2) + 1)
+        let highByte = this.read_raw(offset + (y * 2) + 1)
         let x = 7
         while (x >= 0) {
             let flip_x = (x - 7) * -1
             let low_bit = (lowByte >>> x) & 1
             let high_bit = (highByte >>> x) & 1
 
-            tile[((y * 8) + flip_x) & 0xFFFF] = (high_bit << 1) | low_bit
+            tile[(((y * 8) + flip_x) >>> 0) & 0xFF] = (high_bit << 1) | low_bit
             //console.log(`${tile.toString()}`)
             x -= 1
         }
     }
+
     this.tile_cache[id].dirty = false
     this.tile_cache[id].pixels = tile
 }

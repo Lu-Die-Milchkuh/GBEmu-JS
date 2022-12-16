@@ -39,9 +39,12 @@ screen.init = () => {
 }
 
 screen.reset = () => {
-    //screen.context.fillStyle = "#FFF"
-    //screen.context.fillRect(0,0,320,288)
-
+    if(screen.context !== undefined) {
+        // TODO: Does not work for whatever reason
+        screen.context.fillStyle = "#67B835"
+        screen.context.fillRect(0,0,screen.canvas.width,screen.canvas.height)
+        console.log("Cleared Screen")
+    }
 }
 
 screen.update = () => {

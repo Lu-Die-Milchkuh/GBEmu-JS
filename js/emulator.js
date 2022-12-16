@@ -55,7 +55,7 @@ export async function run() {
     mmu.reset()
     gpu.reset()
     cpu.reset()
-    //let counter = 0
+
 
     while (running) {
         while (paused) {
@@ -77,13 +77,11 @@ export async function run() {
                 let opcode = mmu.read(cpu.PC)
                 cpu.clock.cycles += 4
                 //console.log(`Executing: ${opcode.toString(16)} @ ${cpu.PC.toString(16)}`)
-                //counter++
+
 
                 if (opcode === 0xCB) {
                     cpu.PC = ((cpu.PC + 1) >>> 0) % 0x10000
                     opcode = mmu.read(cpu.PC)
-                    //console.warn(`Prefix CB Instruction: ${opcode.toString(16)}`)
-                    //cpu.clock.cycles += 4
                     prefix_lookup[opcode]()
                 } else {
                     lookup[opcode]()
@@ -93,7 +91,7 @@ export async function run() {
             } else {
                 cpu.clock.cycles += 4
             }
-            //cpu.clock.cycles =  (cpu.clock.cycles / 4) >>> 0
+
 
             if (mmu.read(0xFF02) === 0x81) {
                 console.warn("Serial")
@@ -104,7 +102,7 @@ export async function run() {
             //console.log(`Elapsed Cycles: ${temp_cycles}`)
             updateControls()
             gpu.update(temp_cycles)
-            timer.cycles(temp_cycles)//;printCPUState()
+            timer.cycles(temp_cycles)
             oam.update(temp_cycles)
             cpu.checkInterrupt()
         }
@@ -122,17 +120,9 @@ export async function run() {
             foo += String.fromCharCode(serial[i])
         }
         console.warn(`From Serial: ${foo}`)
-        //printCPUState()
-        //gpu.frame_buffer.forEach((e) => {console.log(e.values())})
-        //let foo2 = gpu.sprite_table.values()
-        //for (let elements of foo2) {
-        //    console.log(elements)
-        //}
 
         screen.update()
     }
-    //console.log(gpu.sprite_table)
-    //document.querySelector("#test").innerHTML = gg
 }
 
 let serial = []
