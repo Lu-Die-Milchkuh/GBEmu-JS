@@ -477,6 +477,8 @@ gpu.read = function (address) {
         }
     } else if (address >= 0xFF00 && address <= 0xFF7F) {
         data = mmu.io_reg[address - 0xFF00]
+    } else {
+        console.error(`GPU read ->  ${address.toString(16)}`)
     }
 
     return data
@@ -548,12 +550,14 @@ gpu.update_sprite = function (data, address) {
         default:
             console.error(`Error in gpu.update_sprite -> data_type ${data_type}`)
     }
+
+    this.sprite_table[sprite_id] = sprite
 }
 
 gpu.refresh_tile = function (id) {
     let offset = (0x8000 + (id * 16)) & 0xFFFF
     //console.log(`Refreshing Tile ${id}`)
-    let tile = new Array(64)
+    let tile = new Uint8Array(64)
     tile.fill(0)
 
     for (let y = 0; y < 8; y++) {
@@ -565,7 +569,7 @@ gpu.refresh_tile = function (id) {
             let low_bit = (lowByte >>> x) & 1
             let high_bit = (highByte >>> x) & 1
 
-            tile[(((y * 8) + flip_x) >>> 0) & 0xFF] = (high_bit << 1) | low_bit
+            tile[(y * 8) + flip_x] = (high_bit << 1) | low_bit
             //console.log(`${tile.toString()}`)
             x -= 1
         }

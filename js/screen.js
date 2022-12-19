@@ -39,10 +39,10 @@ screen.init = () => {
 }
 
 screen.reset = () => {
-    if(screen.context !== undefined) {
+    if (screen.context !== undefined) {
         // TODO: Does not work for whatever reason
         screen.context.fillStyle = "#67B835"
-        screen.context.fillRect(0,0,screen.canvas.width,screen.canvas.height)
+        screen.context.fillRect(0, 0, screen.canvas.width, screen.canvas.height)
         console.log("Cleared Screen")
     }
 }
@@ -67,7 +67,7 @@ screen.update = () => {
     // }
 
     let j = 0
-    for (let i = 0; i < (160 * 144); i++) {
+    for (let i = 0; i < gpu.frame_buffer.length; i++) {
 
         let v = gpu.frame_buffer[i]
 
@@ -84,6 +84,23 @@ screen.update = () => {
 
         j += 8
     }
+
+    // let f = ""
+    // for (let i = 0; i < gpu.frame_buffer.length; i++) {
+    //     if(i % 160 === 0) {
+    //         f += "\n"
+    //     } else {
+    //         if(gpu.frame_buffer[i].toString() === [255,255,255].toString() || gpu.frame_buffer[i].toString() === [0x9B, 0xBC, 0x0F].toString()) {
+    //             f+= " "
+    //         } else {
+    //             f += "1"
+    //         }
+    //     }
+    //
+    // }
+    // console.log(f)
+
+
 
     screen.context.putImageData(screen.content, 0, 0)
 }
