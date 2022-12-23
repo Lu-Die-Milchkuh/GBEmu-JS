@@ -47,7 +47,7 @@ body {
 /*
     Main Game Overlay + Drawing Canvas
 */
-#game-overlay {
+div#game-overlay {
     display: flex;
     justify-content: center;
     position: relative;
@@ -57,7 +57,7 @@ body {
     border-bottom: 5px solid gray;
 }
 
-#gameboy-img {
+img#gameboy-img {
     position: relative;
     justify-content: center;
     border-bottom: 10px inset rgba(0, 0, 0, .5);
@@ -70,7 +70,7 @@ body {
 
 }
 
-#game-screen {
+canvas#game-screen {
     position: absolute;
     justify-content: center;
     width: 320px;
@@ -84,7 +84,7 @@ body {
 /*
     Main Control Block
  */
-#control-block {
+div#control-block {
     margin-top: 2%;
     position: relative;
     display: flex;
@@ -94,7 +94,7 @@ body {
     gap: 5px;
 }
 
-#control-block > * {
+div#control-block > * {
     width: 33%;
     height: fit-content;
 }
@@ -160,7 +160,7 @@ label[for="file-input"]:hover {
 /*
     Speed Control Block
 */
-form[id="speed-control"] {
+form#speed-control {
     display: grid;
     border-style: solid;
     background-color: #7C7C7C;
@@ -175,7 +175,7 @@ form[id="speed-control"] {
     border-radius: 10px;
 }
 
-#speed-slider {
+input#speed-slider {
 
     appearance: none;
     background-color: white;
@@ -183,7 +183,7 @@ form[id="speed-control"] {
 
 }
 
-#speed-slider::-webkit-slider-thumb {
+input#speed-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     box-shadow: 1px 1px 1px #000000, 0 0 1px #0d0d0d;
     border: 1px solid #000000;
@@ -194,7 +194,7 @@ form[id="speed-control"] {
     cursor: pointer;
 }
 
-#speed-slider::-moz-range-thumb {
+input#speed-slider::-moz-range-thumb {
     box-shadow: 1px 1px 1px #000000, 0 0 1px #0d0d0d;
     border: 1px solid #000000;
     height: 20px;
@@ -240,7 +240,7 @@ p::after {
     animation: flicker 0.15s infinite;
 }
 
-#pacman {
+div#pacman {
     width: 100%;
     background: url("./media/pacman.gif") no-repeat;
     position: absolute;
@@ -250,14 +250,14 @@ p::after {
     animation: run 3.5s linear infinite, flicker 1.6s infinite;
 }
 
-#info-block {
+div#info-block {
     display: grid;
     height: auto;
     overflow: hidden;
     margin: 0;
 }
 
-#info-block > h2 {
+div#info-block > h2 {
     position: relative;
     justify-content: center;
     text-align: center;

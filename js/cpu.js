@@ -785,12 +785,6 @@ cpu.STOP = () => {
 
 cpu.HALT = () => {
     cpu.isHalt = !(cpu.IE !== 0 && mmu.read(0xFF0F) !== 0)
-    /*cpu.isHalt = true
-    for(let i = 0; i < 5;i++) {
-        if(cpu.IE & (1<<i) && mmu.read(0xFF0F) & (1 <<i)) {
-            cpu.isHalt = false
-        }
-    }*/
     cpu.clock.cycles += 4
 }
 
