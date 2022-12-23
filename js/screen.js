@@ -23,27 +23,25 @@
 import {gpu} from "./gpu.js"
 
 export let screen = {
-    canvas: undefined,
-    context: undefined,
-
-    //frequency: 60,
-    //pixel_size: 2,
-    content: undefined
+    canvas: null,
+    context: null,
+    content: null
 }
 
 screen.init = () => {
     screen.canvas = document.querySelector("#game-screen")
     screen.context = screen.canvas.getContext('2d')
     screen.content = screen.context.createImageData(320, 288)
-
 }
 
 screen.reset = () => {
-    if (screen.context !== undefined) {
-        // TODO: Does not work for whatever reason
+    if (screen.context !== null) {
+        screen.context.data = []
         screen.context.fillStyle = "#67B835"
-        screen.context.fillRect(0, 0, screen.canvas.width, screen.canvas.height)
-        console.log("Cleared Screen")
+        setTimeout(() => {
+            screen.context.fillRect(0, 0, screen.canvas.width, screen.canvas.height)
+        },100)
+        //console.log("Cleared Screen")
     }
 }
 
@@ -55,11 +53,11 @@ screen.update = () => {
     //         for (let x = 0; x < 160; x++) {
     //             for (let px = 0; px < 2; px++) {
     //                 let offset = yOffset + (x * 2 + px)
-    //                 let v = gpu.frame_buffer[y * 160 + x | 0]
+    //                 let colors = gpu.frame_buffer[y * 160 + x | 0]
     //                 // set RGB values
-    //                 screen.content.data[offset * 4] = v[0]
-    //                 screen.content.data[offset * 4 + 1] = v[1]
-    //                 screen.content.data[offset * 4 + 2] = v[2]
+    //                 screen.content.data[offset * 4] = colors[0]
+    //                 screen.content.data[offset * 4 + 1] = colors[1]
+    //                 screen.content.data[offset * 4 + 2] = colors[2]
     //                 screen.content.data[offset * 4 + 3] = 255
     //             }
     //         }
@@ -69,38 +67,21 @@ screen.update = () => {
     let j = 0
     for (let i = 0; i < gpu.frame_buffer.length; i++) {
 
-        let v = gpu.frame_buffer[i]
+        let colors = gpu.frame_buffer[i]
 
         //set RGB values
-        screen.content.data[j] = v[0]
-        screen.content.data[j + 1] = v[1]
-        screen.content.data[j + 2] = v[2]
+        screen.content.data[j] = colors[0]
+        screen.content.data[j + 1] = colors[1]
+        screen.content.data[j + 2] = colors[2]
         screen.content.data[j + 3] = 255
 
-        screen.content.data[j + 4] = v[0]
-        screen.content.data[j + 5] = v[1]
-        screen.content.data[j + 6] = v[2]
+        screen.content.data[j + 4] = colors[0]
+        screen.content.data[j + 5] = colors[1]
+        screen.content.data[j + 6] = colors[2]
         screen.content.data[j + 7] = 255
 
         j += 8
     }
-
-    // let f = ""
-    // for (let i = 0; i < gpu.frame_buffer.length; i++) {
-    //     if(i % 160 === 0) {
-    //         f += "\n"
-    //     } else {
-    //         if(gpu.frame_buffer[i].toString() === [255,255,255].toString() || gpu.frame_buffer[i].toString() === [0x9B, 0xBC, 0x0F].toString()) {
-    //             f+= " "
-    //         } else {
-    //             f += "1"
-    //         }
-    //     }
-    //
-    // }
-    // console.log(f)
-
-
 
     screen.context.putImageData(screen.content, 0, 0)
 }

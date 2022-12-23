@@ -71,8 +71,11 @@ export function read_rom_info() {
     info["RAM Size"] = ram_size_lookup[cartridge.rom[0x149]]
     info.Japanese = !!cartridge.rom[0x14A]
 
-
+    if(document.querySelector("#rom-info")) {
+        document.querySelector("#rom-info").remove()
+    }
     let table = document.createElement("table")
+    table.id = "rom-info"
     let caption = document.createElement("caption")
     caption.innerHTML = "ROM Information"
 

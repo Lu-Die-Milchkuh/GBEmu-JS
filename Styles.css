@@ -24,7 +24,7 @@ h1::after {
 /*
     Scrolling Header Background
 */
-.header-container {
+div.header-container {
     width: 100%;
     overflow: hidden;
     position: relative;
@@ -32,7 +32,7 @@ h1::after {
     border-bottom: 5px solid gray;
 }
 
-.sliding-background {
+div.sliding-background {
     background: url("./media/header-background.png") repeat-x;
     height: 400px;
     width: 300%;

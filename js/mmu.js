@@ -61,7 +61,7 @@ mmu.read = function (address) {
         data = gpu.read(address)
     } else if (address >= 0xFEA0 && address <= 0xFEFF) {
         // unused memory region
-        console.error(`Tried to read from unused memory region (${address.toString(16)})`)
+        //console.error(`Tried to read from unused memory region (${address.toString(16)})`)
         data = 0xFF
     } else if (address >= 0xFF00 && address <= 0xFF7F) {     // IO Register
         data = this.io_reg[address - 0xFF00]
@@ -101,13 +101,13 @@ mmu.write = function (data, address) {
     } else if (address >= 0xFEA0 && address <= 0xFEFF) {
         // unused memory region
         // Writing to this memory region does nothing. Some games do it,it is not considered as an "error,failure"
-        console.error(`Tried to write ${data.toString(16)} to unused memory region (${address.toString(16)})`)
+        //console.error(`Tried to write ${data.toString(16)} to unused memory region (${address.toString(16)})`)
 
     } else if (address >= 0xFF00 && address <= 0xFF7F) {     // IO Register
 
         if (address !== 0xFF04) {
             if (address === 0xFF46) {
-                console.log(`Requested OAM transfer: ${data.toString()}`)
+                //console.log(`Requested OAM transfer: ${data.toString()}`)
                 oam.request(data)
             } else {
                 this.io_reg[address - 0xFF00] = data

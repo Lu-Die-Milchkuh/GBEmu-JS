@@ -21,6 +21,7 @@
 "use strict"
 
 import {mmu} from "./mmu.js"
+import {cpu} from "./cpu.js"
 
 /*
     Game Boy         PC Keyboard
@@ -56,5 +57,6 @@ export function keyboard_update(event) {
         let old_input = mmu.read(0xFF00)
         //console.log(new_input.toString(2))
         keyboard_state = old_input & ~(1 << keyboard_Joypad[event.key])
+        cpu.requestInterrupt(4)
     }
 }

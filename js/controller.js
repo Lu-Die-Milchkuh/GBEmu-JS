@@ -21,6 +21,7 @@
 "use strict"
 
 import {mmu} from "./mmu.js";
+import {cpu} from "./cpu.js";
 
 export let gamepad_state = 0xCF
 
@@ -91,6 +92,7 @@ export function gamepad_update() {
         }
 
         gamepad_state = old_input
+        cpu.requestInterrupt(4)
 
     }
 }

@@ -26,6 +26,7 @@ import {cartridge, read_rom_info} from "./cartridge.js"
 import {cpu} from "./cpu.js"
 import {gamepad_update} from "./controller.js"
 import {screen} from "./screen.js"
+import {clearSerial} from "./serial.js"
 
 // File Input
 document.querySelector("#file-input").addEventListener("change", (event) => {
@@ -36,6 +37,7 @@ document.querySelector("#file-input").addEventListener("change", (event) => {
         reader.readAsArrayBuffer(files[0])
         reader.onload = () => {
             cartridge.reset()
+            clearSerial()
             //screen.reset()
 
             let buffer = reader.result

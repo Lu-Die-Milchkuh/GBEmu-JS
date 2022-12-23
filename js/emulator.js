@@ -28,6 +28,7 @@ import {gpu} from "./gpu.js"
 import {screen} from "./screen.js"
 import {oam} from "./dma.js"
 import {updateControls} from "./input.js"
+import {checkSerial, setSerial} from "./serial.js"
 
 let ratio = 1
 export let running = true
@@ -56,6 +57,8 @@ export async function run() {
     gpu.reset()
     cpu.reset()
 
+    setInterval(checkSerial,100)
+
 
     while (running) {
         while (paused) {
@@ -72,6 +75,7 @@ export async function run() {
             let temp_cycles = cpu.clock.cycles
 
             cpu.update_F()
+            //cpu.checkInterrupt()
             if (!cpu.isHalt && !cpu.isStop) { //&& !gpu.vblank
                 // Opcodes are the Bytes that tell the cpu which instruction it should execute
                 let opcode = mmu.read(cpu.PC)
@@ -92,14 +96,16 @@ export async function run() {
                 cpu.clock.cycles += 4
             }
 
-
             if (mmu.read(0xFF02) === 0x81) {
-                console.warn("Serial")
-                serial.push(mmu.read(0xFF01))
+                //console.warn("Serial")
+
+                setSerial(mmu.read(0xFF01))
                 mmu.write(0, 0xFF02)
+
             }
+
             temp_cycles = cpu.clock.cycles - temp_cycles // Elapsed Cycles
-            //console.log(`Elapsed Cycles: ${temp_cycles}`)
+
             updateControls()
             gpu.update(temp_cycles)
             timer.cycles(temp_cycles)
@@ -115,14 +121,9 @@ export async function run() {
         }*/
 
         await new Promise(resolve => setTimeout(resolve, 100))
-        let foo = ""
-        for (let i = 0; i < serial.length; i++) {
-            foo += String.fromCharCode(serial[i])
-        }
-        console.warn(`From Serial: ${foo}`)
 
         screen.update()
     }
 }
 
-let serial = []
+//let serial = []
