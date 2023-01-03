@@ -85,6 +85,10 @@ document.querySelector("#pause-button").addEventListener("click", () => {
     console.log(`Emulation Paused: ${paused}`)
 })
 
+document.querySelector("#chippy8").addEventListener("click",() => {
+    window.open("https://students.btsi.lu/zeblu735/Chippy8-Web/")
+})
+
 // Event Listener for Keyboard Input
 window.addEventListener("keypress", keyboard_update)
 

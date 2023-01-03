@@ -40,8 +40,7 @@ screen.reset = () => {
         screen.context.fillStyle = "#67B835"
         setTimeout(() => {
             screen.context.fillRect(0, 0, screen.canvas.width, screen.canvas.height)
-        },100)
-        //console.log("Cleared Screen")
+        }, 100)
     }
 }
 
