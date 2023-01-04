@@ -50,16 +50,17 @@ body {
 div#game-overlay {
     display: flex;
     justify-content: center;
+    overflow: hidden;
     position: relative;
-
     background: url("./media/retro-game.gif");
     background-size: cover;
     border-bottom: 5px solid gray;
 }
 
 img#gameboy-img {
+    object-fit: cover;
+    overflow: hidden;
     position: relative;
-    justify-content: center;
     border-bottom: 10px inset rgba(0, 0, 0, .5);
     border-left: 10px inset rgba(0, 0, 0, .5);
     border-right: 10px inset rgba(255, 255, 255, .5);
@@ -73,9 +74,9 @@ img#gameboy-img {
 canvas#game-screen {
     position: absolute;
     justify-content: center;
+    display: inline-block;
     width: 320px;
     height: 288px;
-    display: flex;
     top: 9%;
     z-index: 1;
     background-color: #67B835;
