@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,55 +12,57 @@
     <script src="./js/EventManager.js" type="module"></script>
 
 </head>
+
 <body>
 
-<div class="header-container">
-    <div class="sliding-background"></div>
-    <h1>WebBoy</h1>
-</div>
-
-
-<main>
-    <noscript>Javascript not enabled! Please enable it or switch to a newer Browser</noscript>
-
-    <div id="game-overlay">
-        <img id="gameboy-img" src="media/gb-cover.png" alt="GameBoy Overlay" draggable="false">
-        <canvas id="game-screen">Your Browser does not support the Canvas</canvas>
-    </div>
-
-    <div id="control-block">
-
-        <label for="file-input">Select your ROM!
-            <input id="file-input" type="file" accept=".gb,.gbc">
-        </label>
-
-        <button id="reset-button">Reset</button>
-        <button id="stop-button">Stop</button>
-        <button id="pause-button">Pause</button>
-        <button id="chippy8">Open Chippy8 Emulator</button>
-
-        <form id="speed-control">
-            <label for="speed-slider">Set Emulation Speed (1 - 200%)</label>
-            <input id="speed-slider" type="range" min="1" max="200" value="100">
-            <output id="speed-out" for="speed-slider">Current Emulation Speed: 100%</output>
-        </form>
-
-    </div>
-
-    <div id="info-block">
-        <h2>Information</h2>
+    <div class="header-container">
+        <div class="sliding-background"></div>
+        <h1>WebBoy</h1>
     </div>
 
 
-</main>
+    <main>
+        <noscript>Javascript not enabled! Please enable it or switch to a newer Browser</noscript>
 
-<footer>
-    <div id="pacman"></div>
-    <p>
-        This Website is licensed under GPL v3. You can find its source code on
-        <a href="https://github.com/Lu-Die-Milchkuh/GBEmu-JS">Github</a>
-    </p>
-</footer>
+        <div id="game-overlay">
+            <img id="gameboy-img" src="media/gb-cover.png" alt="GameBoy Overlay" draggable="false">
+            <canvas id="game-screen">Your Browser does not support the Canvas</canvas>
+        </div>
+
+        <div id="control-block">
+
+            <label for="file-input">Select your ROM!
+                <input id="file-input" type="file" accept=".gb,.gbc">
+            </label>
+
+            <button id="reset-button">Reset</button>
+            <button id="stop-button">Stop</button>
+            <button id="pause-button">Pause</button>
+            <button id="chippy8">Open Chippy8 Emulator</button>
+
+            <form id="speed-control">
+                <label for="speed-slider">Set Emulation Speed (1 - 200%)</label>
+                <input id="speed-slider" type="range" min="1" max="200" value="100">
+                <output id="speed-out" for="speed-slider">Current Emulation Speed: 100%</output>
+            </form>
+
+        </div>
+
+        <div id="info-block">
+            <h2>Information</h2>
+        </div>
+
+
+    </main>
+
+    <footer>
+        <div id="pacman"></div>
+        <p>
+            This Website is licensed under GPL v3. You can find its source code on
+            <a href="https://github.com/Lu-Die-Milchkuh/GBEmu-JS">Github</a>
+        </p>
+    </footer>
 
 </body>
+
 </html>

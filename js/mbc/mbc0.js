@@ -20,14 +20,14 @@
 
 "use strict"
 
-import {cartridge} from "../cartridge.js"
+import { cartridge } from "../cartridge.js"
 
 export let mbc0 = {
     read: function (address) {
         return cartridge.rom[address]
     },
 
-    write: function (data,address) {
+    write: function (data, address) {
         console.error(`MBC0 -> Tried to write ${data.toString(16)} to ${address.toString(16)}`)
     }
 }

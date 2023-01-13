@@ -20,10 +20,10 @@
 
 "use strict"
 
-import {mmu} from "./mmu.js"
-import {gamepad_state} from "./controller.js"
-import {keyboard_state} from "./keyboard.js"
-import {cpu} from "./cpu.js"
+import { mmu } from "./mmu.js"
+import { gamepad_state } from "./controller.js"
+import { keyboard_state } from "./keyboard.js"
+import { cpu } from "./cpu.js"
 
 /*
 Taken from pandocs
@@ -40,8 +40,8 @@ let state = 0xCF
 
 export function updateControls() {
     state = keyboard_state | gamepad_state
-    mmu.write(state,0xFF00)
-    if(state !== 0) {
+    mmu.write(state, 0xFF00)
+    if (state !== 0) {
         cpu.isStop = false // Pressing a Button wakes Game Boy up
     }
     //console.log(`Updating Controls ${state.toString(2)}`)

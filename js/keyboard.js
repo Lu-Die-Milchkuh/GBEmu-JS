@@ -20,8 +20,8 @@
 
 "use strict"
 
-import {mmu} from "./mmu.js"
-import {cpu} from "./cpu.js"
+import { mmu } from "./mmu.js"
+import { cpu } from "./cpu.js"
 
 /*
     Game Boy         PC Keyboard
@@ -36,7 +36,7 @@ import {cpu} from "./cpu.js"
     Select              q
 */
 
-const valid_keys = ["w","a","s","d","e","r","q","f"]
+const valid_keys = ["w", "a", "s", "d", "e", "r", "q", "f"]
 
 const keyboard_Joypad = {
     "w": 2,   // Up
@@ -52,7 +52,7 @@ const keyboard_Joypad = {
 export let keyboard_state = 0xCF
 
 export function keyboard_update(event) {
-    if(valid_keys.includes(event.key)) {
+    if (valid_keys.includes(event.key)) {
         //console.log(event.key)
         let old_input = mmu.read(0xFF00)
         //console.log(new_input.toString(2))

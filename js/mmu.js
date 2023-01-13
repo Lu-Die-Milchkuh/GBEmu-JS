@@ -20,10 +20,10 @@
 
 "use strict"
 
-import {gpu} from "./gpu.js"
-import {cpu} from "./cpu.js"
-import {oam} from "./dma.js"
-import {cartridge} from "./cartridge.js"
+import { gpu } from "./gpu.js"
+import { cpu } from "./cpu.js"
+import { oam } from "./dma.js"
+import { cartridge } from "./cartridge.js"
 
 export let mmu = {
     wram: new Array(0x2000), // 8192 Bytes of Work RAM

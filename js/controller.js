@@ -20,8 +20,8 @@
 
 "use strict"
 
-import {mmu} from "./mmu.js";
-import {cpu} from "./cpu.js";
+import { mmu } from "./mmu.js";
+import { cpu } from "./cpu.js";
 
 export let gamepad_state = 0xCF
 
@@ -55,12 +55,12 @@ export let gamepad_state = 0xCF
 */
 
 export function gamepad_update() {
-    if(navigator.getGamepads()) {
+    if (navigator.getGamepads()) {
         const gamepad = navigator.getGamepads()[0]
         let old_input = mmu.read(0xFF00)
 
         // A Button or Right
-        if(gamepad.buttons[0].pressed || gamepad.buttons[15].pressed) {
+        if (gamepad.buttons[0].pressed || gamepad.buttons[15].pressed) {
             //console.log(`Button A or Right`)
             old_input = old_input & ~(1 << 0)
         } else {
@@ -68,7 +68,7 @@ export function gamepad_update() {
         }
 
         // B Button or Left
-        if(gamepad.buttons[1].pressed || gamepad.buttons[14].pressed) {
+        if (gamepad.buttons[1].pressed || gamepad.buttons[14].pressed) {
             //console.log(`Button B or Left`)
             old_input = old_input & ~(1 << 1)
         } else {
@@ -76,7 +76,7 @@ export function gamepad_update() {
         }
 
         // Up or Select
-        if(gamepad.buttons[12].pressed || gamepad.buttons[8].pressed) {
+        if (gamepad.buttons[12].pressed || gamepad.buttons[8].pressed) {
             //console.log(`Button Select or Up`)
             old_input = old_input & ~(1 << 1)
         } else {
@@ -84,7 +84,7 @@ export function gamepad_update() {
         }
 
         // Down or Start
-        if(gamepad.buttons[13].pressed || gamepad.buttons[9].pressed) {
+        if (gamepad.buttons[13].pressed || gamepad.buttons[9].pressed) {
             //console.log(`Button Start or Down`)
             old_input = old_input & ~(1 << 1)
         } else {

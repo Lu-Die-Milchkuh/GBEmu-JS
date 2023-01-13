@@ -20,8 +20,8 @@
 
 "use strict"
 
-import {mmu} from "./mmu.js"
-import {gpu} from "./gpu.js"
+import { mmu } from "./mmu.js"
+import { gpu } from "./gpu.js"
 
 export let oam = {
     active: false,

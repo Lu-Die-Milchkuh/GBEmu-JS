@@ -20,7 +20,7 @@
 
 "use strict"
 
-import {gpu} from "./gpu.js"
+import { gpu } from "./gpu.js"
 
 export let screen = {
     canvas: null,

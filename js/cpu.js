@@ -20,7 +20,7 @@
 
 "use strict"
 
-import {mmu} from "./mmu.js"
+import { mmu } from "./mmu.js"
 
 export let cpu = {
     // 8-Bit Register

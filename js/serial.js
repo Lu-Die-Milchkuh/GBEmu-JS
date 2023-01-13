@@ -29,7 +29,7 @@ export function setSerial(foo) {
 export function clearSerial() {
     serial_content = []
     let serial_out = document.querySelector("#serial")
-    if(serial_out) {
+    if (serial_out) {
         serial_out.remove()
     }
 }

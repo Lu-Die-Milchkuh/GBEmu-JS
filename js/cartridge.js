@@ -20,8 +20,8 @@
 
 "use strict"
 
-import {mbc0} from "./mbc/mbc0.js"
-import {mbc1} from "./mbc/mbc1.js"
+import { mbc0 } from "./mbc/mbc0.js"
+import { mbc1 } from "./mbc/mbc1.js"
 
 export let cartridge = {
     rom: [],     // Array to Store ROM Content
@@ -33,7 +33,7 @@ const mbc_lookup = [
     mbc1
 ]
 
-cartridge.reset = function() {
+cartridge.reset = function () {
     this.rom = []
     this.mbc = 0
 }
@@ -71,7 +71,7 @@ export function read_rom_info() {
     info["RAM Size"] = ram_size_lookup[cartridge.rom[0x149]]
     info.Japanese = !!cartridge.rom[0x14A]
 
-    if(document.querySelector("#rom-info")) {
+    if (document.querySelector("#rom-info")) {
         document.querySelector("#rom-info").remove()
     }
     let table = document.createElement("table")

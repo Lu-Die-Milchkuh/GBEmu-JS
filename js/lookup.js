@@ -20,8 +20,8 @@
 
 "use strict"
 
-import {cpu} from "./cpu.js"
-import {mmu} from "./mmu.js"
+import { cpu } from "./cpu.js"
+import { mmu } from "./mmu.js"
 
 export const lookup = {
     0x00: () => {

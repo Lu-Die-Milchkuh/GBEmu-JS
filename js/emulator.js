@@ -20,15 +20,15 @@
 
 "use strict"
 
-import {mmu} from "./mmu.js"
-import {cpu} from "./cpu.js"
-import {lookup, prefix_lookup} from "./lookup.js"
-import {timer} from "./timer.js"
-import {gpu} from "./gpu.js"
-import {screen} from "./screen.js"
-import {oam} from "./dma.js"
-import {updateControls} from "./input.js"
-import {checkSerial, setSerial} from "./serial.js"
+import { mmu } from "./mmu.js"
+import { cpu } from "./cpu.js"
+import { lookup, prefix_lookup } from "./lookup.js"
+import { timer } from "./timer.js"
+import { gpu } from "./gpu.js"
+import { screen } from "./screen.js"
+import { oam } from "./dma.js"
+import { updateControls } from "./input.js"
+import { checkSerial, setSerial } from "./serial.js"
 
 let ratio = 1
 export let running = true
@@ -57,7 +57,7 @@ export async function run() {
     gpu.reset()
     cpu.reset()
 
-    setInterval(checkSerial,100)
+    setInterval(checkSerial, 100)
 
 
     while (running) {

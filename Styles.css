@@ -97,7 +97,7 @@ div#control-block {
     gap: 5px;
 }
 
-div#control-block > * {
+div#control-block>* {
     width: 33%;
     height: fit-content;
 }
@@ -260,7 +260,7 @@ div#info-block {
     margin: 0;
 }
 
-div#info-block > h2 {
+div#info-block>h2 {
     position: relative;
     justify-content: center;
     text-align: center;
@@ -283,7 +283,8 @@ tr {
     border: 1px solid black;
 }
 
-td, th {
+td,
+th {
     text-align: center;
     font-size: 20px;
     padding: 10px;

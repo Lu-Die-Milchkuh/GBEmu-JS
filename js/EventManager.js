@@ -20,13 +20,13 @@
 
 "use strict"
 
-import {setPaused, setRunning, setRatio, run, paused} from "./emulator.js"
-import {keyboard_update} from "./keyboard.js"
-import {cartridge, read_rom_info} from "./cartridge.js"
-import {cpu} from "./cpu.js"
-import {gamepad_update} from "./controller.js"
-import {screen} from "./screen.js"
-import {clearSerial} from "./serial.js"
+import { setPaused, setRunning, setRatio, run, paused } from "./emulator.js"
+import { keyboard_update } from "./keyboard.js"
+import { cartridge, read_rom_info } from "./cartridge.js"
+import { cpu } from "./cpu.js"
+import { gamepad_update } from "./controller.js"
+import { screen } from "./screen.js"
+import { clearSerial } from "./serial.js"
 
 // File Input
 document.querySelector("#file-input").addEventListener("change", (event) => {
@@ -85,7 +85,7 @@ document.querySelector("#pause-button").addEventListener("click", () => {
     console.log(`Emulation Paused: ${paused}`)
 })
 
-document.querySelector("#chippy8").addEventListener("click",() => {
+document.querySelector("#chippy8").addEventListener("click", () => {
     window.open("https://students.btsi.lu/zeblu735/Chippy8-Web/")
 })
 
